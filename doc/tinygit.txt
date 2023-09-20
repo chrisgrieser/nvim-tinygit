@@ -13,6 +13,9 @@ Table of Contents                                  *tinygit-table-of-contents*
 Lightweight git client for nvim for quick commits and other quality of life
 improvements.
 
+`nvim-tinygit` should be considered beta status. It-works-on-my-machine, but it
+has not yet been tested by many other users.
+
 - |tinygit-features|
 - |tinygit-installation|
 - |tinygit-usage|
