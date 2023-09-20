@@ -1,8 +1,8 @@
  <!-- LTeX: enabled=false -->
-# {{plugin-name}} <!-- LTeX: enabled=true -->
-<a href="https://dotfyle.com/plugins/chrisgrieser/{{plugin-name}}"><img src="https://dotfyle.com/plugins/chrisgrieser/{{plugin-name}}/shield" /></a>
+# nvim-tinygit <!-- LTeX: enabled=true -->
+<a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield" /></a>
 
-{{plugin-desc}}
+A minimalistic git client for nvim.
 
 <!--toc:start-->
 - [Features](#features)
@@ -19,7 +19,7 @@
 ```lua
 -- lazy.nvim
 {
-	"chrisgrieser/{{plugin-name}}",
+	"chrisgrieser/nvim-tinygit",
 	opts = {
 		
 	},
@@ -27,9 +27,9 @@
 
 -- packer
 use {
-	"chrisgrieser/{{plugin-name}}",
+	"chrisgrieser/nvim-tinygit",
 	config = function () 
-		require("{{plugin-name-short}}").setup ({
+		require("tinygit").setup ({
 			
 		})
 	end,
