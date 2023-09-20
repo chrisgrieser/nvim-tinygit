@@ -47,6 +47,7 @@ Optionally, install the Treesitter parser for git commits for some syntax highli
 ```lua
 -- Open a commit popup. If there are no staged changes, stage all changes (`git add -A`) before the commit. Optionally runs `git push` afterwards.
 -- 💡 You can use gitsigns.nvim's `add_hunk` command to stage changes.
+-- 💡 To use vim commands in the input field, set dressing.nvim's `insert_only` to `false`.
 require("tinygit").smartCommit({ push = false }) -- options default to `false`
 
 -- Quick amends. `noedit = false` will open a commit message popup. 
