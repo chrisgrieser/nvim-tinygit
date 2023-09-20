@@ -13,6 +13,7 @@ Lightweight and nimble git client for nvim.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
+- [Non-Goals](#non-goals)
 - [Credits](#credits)
 <!--toc:end-->
 
@@ -23,7 +24,6 @@ Lightweight and nimble git client for nvim.
 - Quick amends.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
-- Non-Goal: Become [neogit](https://github.com/TimUntersberger/neogit) or [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim). `tinygit` is intended to complement those plugins with some simple commands, not replace them.
 
 ## Installation
 
@@ -41,7 +41,7 @@ use {
 }
 ```
 
-Optionally, install the Treesitter parser for git commits for some syntax highlighting of your commit messages, like for example emphasized conventional commit keywords: `TSInstall gitcommit`
+Optionally, install the Treesitter parser for git commits for some syntax highlighting of your commit messages like emphasized conventional commit keywords: `TSInstall gitcommit`
 
 ## Usage
 
@@ -111,7 +111,13 @@ local defaultConfig = {
 }
 ```
 
-To change the appearance and behavior of the commit message input field, you need to configure [dressing.nvim](https://github.com/stevearc/dressing.nvim).
+> [!NOTE]
+> To change the appearance and behavior of the commit message input field, you need to configure [dressing.nvim](https://github.com/stevearc/dressing.nvim).
+
+## Non-Goals
+- Become a full-fledged git client. Use [neogit](https://github.com/NeogitOrg/neogit) for that.
+- Add features available in [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim). `tinygit` is intended to complement `gitsigns.nvim` with some simple commands, not replace it.
+- UI Customization. Configure [dressing.nvim](https://github.com/stevearc/dressing.nvim) for that.
 
 ## Credits
 __About Me__  

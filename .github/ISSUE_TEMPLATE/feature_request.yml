@@ -21,11 +21,5 @@ body:
       options:
         - label: The feature would be useful to more users than just me.
           required: true
-        - label: I understand that this plugin does not intend to be a full-blown git client like Neogit.
-          required: true
-        - label: The feature is not available via gitsigns.nvim.
-          required: true
-        - label: >
-            The request does not concern the appearance of the commit message input field.
-            (Which is controlled via dressing.nvim and not this plugin.)
+        - label: I have read the [Non-Goals section of the README](..#non-goals).
           required: true
