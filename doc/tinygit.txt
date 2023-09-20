@@ -87,17 +87,19 @@ USAGE                                            *tinygit-nvim-tinygit--usage*
 
 CONFIGURATION                            *tinygit-nvim-tinygit--configuration*
 
+The `setup` call is optional. These are the default settings:
+
 >lua
     local defaultConfig = {
-        -- Why 72-50? see https://stackoverflow.com/q/2290016/22114136
+        -- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
         commitMaxLen = 72,
         smallCommitMaxLen = 50,
     
-        -- when conforming the commit message popup with an empty message, 
-        -- fill in this message. (Set to `false` to disallow empty commit messages.)
+        -- When conforming the commit message popup with an empty message, fill in this message. 
+        -- Set to `false` to disallow empty commit messages.
         emptyCommitMsgFillIn = "squash", -- string|false
     
-        -- deny commit messages without a conventinal commit keyword
+        -- disallow commit messages without a conventinal commit keyword
         enforceConvCommits = {
             enabled = true,
             keywords = { 
@@ -105,6 +107,7 @@ CONFIGURATION                            *tinygit-nvim-tinygit--configuration*
                 "style", "revert", "ci", "docs", "break", "improv",
             },
         },
+    
         -- icons for the issue/PR search
         issueIcons = {
             closedIssue = "🟣",
@@ -114,7 +117,7 @@ CONFIGURATION                            *tinygit-nvim-tinygit--configuration*
             closedPR = "🟥",
         },
     
-        -- confirmation sounds on finished async operations (like push)
+        -- confirmation sounds on finished async operations like push
         confirmationSoundsOnMacOs = true,
     }
 <
