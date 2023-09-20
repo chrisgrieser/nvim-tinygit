@@ -156,7 +156,7 @@ end
 
 --------------------------------------------------------------------------------
 
----@param opts? object
+---@param opts { forcePush?: boolean }
 local function amendNoEdit(opts)
 	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
@@ -168,14 +168,14 @@ local function amendNoEdit(opts)
 	if opts.forcePush then M.push { force = true } end
 end
 
----@param opts? object
+---@param opts? { noEdit?: boolean, forcePush?: boolean }
 ---@param prefillMsg? string
 function M.amend(opts, prefillMsg)
 	if not opts then opts = {} end
 	vim.cmd("silent update")
 	if notInGitRepo() then return end
 
-	if opts.noedit then
+	if opts.noEdit then
 		amendNoEdit(opts)
 		return
 	end
@@ -190,7 +190,7 @@ function M.amend(opts, prefillMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, newMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.amend(newMsg)
+			M.amend(opts, newMsg)
 			return
 		end
 
@@ -207,7 +207,7 @@ end
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
 ---@param prefillMsg? string
----@param opts? object
+---@param opts? { push?: boolean }
 function M.smartCommit(opts, prefillMsg)
 	if notInGitRepo() then return end
 
@@ -239,7 +239,7 @@ function M.smartCommit(opts, prefillMsg)
 end
 
 -- pull before to avoid conflicts
----@param opts? object
+---@param opts? { pullBefore?: boolean, force?: boolean }
 function M.push(opts)
 	if not opts then opts = {} end
 	local shellCmd = opts.pullBefore and "git pull ; git push" or "git push"
@@ -351,7 +351,7 @@ end
 
 ---Choose a GitHub issue/PR from the current repo to open in the browser.
 ---CAVEAT Due to GitHub API liminations, only the last 100 issues are shown.
----@param userOpts? object
+---@param userOpts? { state?: string, type?: string }
 function M.issuesAndPrs(userOpts)
 	if notInGitRepo() then return end
 	if not userOpts then userOpts = {} end

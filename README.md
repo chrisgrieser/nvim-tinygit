@@ -53,7 +53,7 @@ require("tinygit").smartCommit({ push = false }) -- options default to `false`
 
 -- Quick amends. `noedit = false` will open a commit message popup. 
 -- Optionally runs `git push --force` afterwards (only recommended for single-person repos).
-require("tinygit").amend ({ forcePush = false, noedit = false }) -- options default to `false`
+require("tinygit").amend ({ forcePush = false, noEdit = false }) -- options default to `false`
 
 -- Search issues & PRs. Requires `curl`.
 -- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
