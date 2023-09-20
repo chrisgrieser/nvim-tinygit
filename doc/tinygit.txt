@@ -8,6 +8,7 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Installation                          |tinygit-nvim-tinygit--installation|
   - Usage                                        |tinygit-nvim-tinygit--usage|
   - Configuration                        |tinygit-nvim-tinygit--configuration|
+  - Non-Goals                                |tinygit-nvim-tinygit--non-goals|
   - Credits                                    |tinygit-nvim-tinygit--credits|
 
 ==============================================================================
@@ -22,6 +23,7 @@ has not yet been tested by many other users.
 - |tinygit-installation|
 - |tinygit-usage|
 - |tinygit-configuration|
+- |tinygit-non-goals|
 - |tinygit-credits|
 
 
@@ -33,7 +35,6 @@ FEATURES                                      *tinygit-nvim-tinygit--features*
 - Quick amends.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
-- Non-Goal: Become neogit <https://github.com/TimUntersberger/neogit> or gitsigns.nvim <https://github.com/lewis6991/gitsigns.nvim>. `tinygit` is intended to complement those plugins with some simple commands, not replace them.
 
 
 INSTALLATION                              *tinygit-nvim-tinygit--installation*
@@ -53,8 +54,8 @@ INSTALLATION                              *tinygit-nvim-tinygit--installation*
 <
 
 Optionally, install the Treesitter parser for git commits for some syntax
-highlighting of your commit messages, like for example emphasized conventional
-commit keywords: `TSInstall gitcommit`
+highlighting of your commit messages like emphasized conventional commit
+keywords: `TSInstall gitcommit`
 
 
 USAGE                                            *tinygit-nvim-tinygit--usage*
@@ -126,8 +127,16 @@ The `setup` call is optional. These are the default settings:
     }
 <
 
-To change the appearance and behavior of the commit message input field, you
-need to configure dressing.nvim <https://github.com/stevearc/dressing.nvim>.
+
+  [!NOTE] To change the appearance and behavior of the commit message input
+  field, you need to configure dressing.nvim
+  <https://github.com/stevearc/dressing.nvim>.
+
+NON-GOALS                                    *tinygit-nvim-tinygit--non-goals*
+
+- Become a full-fledged git client. Use neogit <https://github.com/NeogitOrg/neogit> for that.
+- Add features available in gitsigns.nvim <https://github.com/lewis6991/gitsigns.nvim>. `tinygit` is intended to complement `gitsigns.nvim` with some simple commands, not replace it.
+- UI Customization. Configure dressing.nvim <https://github.com/stevearc/dressing.nvim> for that.
 
 
 CREDITS                                        *tinygit-nvim-tinygit--credits*
