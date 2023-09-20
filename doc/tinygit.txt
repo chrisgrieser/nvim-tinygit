@@ -19,6 +19,8 @@ Lightweight and nimble git client for nvim.
 `nvim-tinygit` should be considered beta status. It-works-on-my-machine, but it
 has not yet been tested by many other users.
 
+
+
 - |tinygit-features|
 - |tinygit-installation|
 - |tinygit-usage|
