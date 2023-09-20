@@ -66,6 +66,10 @@ local function nonZeroExit(errorMsg)
 	return exitCode ~= 0
 end
 
+---@nodiscard
+---@return boolean
+local function hasStagedChanges() return fn.system("git diff --staged --quiet || echo -n 'yes'") == "yes" end
+
 ---also notifies if not in git repo
 ---@nodiscard
 ---@return boolean
@@ -156,29 +160,33 @@ end
 
 --------------------------------------------------------------------------------
 
----@param opts { forcePush?: boolean }
-local function amendNoEdit(opts)
+---@param opts? { forcePush?: boolean }
+function M.amendNoEdit(opts)
+	if not opts then opts = {} end
+	vim.cmd("silent update")
+	if notInGitRepo() then return end
+
 	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
 	notify('󰊢 Amend-No-Edit\n"' .. lastCommitMsg .. '"')
 
-	local stderr = fn.system("git add -A && git commit --amend --no-edit")
+	if not hasStagedChanges() then
+		local stderr = fn.system { "git", "add", "-A" }
+		if nonZeroExit(stderr) then return end
+	end
+
+	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
 
 	if opts.forcePush then M.push { force = true } end
 end
 
----@param opts? { noEdit?: boolean, forcePush?: boolean }
+---@param opts? { forcePush?: boolean }
 ---@param prefillMsg? string
-function M.amend(opts, prefillMsg)
+function M.amendOnlyMsg (opts, prefillMsg)
 	if not opts then opts = {} end
 	vim.cmd("silent update")
 	if notInGitRepo() then return end
-
-	if opts.noEdit then
-		amendNoEdit(opts)
-		return
-	end
 
 	if not prefillMsg then
 		local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
@@ -186,16 +194,16 @@ function M.amend(opts, prefillMsg)
 	end
 	setGitCommitAppearance()
 
-	vim.ui.input({ prompt = "󰊢 Amend", default = prefillMsg }, function(commitMsg)
+	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, newMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.amend(opts, newMsg)
+			M.amendOnlyMsg(opts, newMsg)
 			return
 		end
 
 		notify('󰊢 Amend\n"' .. newMsg .. '"')
-		local stderr = fn.system("git add -A && git commit --amend -m '" .. newMsg .. "'")
+		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
 		if opts.forcePush then M.push { force = true } end
@@ -224,8 +232,7 @@ function M.smartCommit(opts, prefillMsg)
 			return
 		end
 
-		local hasStagedChanges = fn.system("git diff --staged --quiet || echo -n 'yes'") == "yes"
-		if not hasStagedChanges then
+		if not hasStagedChanges() then
 			local stderr = fn.system { "git", "add", "-A" }
 			if nonZeroExit(stderr) then return end
 		end
