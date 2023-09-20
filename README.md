@@ -5,6 +5,8 @@
 
 Lightweight git client for nvim for quick commits and other quality of life improvements.
 
+`nvim-tinygit` should be considered beta status. It-works-on-my-machine™, but it has not yet been tested by many other users.
+
 <!--toc:start-->
 - [Features](#main-features)
 - [Installation](#installation)
