@@ -3,12 +3,15 @@
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
 
-  - Main Features                                      |tinygit-main-features|
-  - Installation                                        |tinygit-installation|
-  - Usage                                                      |tinygit-usage|
-  - Configuration                                      |tinygit-configuration|
-  - Credits                                                  |tinygit-credits|
-# nvim-tinygit
+1. nvim-tinygit                                        |tinygit-nvim-tinygit-|
+  - Main Features                        |tinygit-nvim-tinygit--main-features|
+  - Installation                          |tinygit-nvim-tinygit--installation|
+  - Usage                                        |tinygit-nvim-tinygit--usage|
+  - Configuration                        |tinygit-nvim-tinygit--configuration|
+  - Credits                                    |tinygit-nvim-tinygit--credits|
+
+==============================================================================
+1. nvim-tinygit                                        *tinygit-nvim-tinygit-*
 
 Lightweight git client for nvim for quick commits and other quality of life
 improvements.
@@ -23,7 +26,7 @@ has not yet been tested by many other users.
 - |tinygit-credits|
 
 
-MAIN FEATURES                                          *tinygit-main-features*
+MAIN FEATURES                            *tinygit-nvim-tinygit--main-features*
 
 - Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
 - Commit Messages have syntax highlighting, indicators for commit message overlength <https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting>, and optionally enforce conventional commits keywords.
@@ -34,7 +37,7 @@ MAIN FEATURES                                          *tinygit-main-features*
 - Non-Goal: Become neogit <https://github.com/TimUntersberger/neogit> or gitsigns.nvim <https://github.com/lewis6991/gitsigns.nvim>. `tinygit` is intended to complement those plugins with some simple commands, not replace them.
 
 
-INSTALLATION                                            *tinygit-installation*
+INSTALLATION                              *tinygit-nvim-tinygit--installation*
 
 >lua
     -- lazy.nvim
@@ -55,7 +58,7 @@ highlighting of your commit messages, like for example emphasized conventional
 commit keywords: `TSInstall gitcommit`
 
 
-USAGE                                                          *tinygit-usage*
+USAGE                                            *tinygit-nvim-tinygit--usage*
 
 >lua
     -- Open a commit popup. If there are no staged changes, stage all changes (`git add -A`) before the commit. Optionally runs `git push` afterwards.
@@ -80,7 +83,7 @@ USAGE                                                          *tinygit-usage*
 <
 
 
-CONFIGURATION                                          *tinygit-configuration*
+CONFIGURATION                            *tinygit-nvim-tinygit--configuration*
 
 >lua
     local defaultConfig = {
@@ -114,8 +117,11 @@ CONFIGURATION                                          *tinygit-configuration*
     }
 <
 
+To change the appearance and behavior of the commit message input field, you
+need to configure dressing.nvim <https://github.com/stevearc/dressing.nvim>.
 
-CREDITS                                                      *tinygit-credits*
+
+CREDITS                                        *tinygit-nvim-tinygit--credits*
 
 **About Me** In my day job, I am a sociologist studying the social mechanisms
 underlying the digital economy. For my PhD project, I investigate the
