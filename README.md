@@ -9,14 +9,14 @@ Lightweight git client for nvim for quick commits and other quality of life impr
 `nvim-tinygit` should be considered beta status. It-works-on-my-machine™, but it has not yet been tested by many other users.
 
 <!--toc:start-->
-- [Features](#main-features)
+- [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Credits](#credits)
 <!--toc:end-->
 
-## Main Features
+## Features
 - Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
 - Commit Messages have syntax highlighting, indicators for [commit message overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting), and optionally enforce conventional commits keywords.
 - Option to run `git push` in a non-blocking manner after committing.
