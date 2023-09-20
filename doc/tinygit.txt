@@ -13,8 +13,7 @@ Table of Contents                                  *tinygit-table-of-contents*
 ==============================================================================
 1. nvim-tinygit                                        *tinygit-nvim-tinygit-*
 
-Lightweight git client for nvim for quick commits and other quality of life
-improvements.
+Lightweight and nimble git client for nvim.
 
 `nvim-tinygit` should be considered beta status. It-works-on-my-machine, but it
 has not yet been tested by many other users.
@@ -117,8 +116,9 @@ The `setup` call is optional. These are the default settings:
             closedPR = "🟥",
         },
     
-        -- confirmation sounds on finished async operations like push
-        confirmationSoundsOnMacOs = true,
+        -- Confirmation sound on finished async operations like push. 
+        -- Currently macOS only.
+        confirmationSound = true,
     }
 <
 
