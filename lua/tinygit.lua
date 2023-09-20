@@ -266,6 +266,7 @@ function M.push(opts)
 			playSoundMacOS(
 				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 			)
+			vim.cmd.checktime() -- in case a `git pull` has updated a file
 		end,
 		on_stderr = function(_, data)
 			if data[1] == "" and #data == 1 then return end
@@ -286,6 +287,7 @@ function M.push(opts)
 
 			notify(output, logLevel)
 			playSoundMacOS(sound)
+			vim.cmd.checktime() -- in case a `git pull` has updated a file
 		end,
 	})
 end
