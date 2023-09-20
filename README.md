@@ -4,7 +4,7 @@
 <!-- TODO uncomment shields when available in dotfyle.com -->
 <!-- <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield" /></a> -->
 
-Lightweight git client for nvim for quick commits and other quality of life improvements.
+Lightweight and nimble git client for nvim.
 
 `nvim-tinygit` should be considered beta status. It-works-on-my-machine™, but it has not yet been tested by many other users.
 
@@ -101,8 +101,9 @@ local defaultConfig = {
 		closedPR = "🟥",
 	},
 
-	-- confirmation sounds on finished async operations like push
-	confirmationSoundsOnMacOs = true,
+	-- Confirmation sound on finished async operations like push. 
+	-- Currently macOS only.
+	confirmationSound = true,
 }
 ```
 

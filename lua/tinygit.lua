@@ -21,7 +21,7 @@ local defaultConfig = {
 		mergedPR = "🟨",
 		closedPR = "🟥",
 	},
-	confirmationSoundsOnMacOs = true,
+	confirmationSound = true, -- for async commands like push
 }
 
 -- set values if setup call is not run
@@ -75,11 +75,11 @@ local function notInGitRepo()
 	return notInRepo
 end
 
----if on mac, play a sound
+---CAVEAT currently only on macOS
 ---@param soundFilepath string
 local function playSoundMacOS(soundFilepath)
 	local onMacOs = fn.has("macunix") == 1
-	if not onMacOs or not config.confirmationSoundsOnMacOs then return end
+	if not onMacOs or not config.confirmationSound then return end
 	fn.system(("afplay %q &"):format(soundFilepath))
 end
 
