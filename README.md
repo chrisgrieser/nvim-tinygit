@@ -17,13 +17,12 @@ Lightweight and nimble git client for nvim.
 <!--toc:end-->
 
 ## Features
-- Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
-- Commit Messages have syntax highlighting, indicators for [commit message overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting), and optionally enforce conventional commits keywords.
-- Option to run `git push` in a non-blocking manner after committing.
+- Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stage all changes before doing so (`git add -A`).
+- Commit messages have syntax highlighting and indicators for [overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting). Optionally enforce conventional commits keywords.
 - Quick amends.
-- Search issues & PRs. Open the selected issue or PR in the browser.
+- Option to run `git push` in a non-blocking manner after commit commands.
+- Search issues & PRs: Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
-- Non-Goal: Become [neogit](https://github.com/TimUntersberger/neogit) or [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim). `tinygit` is intended to complement those plugins with some simple commands, not replace them.
 
 ## Installation
 
@@ -107,7 +106,8 @@ local defaultConfig = {
 }
 ```
 
-To change the appearance and behavior of the commit message input field, you need to configure [dressing.nvim](https://github.com/stevearc/dressing.nvim).
+> [!NOTE]
+> To change the appearance and behavior of the commit message input field, you need to [configure dressing.nvim](https://github.com/stevearc/dressing.nvim#configuration).
 
 ## Credits
 __About Me__  
