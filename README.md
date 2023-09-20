@@ -1,18 +1,26 @@
  <!-- LTeX: enabled=false -->
 # nvim-tinygit <!-- LTeX: enabled=true -->
-<a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield" /></a>
+<!-- TODO uncomment shields when available in dotfyle.com -->
+<!-- <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield" /></a> -->
 
-A minimalistic git client for nvim.
+Lightweight git client for nvim for quick commits and other quality of life improvements.
 
 <!--toc:start-->
-- [Features](#features)
+- [Features](#main-features)
 - [Installation](#installation)
+- [Usage](#usage)
 - [Configuration](#configuration)
-- [Limitations](#limitations)
 - [Credits](#credits)
 <!--toc:end-->
 
-## Features
+## Main Features
+- Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
+- Commit Messages have syntax highlighting, indicators for [commit message overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting), and optionally enforce conventional commits keywords.
+- Option to run `git push` in a non-blocking manner after committing.
+- Quick amends.
+- Search issues & PRs. Open the selected issue or PR in the browser.
+- Open the GitHub URL of the current file or selection.
+- Non-Goal: Become [neogit](https://github.com/TimUntersberger/neogit) or [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim). `tinygit` is intended to complement those plugins with some simple commands, not replace them.
 
 ## Installation
 
@@ -20,32 +28,74 @@ A minimalistic git client for nvim.
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	opts = {
-		
-	},
+	dependencies = "stevearc/dressing.nvim",
 },
 
 -- packer
 use {
 	"chrisgrieser/nvim-tinygit",
-	config = function () 
-		require("tinygit").setup ({
-			
-		})
-	end,
+	requires = "stevearc/dressing.nvim",
 }
+```
+
+Optionally, install the Treesitter parser for git commits for some syntax highlighting of your commit messages, like for example emphasized conventional commit keywords: `TSInstall gitcommit`
+
+## Usage
+
+```lua
+-- Open a commit popup. If there are no staged changes, stage all changes (`git add -A`) before the commit. Optionally runs `git push` afterwards.
+-- 💡 You can use gitsigns.nvim's `add_hunk` command to stage changes.
+require("tinygit").smartCommit({ push = false }) -- options default to `false`
+
+-- Quick amends. `noedit = false` will open a commit message popup. 
+-- Optionally runs `git push --force` afterwards (only recommended for single-person repos).
+require("tinygit").amend ({ forcePush = false, noedit = false }) -- options default to `false`
+
+-- Search issues & PRs. 
+-- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
+require("tinygit").issuesAndPrs("all") -- all|closed|open (default: all)
+
+-- Open at GitHub and copy the URL to the system clipboard.
+-- Normal mode: the current file, visual mode: the current selection.
+require("tinygit").githubUrl("file") -- file|repo (default: file)
+
+-- `git push`
+require("tinygit").push({ pullBefore = false, force = false }) -- options default to `false`
 ```
 
 ## Configuration
 
 ```lua
--- default values
-opts = {
+local defaultConfig = {
+	-- Why 72-50? see https://stackoverflow.com/q/2290016/22114136
+	commitMaxLen = 72,
+	smallCommitMaxLen = 50,
 
+	-- when conforming the commit message popup with an empty message, 
+	-- fill in this message. (Set to `false` to disallow empty commit messages.)
+	emptyCommitMsgFillIn = "squash", -- string|false
+
+	-- deny commit messages without a conventinal commit keyword
+	enforceConvCommits = {
+		enabled = true,
+		keywords = { 
+			"chore", "build", "test", "fix", "feat", "refactor", "perf", 
+			"style", "revert", "ci", "docs", "break", "improv",
+		},
+	},
+	-- icons for the issue/PR search
+	issueIcons = {
+		closedIssue = "🟣",
+		openIssue = "🟢",
+		openPR = "🟦",
+		mergedPR = "🟨",
+		closedPR = "🟥",
+	},
+
+	-- confirmation sounds on finished async operations (like push)
+	confirmationSoundsOnMacOs = true,
 }
 ```
-
-## Limitations
 
 ## Credits
 <!-- vale Google.FirstPerson = NO -->

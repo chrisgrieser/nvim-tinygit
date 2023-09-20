@@ -3,13 +3,16 @@ local fn = vim.fn
 
 --------------------------------------------------------------------------------
 local defaultConfig = {
-	commitMaxLen = 72, -- https://stackoverflow.com/q/2290016/22114136
-	smallCommitMaxLen = 50,
-	useSoundOnMacOs = true,
+	commitMaxLen = 72,
+	smallCommitMaxLen = 50, -- https://stackoverflow.com/q/2290016/22114136
+	emptyCommitMsgFillIn = "chore",
 	enforceConvCommits = {
 		enabled = true,
 		-- stylua: ignore
-		keywords = { "chore", "build", "test", "fix", "feat", "refactor", "perf", "style", "revert", "ci", "docs", "improv", "break" },
+		keywords = {
+			"chore", "build", "test", "fix", "feat", "refactor", "perf",
+			"style", "revert", "ci", "docs", "break", "improv",
+		},
 	},
 	issueIcons = {
 		closedIssue = "🟣",
@@ -18,10 +21,11 @@ local defaultConfig = {
 		mergedPR = "🟨",
 		closedPR = "🟥",
 	},
+	confirmationSoundsOnMacOs = true,
 }
 
 -- set values if setup call is not run
-local config = defaultConfig 
+local config = defaultConfig
 
 function M.setup(userConf) config = vim.tbl_extend("force", defaultConfig, userConf) end
 
@@ -75,47 +79,9 @@ end
 ---@param soundFilepath string
 local function playSoundMacOS(soundFilepath)
 	local onMacOs = fn.has("macunix") == 1
-	if not onMacOs or not config.useSoundOnMacOs then return end
+	if not onMacOs or not config.confirmationSoundsOnMacOs then return end
 	fn.system(("afplay %q &"):format(soundFilepath))
 end
-
-local gitShellOpts = {
-	stdout_buffered = true,
-	stderr_buffered = true,
-	detach = true, -- finish even when quitting nvim
-	on_stdout = function(_, data)
-		if data[1] == "" and #data == 1 then return end
-		local output = vim.trim(table.concat(data, "\n"))
-
-		-- no need to notify that the pull in `git pull ; git push` yielded no update
-		if output:find("Current branch .* is up to date") then return end
-
-		notify(output)
-		playSoundMacOS(
-			"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
-		)
-	end,
-	on_stderr = function(_, data)
-		if data[1] == "" and #data == 1 then return end
-		local output = vim.trim(table.concat(data, "\n"))
-
-		-- git often puts non-errors into STDERR, therefore checking here again
-		-- whether it is actually an error or not
-		local logLevel = "info"
-		local sound =
-			"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
-		if output:lower():find("error") then
-			logLevel = "error"
-			sound = "/System/Library/Sounds/Basso.aiff"
-		elseif output:lower():find("warning") then
-			logLevel = "warn"
-			sound = "/System/Library/Sounds/Basso.aiff"
-		end
-
-		notify(output, logLevel)
-		playSoundMacOS(sound)
-	end,
-}
 
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
@@ -129,7 +95,12 @@ local function processCommitMsg(commitMsg)
 		local shortenedMsg = commitMsg:sub(1, config.commitMaxLen)
 		return false, shortenedMsg
 	elseif commitMsg == "" then
-		return true, "chore"
+		if not config.emptyCommitMsgFillIn then
+			notify("Commit Message empty.", "warn")
+			return false, ""
+		else
+			return true, config.emptyCommitMsgFillIn
+		end
 	end
 
 	if config.enforceConvCommits then
@@ -186,18 +157,15 @@ end
 --------------------------------------------------------------------------------
 
 ---@param opts? object
-function M.amendNoEdit(opts)
-	if not opts then opts = {} end
-	vim.cmd("silent update")
-	if notInGitRepo() then return end
-
+local function amendNoEdit(opts)
+	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-	notify('󰊢 Amend-No-Edit & Force Push…\n"' .. lastCommitMsg .. '"')
+	notify('󰊢 Amend-No-Edit\n"' .. lastCommitMsg .. '"')
 
 	local stderr = fn.system("git add -A && git commit --amend --no-edit")
 	if nonZeroExit(stderr) then return end
 
-	if opts.forcePush then fn.jobstart("git push --force", gitShellOpts) end
+	if opts.forcePush then M.push { force = true } end
 end
 
 ---@param opts? object
@@ -206,6 +174,11 @@ function M.amend(opts, prefillMsg)
 	if not opts then opts = {} end
 	vim.cmd("silent update")
 	if notInGitRepo() then return end
+
+	if opts.noedit then
+		amendNoEdit(opts)
+		return
+	end
 
 	if not prefillMsg then
 		local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
@@ -225,9 +198,11 @@ function M.amend(opts, prefillMsg)
 		local stderr = fn.system("git add -A && git commit --amend -m '" .. newMsg .. "'")
 		if nonZeroExit(stderr) then return end
 
-		if opts.forcePush then fn.jobstart("git push --force", gitShellOpts) end
+		if opts.forcePush then M.push { force = true } end
 	end)
 end
+
+--------------------------------------------------------------------------------
 
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
@@ -254,17 +229,59 @@ function M.smartCommit(opts, prefillMsg)
 			local stderr = fn.system { "git", "add", "-A" }
 			if nonZeroExit(stderr) then return end
 		end
-		notify('󰊢 Smart Commit…\n"' .. newMsg .. '"')
+		notify('󰊢 Smart Commit\n"' .. newMsg .. '"')
 
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
-		if opts.push then M.push() end
+		if opts.push then M.push { pullBefore = true } end
 	end)
 end
 
 -- pull before to avoid conflicts
-function M.push() fn.jobstart("git pull ; git push", gitShellOpts) end
+---@param opts? object
+function M.push(opts)
+	if not opts then opts = {} end
+	local shellCmd = opts.pullBefore and "git pull ; git push" or "git push"
+	if opts.force then shellCmd = shellCmd .. " --force" end
+	fn.jobstart(shellCmd, {
+		stdout_buffered = true,
+		stderr_buffered = true,
+		detach = true, -- finish even when quitting nvim
+		on_stdout = function(_, data)
+			if data[1] == "" and #data == 1 then return end
+			local output = vim.trim(table.concat(data, "\n"))
+
+			-- no need to notify that the pull in `git pull ; git push` yielded no update
+			if output:find("Current branch .* is up to date") then return end
+
+			notify(output)
+			playSoundMacOS(
+				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
+			)
+		end,
+		on_stderr = function(_, data)
+			if data[1] == "" and #data == 1 then return end
+			local output = vim.trim(table.concat(data, "\n"))
+
+			-- git often puts non-errors into STDERR, therefore checking here again
+			-- whether it is actually an error or not
+			local logLevel = "info"
+			local sound =
+				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
+			if output:lower():find("error") then
+				logLevel = "error"
+				sound = "/System/Library/Sounds/Basso.aiff"
+			elseif output:lower():find("warning") then
+				logLevel = "warn"
+				sound = "/System/Library/Sounds/Basso.aiff"
+			end
+
+			notify(output, logLevel)
+			playSoundMacOS(sound)
+		end,
+	})
+end
 
 --------------------------------------------------------------------------------
 
