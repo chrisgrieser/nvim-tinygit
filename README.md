@@ -8,6 +8,8 @@ Lightweight and nimble git client for nvim.
 
 `nvim-tinygit` should be considered beta status. It-works-on-my-machine™, but it has not yet been tested by many other users.
 
+<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase commit message writing" width=65%>
+
 <!--toc:start-->
 - [Features](#features)
 - [Installation](#installation)
