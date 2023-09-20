@@ -55,9 +55,11 @@ require("tinygit").smartCommit({ push = false }) -- options default to `false`
 -- Optionally runs `git push --force` afterwards (only recommended for single-person repos).
 require("tinygit").amend ({ forcePush = false, noedit = false }) -- options default to `false`
 
--- Search issues & PRs. 
+-- Search issues & PRs. Requires `curl`.
 -- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
-require("tinygit").issuesAndPrs("all") -- all|closed|open (default: all)
+-- state: all|closed|open (default: all)
+-- type: all|issue|pr (default: all)
+require("tinygit").issuesAndPrs({ type = "all", state = "all" }) 
 
 -- Open at GitHub and copy the URL to the system clipboard.
 -- Normal mode: the current file, visual mode: the current selection.

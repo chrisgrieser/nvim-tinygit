@@ -325,52 +325,71 @@ function M.githubUrl(justRepo)
 	fn.setreg("+", url) -- copy to clipboard
 end
 
+--------------------------------------------------------------------------------
+---formats the list of issues/PRs for vim.ui.select
+---@param issue object
+---@return object
+local function issueListFormatter(issue)
+	local isPR = issue.pull_request ~= nil
+	local merged = isPR and issue.pull_request.merged_at ~= nil
+
+	local icon
+	if issue.state == "open" and isPR then
+		icon = config.issueIcons.openPR
+	elseif issue.state == "closed" and isPR and merged then
+		icon = config.issueIcons.mergedPR
+	elseif issue.state == "closed" and isPR and not merged then
+		icon = config.issueIcons.closedPR
+	elseif issue.state == "closed" and not isPR then
+		icon = config.issueIcons.closedIssue
+	elseif issue.state == "open" and not isPR then
+		icon = config.issueIcons.openIssue
+	end
+
+	return icon .. " #" .. issue.number .. " " .. issue.title
+end
+
 ---Choose a GitHub issue/PR from the current repo to open in the browser.
----(Due to -GitHub API liminations, only the last 100 issues are shown.)
----@param state? "open"|"closed"|"all" default "all"
-function M.issuesAndPrs(state)
+---CAVEAT Due to GitHub API liminations, only the last 100 issues are shown.
+---@param userOpts? object
+function M.issuesAndPrs(userOpts)
 	if notInGitRepo() then return end
-	if not state then state = "all" end
+	if not userOpts then userOpts = {} end
+	local defaultOpts = { state = "all", type = "all" }
+	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
 	local repo = fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2)
 
-	-- TODO figure out how to make a proper http request in nvim
-	local rawJsonUrl = ("https://api.github.com/repos/%s/issues?per_page=100&state=%s"):format(
+	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
+	local rawJsonUrl = ("https://api.github.com/repos/%s/issues?per_page=100&state=%s&sort=updated"):format(
 		repo,
-		state
+		opts.state
 	)
 	local rawJSON = fn.system { "curl", "-sL", rawJsonUrl }
 	local issues = vim.json.decode(rawJSON)
+	if not issues then
+		notify("Failed to fetch issues.", "warn")
+		return
+	end
+	if issues and opts.type ~= "all" then
+		issues = vim.tbl_filter(function(issue)
+			local isPR = issue.pull_request ~= nil
+			local isRightKind = (isPR and opts.type == "pr") or (not isPR and opts.type == "issue")
+			return isRightKind
+		end, issues)
+	end
 
-	if not issues or #issues == 0 then
-		local type = state == "all" and "" or state .. " "
-		notify(("There are no %sissues or PRs for this repo."):format(type), "warn")
+	if #issues == 0 then
+		local state = opts.state == "all" and "" or opts.state .. " "
+		local type = opts.type == "all" and "issues or PRs " or opts.type .. "s "
+		notify(("There are no %s%sfor this repo."):format(state, type), "warn")
 		return
 	end
 
-	local function issueListFormatter(issue)
-		local isPR = issue.pull_request ~= nil
-		local merged = isPR and issue.pull_request.merged_at ~= nil
-
-		local icon
-		if issue.state == "open" and isPR then
-			icon = config.issueIcons.openPR
-		elseif issue.state == "closed" and isPR and merged then
-			icon = config.issueIcons.mergedPR
-		elseif issue.state == "closed" and isPR and not merged then
-			icon = config.issueIcons.closedPR
-		elseif issue.state == "closed" and not isPR then
-			icon = config.issueIcons.closedIssue
-		elseif issue.state == "open" and not isPR then
-			icon = config.issueIcons.openIssue
-		end
-
-		return icon .. " #" .. issue.number .. " " .. issue.title
-	end
-
+	local title = opts.type == "all" and "Issue/PR" or opts.type
 	vim.ui.select(
 		issues,
-		{ prompt = " Select Issue:", kind = "github_issue", format_item = issueListFormatter },
+		{ prompt = " Select " .. title, kind = "github_issue", format_item = issueListFormatter },
 		function(choice)
 			if not choice then return end
 			openUrl(choice.html_url)
