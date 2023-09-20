@@ -1,4 +1,5 @@
- <!-- LTeX: enabled=false -->
+<!-- vale Google.FirstPerson = NO -->
+<!-- LTeX: enabled=false -->
 # nvim-tinygit <!-- LTeX: enabled=true -->
 <!-- TODO uncomment shields when available in dotfyle.com -->
 <!-- <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield" /></a> -->
@@ -100,8 +101,9 @@ local defaultConfig = {
 }
 ```
 
+To change the appearance and behavior of the commit message input field, you need to configure [dressing.nvim](https://github.com/stevearc/dressing.nvim).
+
 ## Credits
-<!-- vale Google.FirstPerson = NO -->
 __About Me__  
 In my day job, I am a sociologist studying the social mechanisms underlying the digital economy. For my PhD project, I investigate the governance of the app economy and how software ecosystems manage the tension between innovation and compatibility. If you are interested in this subject, feel free to get in touch.
 

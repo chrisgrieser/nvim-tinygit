@@ -8,8 +8,7 @@ body:
     attributes:
       label: Bug Description
       description: A clear and concise description of the bug.
-    validations:
-      required: true
+    validations: { required: true }
   - type: textarea
     id: screenshot
     attributes:
@@ -30,8 +29,7 @@ body:
     attributes:
       label: neovim version
       render: Text
-    validations:
-      required: true
+    validations: { required: true }
   - type: checkboxes
     id: checklist
     attributes:
