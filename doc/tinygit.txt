@@ -1,4 +1,4 @@
-*tinygit.txt*          For NVIM v0.8.0          Last change: 2023 September 20
+*tinygit.txt*          For NVIM v0.8.0          Last change: 2023 September 21
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -7,6 +7,7 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Features                                  |tinygit-nvim-tinygit--features|
   - Installation                          |tinygit-nvim-tinygit--installation|
   - Usage                                        |tinygit-nvim-tinygit--usage|
+  - Example Workflows                |tinygit-nvim-tinygit--example-workflows|
   - Configuration                        |tinygit-nvim-tinygit--configuration|
   - Non-Goals                                |tinygit-nvim-tinygit--non-goals|
   - Credits                                    |tinygit-nvim-tinygit--credits|
@@ -24,6 +25,7 @@ has not yet been tested by many other users.
 - |tinygit-features|
 - |tinygit-installation|
 - |tinygit-usage|
+- |tinygit-example-workflows|
 - |tinygit-configuration|
 - |tinygit-non-goals|
 - |tinygit-credits|
@@ -73,8 +75,8 @@ USAGE                                            *tinygit-nvim-tinygit--usage*
     -- `amendOnlyMsg` just opens the commit popup to change the last commit message, and does not stage any changes.
     -- `amendNoEdit` keeps the last commit message; if there are no staged changes, it will stage all changes (`git add -A`).
     -- Optionally runs `git push --force` afterwards (only recommended for single-person repos).
-    require("tinygit").amendOnlyMsg ({ forcePush = false }) -- options default to `false`
-    require("tinygit").amendNoEdit ({ forcePush = false }) -- options default to `false`
+    require("tinygit").amendOnlyMsg({ forcePush = false }) -- options default to `false`
+    require("tinygit").amendNoEdit({ forcePush = false }) -- options default to `false`
     
     -- Search issues & PRs. Requires `curl`.
     -- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
@@ -88,6 +90,30 @@ USAGE                                            *tinygit-nvim-tinygit--usage*
     
     -- `git push`
     require("tinygit").push({ pullBefore = false, force = false }) -- options default to `false`
+<
+
+
+EXAMPLE WORKFLOWS                    *tinygit-nvim-tinygit--example-workflows*
+
+Assuming these keybindings:
+
+>lua
+    vim.keymap.set("n", "ga", "<cmd>Gitsigns add_hunk<CR>") -- gitsigns.nvim
+    vim.keymap.set("n", "gc", function() require("tinygit").smartCommit() end)
+    vim.keymap.set("n", "gm", function() require("tinygit").ammendNoEdit() end)
+<
+
+1. Stage some hunks (changes) via `ga`.
+2. Press `gc` to enter a commit message.
+3. You have forgotten to add a comment. You add the comment.
+4. Stage & amend the added comment in one go via `gm`.
+
+------------------------------------------------------------------------------
+If you are working on a small single-person repo, you can also stage all
+changes, commit, and push them in one go via:
+
+>lua
+    vim.keymap.set("n", "gC", function() require("tinygit").smartCommit({ push = true }) end)
 <
 
 
