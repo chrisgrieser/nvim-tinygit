@@ -335,8 +335,8 @@ end
 
 --------------------------------------------------------------------------------
 ---formats the list of issues/PRs for vim.ui.select
----@param issue object
----@return object
+---@param issue table
+---@return table
 local function issueListFormatter(issue)
 	local isPR = issue.pull_request ~= nil
 	local merged = isPR and issue.pull_request.merged_at ~= nil
