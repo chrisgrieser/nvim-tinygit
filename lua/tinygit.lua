@@ -145,7 +145,7 @@ local function setGitCommitAppearance()
 			vim.api.nvim_set_hl(winNs, "tooLong", { link = "ErrorMsg" })
 
 			-- for treesitter highlighting
-			vim.bo.filetype = "gitcommit"
+			vim.bo.filetype = "gitcommit" ---@diagnostic disable-line: inject-field
 			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
 
 			-- fix confirming input field (not working in insert mode due to filetype change)
@@ -153,6 +153,7 @@ local function setGitCommitAppearance()
 
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG") -- for statusline plugins
 
+			---@diagnostic disable-next-line: inject-field
 			vim.opt_local.colorcolumn = { config.smallCommitMaxLen, config.commitMaxLen }
 		end,
 	})
@@ -168,7 +169,6 @@ function M.amendNoEdit(opts)
 
 	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-	notify('󰊢 Amend-No-Edit\n"' .. lastCommitMsg .. '"')
 
 	if not hasStagedChanges() then
 		local stderr = fn.system { "git", "add", "-A" }
@@ -178,7 +178,7 @@ function M.amendNoEdit(opts)
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
 
-	local msg = ('󰊢 Amend-No-Edit%s"'):format(lastCommitMsg)
+	local msg = ('󰊢 Amend-No-Edit\n"%s"'):format(lastCommitMsg)
 	if opts.forcePush then msg = msg .. "\n\nForce Pushing…" end
 	notify(msg)
 
