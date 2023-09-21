@@ -14,6 +14,7 @@ Lightweight and nimble git client for nvim.
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Example Workflows](#example-workflows)
 - [Configuration](#configuration)
 - [Non-Goals](#non-goals)
 - [Credits](#credits)
@@ -58,8 +59,8 @@ require("tinygit").smartCommit({ push = false }) -- options default to `false`
 -- `amendOnlyMsg` just opens the commit popup to change the last commit message, and does not stage any changes.
 -- `amendNoEdit` keeps the last commit message; if there are no staged changes, it will stage all changes (`git add -A`).
 -- Optionally runs `git push --force` afterwards (only recommended for single-person repos).
-require("tinygit").amendOnlyMsg ({ forcePush = false }) -- options default to `false`
-require("tinygit").amendNoEdit ({ forcePush = false }) -- options default to `false`
+require("tinygit").amendOnlyMsg({ forcePush = false }) -- options default to `false`
+require("tinygit").amendNoEdit({ forcePush = false }) -- options default to `false`
 
 -- Search issues & PRs. Requires `curl`.
 -- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
@@ -74,6 +75,29 @@ require("tinygit").githubUrl("file") -- file|repo (default: file)
 -- `git push`
 require("tinygit").push({ pullBefore = false, force = false }) -- options default to `false`
 ```
+
+## Example Workflows
+Assuming these keybindings:
+
+```lua
+vim.keymap.set("n", "ga", "<cmd>Gitsigns add_hunk<CR>") -- gitsigns.nvim
+vim.keymap.set("n", "gc", function() require("tinygit").smartCommit() end)
+vim.keymap.set("n", "gm", function() require("tinygit").ammendNoEdit() end)
+```
+
+1. Stage some hunks (changes) via `ga`.
+2. Press `gc` to enter a commit message.
+3. You have forgotten to add a comment. You add the comment.
+4. Stage & amend the added comment in one go via `gm`.
+
+---
+
+If you are working on a small single-person repo, you can also stage all changes, commit, and push them in one go via:
+
+```lua
+vim.keymap.set("n", "gC", function() require("tinygit").smartCommit({ push = true }) end)
+```
+
 
 ## Configuration
 
