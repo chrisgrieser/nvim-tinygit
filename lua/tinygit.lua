@@ -202,8 +202,7 @@ function M.amendOnlyMsg (opts, prefillMsg)
 			return
 		end
 
-		notify('󰊢 Amend\n"' .. newMsg .. '"')
-		local stderr = fn.system { "git", "commit", "-m", newMsg }
+		local stderr = fn.system { "git", "commit", "--amend", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
 		if opts.forcePush then M.push { force = true } end
