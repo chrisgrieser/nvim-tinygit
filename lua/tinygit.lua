@@ -48,12 +48,13 @@ local function openUrl(url)
 end
 
 ---send notification
----@param msg string
+---@param body string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
-local function notify(msg, level)
+local function notify(body, level, titleAppendix)
 	local pluginName = "tinygit"
 	if not level then level = "info" end
-	vim.notify(vim.trim(msg), vim.log.levels[level:upper()], { title = pluginName })
+	local title = titleAppendix and pluginName .. ": " .. titleAppendix or pluginName
+	vim.notify(vim.trim(body), vim.log.levels[level:upper()], { title = title })
 end
 
 ---checks if last command was successful, if not, notify
@@ -178,9 +179,9 @@ function M.amendNoEdit(opts)
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
 
-	local msg = ('󰊢 Amend-No-Edit\n"%s"'):format(lastCommitMsg)
-	if opts.forcePush then msg = msg .. "\n\nForce Pushing…" end
-	notify(msg)
+	local body = ('"%s"'):format(lastCommitMsg)
+	if opts.forcePush then body = body .. "\nForce Pushing…" end
+	notify(body, "info", "Amend-No-edit")
 
 	if opts.forcePush then M.push { force = true } end
 end
@@ -209,9 +210,9 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "--amend", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
-		local msg = ('󰊢 Amend\n"%s"'):format(newMsg)
-		if opts.forcePush then msg = msg .. "\n\nForce Pushing…" end
-		notify(msg)
+		local body = ('"%s"'):format(newMsg)
+		if opts.forcePush then body = body .. "\nForce Pushing…" end
+		notify(body, "info", "Amend-Only-Msg")
 
 		if opts.forcePush then M.push { force = true } end
 	end)
@@ -247,9 +248,9 @@ function M.smartCommit(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
-		local msg = ('󰊢 Smart Commit\n"%s"'):format(newMsg)
-		if opts.push then msg = msg .. "\n\nPushing…" end
-		notify(msg)
+		local body = ('"%s"'):format(newMsg)
+		if opts.push then body = body .. "\nPushing…" end
+		notify(body, "info", "Smart-Commit")
 
 		if opts.push then M.push { pullBefore = true } end
 	end)
@@ -272,7 +273,7 @@ function M.push(opts)
 			-- no need to notify that the pull in `git pull ; git push` yielded no update
 			if output:find("Current branch .* is up to date") then return end
 
-			notify(output)
+			notify(output, "info", "Push")
 			playSoundMacOS(
 				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 			)
@@ -295,7 +296,7 @@ function M.push(opts)
 				sound = "/System/Library/Sounds/Basso.aiff"
 			end
 
-			notify(output, logLevel)
+			notify(output, logLevel, "Push")
 			playSoundMacOS(sound)
 			vim.cmd.checktime() -- in case a `git pull` has updated a file
 		end,
