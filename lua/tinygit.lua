@@ -178,12 +178,16 @@ function M.amendNoEdit(opts)
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
 
+	local msg = ('󰊢 Amend-No-Edit%s"'):format(lastCommitMsg)
+	if opts.forcePush then msg = msg .. "\n\nForce Pushing…" end
+	notify(msg)
+
 	if opts.forcePush then M.push { force = true } end
 end
 
 ---@param opts? { forcePush?: boolean }
 ---@param prefillMsg? string
-function M.amendOnlyMsg (opts, prefillMsg)
+function M.amendOnlyMsg(opts, prefillMsg)
 	if not opts then opts = {} end
 	vim.cmd("silent update")
 	if notInGitRepo() then return end
@@ -204,6 +208,10 @@ function M.amendOnlyMsg (opts, prefillMsg)
 
 		local stderr = fn.system { "git", "commit", "--amend", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
+
+		local msg = ('󰊢 Amend\n"%s"'):format(newMsg)
+		if opts.forcePush then msg = msg .. "\n\nForce Pushing…" end
+		notify(msg)
 
 		if opts.forcePush then M.push { force = true } end
 	end)
@@ -235,10 +243,13 @@ function M.smartCommit(opts, prefillMsg)
 			local stderr = fn.system { "git", "add", "-A" }
 			if nonZeroExit(stderr) then return end
 		end
-		notify('󰊢 Smart Commit\n"' .. newMsg .. '"')
 
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
+
+		local msg = ('󰊢 Smart Commit\n"%s"'):format(newMsg)
+		if opts.push then msg = msg .. "\n\nPushing…" end
+		notify(msg)
 
 		if opts.push then M.push { pullBefore = true } end
 	end)
