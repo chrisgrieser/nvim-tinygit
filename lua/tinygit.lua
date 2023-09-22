@@ -50,11 +50,12 @@ end
 ---send notification
 ---@param body string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
-local function notify(body, level, titleAppendix)
-	local pluginName = "tinygit"
+---@param title? string
+local function notify(body, level, title)
+	local titlePrefix = "tinygit"
 	if not level then level = "info" end
-	local title = titleAppendix and pluginName .. ": " .. titleAppendix or pluginName
-	vim.notify(vim.trim(body), vim.log.levels[level:upper()], { title = title })
+	local notifyTitle = title and titlePrefix .. ": " .. title or title
+	vim.notify(vim.trim(body), vim.log.levels[level:upper()], { title = notifyTitle })
 end
 
 ---checks if last command was successful, if not, notify
