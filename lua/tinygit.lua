@@ -236,7 +236,7 @@ function M.smartCommit(opts, prefillMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, newMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.smartCommitPush(newMsg)
+			M.smartCommit(opts, newMsg)
 			return
 		end
 
