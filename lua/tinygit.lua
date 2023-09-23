@@ -146,15 +146,17 @@ local function setGitCommitAppearance()
 
 			vim.api.nvim_win_set_hl_ns(0, winNs)
 
-			-- \ze = end of match, \zs = start of match
+			-- custom highlighting
+			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
 			fn.matchadd(
-				"almostLong",
+				"closeToOverlengh",
+				-- \ze = end of match, \zs = start of match
 				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen - 1, conf.maxLen - conf.mediumLen)
 			)
-			vim.api.nvim_set_hl(winNs, "almostLong", { link = "WarningMsg" })
-
-			fn.matchadd("tooLong", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
-			vim.api.nvim_set_hl(winNs, "tooLong", { link = "ErrorMsg" })
+			fn.matchadd("issueNumber", [[#\d\+]])
+			vim.api.nvim_set_hl(winNs, "overLength", { link = "ErrorMsg" })
+			vim.api.nvim_set_hl(winNs, "closeToOverlengh", { link = "WarningMsg" })
+			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
 
 			-- for treesitter highlighting
 			vim.bo.filetype = "gitcommit"
