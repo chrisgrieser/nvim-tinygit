@@ -2,18 +2,28 @@ local M = {}
 local fn = vim.fn
 
 --------------------------------------------------------------------------------
+
 local defaultConfig = {
-	commitMaxLen = 72,
-	smallCommitMaxLen = 50, -- https://stackoverflow.com/q/2290016/22114136
-	emptyCommitMsgFillIn = "chore",
-	enforceConvCommits = {
-		enabled = true,
-		-- stylua: ignore
-		keywords = {
-			"chore", "build", "test", "fix", "feat", "refactor", "perf",
-			"style", "revert", "ci", "docs", "break", "improv",
+	commitMsg = {
+		-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
+		maxLen = 72,
+		mediumLen = 50,
+
+		-- When conforming the commit message popup with an empty message, fill in
+		-- this message. Set to `false` to disallow empty commit messages.
+		emptyFillIn = "chore", ---@type string|false
+
+		-- disallow commit messages without a conventinal commit keyword
+		enforceConvCommits = {
+			enabled = true,
+			-- stylua: ignore
+			keywords = {
+				"chore", "build", "test", "fix", "feat", "refactor", "perf",
+				"style", "revert", "ci", "docs", "break", "improv",
+			},
 		},
 	},
+	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {
 		closedIssue = "🟣",
 		openIssue = "🟢",
@@ -21,7 +31,6 @@ local defaultConfig = {
 		mergedPR = "🟨",
 		closedPR = "🟥",
 	},
-	asyncOpConfirmationSound = true, -- Currently macOS only
 }
 
 -- set values if setup call is not run
@@ -85,7 +94,7 @@ end
 ---@param soundFilepath string
 local function playSoundMacOS(soundFilepath)
 	local onMacOs = fn.has("macunix") == 1
-	if not onMacOs or not config.confirmationSound then return end
+	if not onMacOs or not config.asyncOpConfirmationSound then return end
 	fn.system(("afplay %q &"):format(soundFilepath))
 end
 
@@ -96,23 +105,26 @@ end
 ---@return string the (modified) commit message
 local function processCommitMsg(commitMsg)
 	commitMsg = vim.trim(commitMsg)
-	if #commitMsg > config.commitMaxLen then
+	local conf = config.commitMsg
+
+	if #commitMsg > conf.maxLen then
 		notify("Commit Message too long.", "warn")
-		local shortenedMsg = commitMsg:sub(1, config.commitMaxLen)
+		local shortenedMsg = commitMsg:sub(1, conf.maxLen)
 		return false, shortenedMsg
 	elseif commitMsg == "" then
-		if not config.emptyCommitMsgFillIn then
+		if not conf.emptyFillIn then
 			notify("Commit Message empty.", "warn")
 			return false, ""
 		else
-			return true, config.emptyCommitMsgFillIn
+			---@diagnostic disable-next-line: return-type-mismatch -- checked above
+			return true, conf.emptyFillIn
 		end
 	end
 
-	if config.enforceConvCommits then
+	if conf.enforceConvCommits.enabled then
 		-- stylua: ignore
 		local firstWord = commitMsg:match("^%w+")
-		if not vim.tbl_contains(config.enforceConvCommits.keywords, firstWord) then
+		if not vim.tbl_contains(conf.enforceConvCommits.keywords, firstWord) then
 			notify("Not using a Conventional Commits keyword.", "warn")
 			return false, commitMsg
 		end
@@ -129,25 +141,23 @@ local function setGitCommitAppearance()
 		pattern = "DressingInput",
 		once = true, -- do not affect other DressingInputs
 		callback = function()
+			local conf = config.commitMsg
 			local winNs = 1
+
 			vim.api.nvim_win_set_hl_ns(0, winNs)
 
-			-- \zs = start of match
-			-- \ze = end of match
+			-- \ze = end of match, \zs = start of match
 			fn.matchadd(
 				"almostLong",
-				([[.\{%s}\zs.\{1,%s}\ze]]):format(
-					config.smallCommitMaxLen - 1,
-					config.commitMaxLen - config.smallCommitMaxLen
-				)
+				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen - 1, conf.maxLen - conf.mediumLen)
 			)
 			vim.api.nvim_set_hl(winNs, "almostLong", { link = "WarningMsg" })
 
-			fn.matchadd("tooLong", ([[.\{%s}\zs.*\ze]]):format(config.commitMaxLen - 1))
+			fn.matchadd("tooLong", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
 			vim.api.nvim_set_hl(winNs, "tooLong", { link = "ErrorMsg" })
 
 			-- for treesitter highlighting
-			vim.bo.filetype = "gitcommit" ---@diagnostic disable-line: inject-field
+			vim.bo.filetype = "gitcommit"
 			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
 
 			-- fix confirming input field (not working in insert mode due to filetype change)
@@ -155,8 +165,7 @@ local function setGitCommitAppearance()
 
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG") -- for statusline plugins
 
-			---@diagnostic disable-next-line: inject-field
-			vim.opt_local.colorcolumn = { config.smallCommitMaxLen, config.commitMaxLen }
+			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
 		end,
 	})
 end
@@ -181,7 +190,7 @@ function M.amendNoEdit(opts)
 	if nonZeroExit(stderr) then return end
 
 	local body = ('"%s"'):format(lastCommitMsg)
-	if opts.forcePush then body = body .. "\nForce Pushing…" end
+	if opts.forcePush then body = body .. "\n➤ Force Pushing…" end
 	notify(body, "info", "Amend-No-edit")
 
 	if opts.forcePush then M.push { force = true } end
@@ -212,7 +221,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		if nonZeroExit(stderr) then return end
 
 		local body = ('"%s"'):format(newMsg)
-		if opts.forcePush then body = body .. "\nForce Pushing…" end
+		if opts.forcePush then body = body .. "\n➤ Force Pushing…" end
 		notify(body, "info", "Amend-Only-Msg")
 
 		if opts.forcePush then M.push { force = true } end
@@ -250,7 +259,7 @@ function M.smartCommit(opts, prefillMsg)
 		if nonZeroExit(stderr) then return end
 
 		local body = ('"%s"'):format(newMsg)
-		if opts.push then body = body .. "\nPushing…" end
+		if opts.push then body = body .. "\n➤ Pushing…" end
 		notify(body, "info", "Smart-Commit")
 
 		if opts.push then M.push { pullBefore = true } end

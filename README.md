@@ -105,24 +105,26 @@ The `setup` call is optional. These are the default settings:
 
 ```lua
 local defaultConfig = {
-	-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
-	commitMaxLen = 72,
-	smallCommitMaxLen = 50,
+	commitMsg = {
+		-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
+		maxLen = 72,
+		mediumLen = 50,
 
-	-- When conforming the commit message popup with an empty message, fill in this message. 
-	-- Set to `false` to disallow empty commit messages.
-	emptyCommitMsgFillIn = "squash", -- string|false
+		-- When conforming the commit message popup with an empty message, fill 
+		-- in this message. `false` to disallow empty commit messages.
+		emptyFillIn = "chore", ---@type string|false
 
-	-- disallow commit messages without a conventinal commit keyword
-	enforceConvCommits = {
-		enabled = true,
-		keywords = { 
-			"chore", "build", "test", "fix", "feat", "refactor", "perf", 
-			"style", "revert", "ci", "docs", "break", "improv",
+		-- disallow commit messages without a conventinal commit keyword
+		enforceConvCommits = {
+			enabled = true,
+			-- stylua: ignore
+			keywords = {
+				"chore", "build", "test", "fix", "feat", "refactor", "perf",
+				"style", "revert", "ci", "docs", "break", "improv",
+			},
 		},
 	},
-
-	-- icons for the issue/PR search
+	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {
 		closedIssue = "🟣",
 		openIssue = "🟢",
@@ -130,10 +132,6 @@ local defaultConfig = {
 		mergedPR = "🟨",
 		closedPR = "🟥",
 	},
-
-	-- Confirmation sound on finished async operations like push. 
-	-- Currently macOS only.
-	asyncOpConfirmationSound = true,
 }
 ```
 
