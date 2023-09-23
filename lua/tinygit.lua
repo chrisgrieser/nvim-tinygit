@@ -219,16 +219,16 @@ function M.amendOnlyMsg(opts, prefillMsg)
 
 	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
-		local validMsg, newMsg = processCommitMsg(commitMsg)
+		local validMsg, cMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.amendOnlyMsg(opts, newMsg)
+			M.amendOnlyMsg(opts, cMsg)
 			return
 		end
 
-		local stderr = fn.system { "git", "commit", "--amend", "-m", newMsg }
+		local stderr = fn.system { "git", "commit", "--amend", "-m", cMsg }
 		if nonZeroExit(stderr) then return end
 
-		local body = ('"%s"'):format(newMsg)
+		local body = ('"%s"'):format(cMsg)
 		if opts.forcePush then body = body .. "\n➤ Force Pushing…" end
 		notify(body, "info", "Amend-Only-Msg")
 
