@@ -276,7 +276,7 @@ function M.smartCommit(opts, prefillMsg)
 		if opts.push then body = body .. "\n➤ Pushing…" end
 		notify(body, "info", "Smart-Commit")
 
-		if opts.push then M.push { pullBefore = true } end
+		if opts.push then M.push() end
 	end)
 end
 
