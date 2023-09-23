@@ -84,15 +84,13 @@ local function stageAllIfNoChanges()
 	local hasStagedChanges = vim.v.shell_error ~= 0
 
 	if hasStagedChanges then
-		local stagedInfo = fn.system { "git", "diff", "--staged", "--stat" }
-		if nonZeroExit(stagedInfo) then return end
+		local stagedInfo = fn.system { "git", "-c" , "color.diff=always", "diff", "--staged", "--stat" }
 		notify(stagedInfo, "info", "Staged Changes")
+		if nonZeroExit(stagedInfo) then return end
 	else
 		local stderr = fn.system { "git", "add", "-A" }
 		if nonZeroExit(stderr) then return end
-		notify("Staged All Changes.", "info")
 	end
-
 end
 
 ---also notifies if not in git repo
