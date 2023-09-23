@@ -278,8 +278,13 @@ end
 ---@param opts? { pullBefore?: boolean, force?: boolean }
 function M.push(opts)
 	if not opts then opts = {} end
-	local shellCmd = opts.pullBefore and "git pull ; git push" or "git push"
-	if opts.force then shellCmd = shellCmd .. " --force" end
+	local title = opts.force and "Force Push" or "Push"
+	local shellCmd = opts.force and "git push --force" or "git push"
+	if opts.pullBefore then
+		shellCmd = "git pull ; " .. shellCmd
+		title = "Pull & " .. title
+	end
+
 	fn.jobstart(shellCmd, {
 		stdout_buffered = true,
 		stderr_buffered = true,
@@ -291,7 +296,7 @@ function M.push(opts)
 			-- no need to notify that the pull in `git pull ; git push` yielded no update
 			if output:find("Current branch .* is up to date") then return end
 
-			notify(output, "info", "Push")
+			notify(output, "info", title)
 			confirmationSound(
 				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 			)
@@ -314,7 +319,7 @@ function M.push(opts)
 				sound = "/System/Library/Sounds/Basso.aiff"
 			end
 
-			notify(output, logLevel, "Push")
+			notify(output, logLevel, title)
 			confirmationSound(sound)
 			vim.cmd.checktime() -- in case a `git pull` has updated a file
 		end,
