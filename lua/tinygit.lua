@@ -92,7 +92,7 @@ end
 
 ---CAVEAT currently only on macOS
 ---@param soundFilepath string
-local function playSoundMacOS(soundFilepath)
+local function confirmationSound(soundFilepath)
 	local onMacOs = fn.has("macunix") == 1
 	if not onMacOs or not config.asyncOpConfirmationSound then return end
 	fn.system(("afplay %q &"):format(soundFilepath))
@@ -284,7 +284,7 @@ function M.push(opts)
 			if output:find("Current branch .* is up to date") then return end
 
 			notify(output, "info", "Push")
-			playSoundMacOS(
+			confirmationSound(
 				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 			)
 			vim.cmd.checktime() -- in case a `git pull` has updated a file
@@ -307,7 +307,7 @@ function M.push(opts)
 			end
 
 			notify(output, logLevel, "Push")
-			playSoundMacOS(sound)
+			confirmationSound(sound)
 			vim.cmd.checktime() -- in case a `git pull` has updated a file
 		end,
 	})

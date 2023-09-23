@@ -92,7 +92,7 @@ vim.keymap.set("n", "gm", function() require("tinygit").ammendNoEdit() end)
 
 ---
 
-If you are working on a small single-person repo, you can also stage all changes, commit, and push them in one go via:
+You can also stage all changes, commit, and push them in one go via:
 
 ```lua
 vim.keymap.set("n", "gC", function() require("tinygit").smartCommit({ push = true }) end)
