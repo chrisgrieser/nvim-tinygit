@@ -21,7 +21,7 @@ local defaultConfig = {
 		mergedPR = "🟨",
 		closedPR = "🟥",
 	},
-	confirmationSound = true, -- for async commands like push
+	asyncOpConfirmationSound = true, -- Currently macOS only
 }
 
 -- set values if setup call is not run

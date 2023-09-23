@@ -133,7 +133,7 @@ local defaultConfig = {
 
 	-- Confirmation sound on finished async operations like push. 
 	-- Currently macOS only.
-	confirmationSound = true,
+	asyncOpConfirmationSound = true,
 }
 ```
 
