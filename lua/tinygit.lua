@@ -258,9 +258,14 @@ function M.smartCommit(opts, prefillMsg)
 			return
 		end
 
-		if not hasStagedChanges() then
+		if hasStagedChanges() then
+			local stagedInfo = fn.system { "git", "diff", "--staged", "--stat" }
+			if nonZeroExit(stagedInfo) then return end
+			notify(stagedInfo, "info", "Staged Changes")
+		else
 			local stderr = fn.system { "git", "add", "-A" }
 			if nonZeroExit(stderr) then return end
+			notify("Staged All Changes.", "info")
 		end
 
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
