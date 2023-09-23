@@ -79,18 +79,20 @@ end
 
 -- if there are no staged changes, will add all changes (`git add -A`)
 -- if not, indicates the already staged changes
+---@return boolean success of staging
 local function stageAllIfNoChanges()
 	fn.system { "git", "diff", "--staged", "--quiet" }
 	local hasStagedChanges = vim.v.shell_error ~= 0
 
 	if hasStagedChanges then
-		local stagedInfo = fn.system { "git", "-c" , "color.diff=always", "diff", "--staged", "--stat" }
+		local stagedInfo = fn.system { "git", "diff", "--staged", "--stat" }
+		if nonZeroExit(stagedInfo) then return false end
 		notify(stagedInfo, "info", "Staged Changes")
-		if nonZeroExit(stagedInfo) then return end
 	else
 		local stderr = fn.system { "git", "add", "-A" }
-		if nonZeroExit(stderr) then return end
+		if nonZeroExit(stderr) then return false end
 	end
+	return true
 end
 
 ---also notifies if not in git repo
@@ -197,7 +199,8 @@ function M.amendNoEdit(opts)
 	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
 
-	stageAllIfNoChanges()
+	local success = stageAllIfNoChanges()
+	if not success then return end
 
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
@@ -254,7 +257,8 @@ function M.smartCommit(opts, prefillMsg)
 	if not opts then opts = {} end
 	if not prefillMsg then prefillMsg = "" end
 
-	stageAllIfNoChanges()
+	local success = stageAllIfNoChanges()
+	if not success then return end
 
 	setGitCommitAppearance()
 	vim.ui.input({ prompt = "󰊢 Commit Message", default = prefillMsg }, function(commitMsg)
