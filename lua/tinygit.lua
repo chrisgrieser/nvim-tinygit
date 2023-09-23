@@ -79,7 +79,11 @@ end
 
 ---@nodiscard
 ---@return boolean
-local function hasStagedChanges() return fn.system("git diff --staged --quiet || echo -n 'yes'") == "yes" end
+local function hasStagedChanges()
+	fn.system("git diff --staged --quiet")
+	local hasStaged = vim.v.shell_error ~= 0
+	return hasStaged
+end
 
 ---also notifies if not in git repo
 ---@nodiscard
@@ -158,16 +162,18 @@ local function setGitCommitAppearance()
 			vim.api.nvim_set_hl(winNs, "closeToOverlengh", { link = "WarningMsg" })
 			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
 
-			-- for treesitter highlighting
+			-- colorcolumn as extra indicators of overLength
+			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
+
+			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
 			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
 
 			-- fix confirming input field (not working in insert mode due to filetype change)
 			vim.keymap.set("i", "<CR>", "<Esc><CR>", { buffer = true, remap = true })
 
-			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG") -- for statusline plugins
-
-			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
+			-- activate styling of statusline plugins
+			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG") 
 		end,
 	})
 end
