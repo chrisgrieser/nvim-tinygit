@@ -174,9 +174,11 @@ local function setGitCommitAppearance()
 			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
 
 			-- colorcolumn as extra indicators of overLength
+			---@diagnostic disable-next-line: inject-field
 			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
 
 			-- treesitter highlighting
+			---@diagnostic disable-next-line: inject-field
 			vim.bo.filetype = "gitcommit"
 			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
 
