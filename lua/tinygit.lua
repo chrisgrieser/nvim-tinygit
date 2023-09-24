@@ -63,7 +63,7 @@ end
 local function notify(body, level, title)
 	local titlePrefix = "tinygit"
 	if not level then level = "info" end
-	local notifyTitle = title and titlePrefix .. ": " .. title or title
+	local notifyTitle = title and titlePrefix .. ": " .. title or titlePrefix
 	vim.notify(vim.trim(body), vim.log.levels[level:upper()], { title = notifyTitle })
 end
 
@@ -87,10 +87,11 @@ local function stageAllIfNoChanges()
 	if hasStagedChanges then
 		local stagedInfo = fn.system { "git", "diff", "--staged", "--stat" }
 		if nonZeroExit(stagedInfo) then return false end
-		notify(stagedInfo, "info", "Staged Changes")
+		notify(stagedInfo, "info", "will commit…")
 	else
 		local stderr = fn.system { "git", "add", "-A" }
 		if nonZeroExit(stderr) then return false end
+		notify("Staged all changes", "info")
 	end
 	return true
 end
