@@ -87,7 +87,7 @@ local function stageAllIfNoChanges()
 	if hasStagedChanges then
 		local stagedInfo = fn.system { "git", "diff", "--staged", "--stat" }
 		if nonZeroExit(stagedInfo) then return false end
-		notify(stagedInfo, "info", "will commit…")
+		notify(stagedInfo, "info", "Committed Staged Changes")
 	else
 		local stderr = fn.system { "git", "add", "-A" }
 		if nonZeroExit(stderr) then return false end
@@ -197,15 +197,14 @@ function M.amendNoEdit(opts)
 	vim.cmd("silent update")
 	if notInGitRepo() then return end
 
-	-- show the message of the last commit
-	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-
 	local success = stageAllIfNoChanges()
 	if not success then return end
 
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
 
+	-- show the message of the last commit
+	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
 	local body = ('"%s"'):format(lastCommitMsg)
 	if opts.forcePush then body = body .. "\n➤ Force Pushing…" end
 	notify(body, "info", "Amend-No-edit")
@@ -258,9 +257,6 @@ function M.smartCommit(opts, prefillMsg)
 	if not opts then opts = {} end
 	if not prefillMsg then prefillMsg = "" end
 
-	local success = stageAllIfNoChanges()
-	if not success then return end
-
 	setGitCommitAppearance()
 	vim.ui.input({ prompt = "󰊢 Commit Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
@@ -270,6 +266,9 @@ function M.smartCommit(opts, prefillMsg)
 			return
 		end
 
+		local success = stageAllIfNoChanges()
+		if not success then return end
+
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
@@ -277,7 +276,7 @@ function M.smartCommit(opts, prefillMsg)
 		if opts.push then body = body .. "\n➤ Pushing…" end
 		notify(body, "info", "Smart-Commit")
 
-		if opts.push then M.push() end
+		if opts.push then M.push({ pullBefore = true }) end
 	end)
 end
 
