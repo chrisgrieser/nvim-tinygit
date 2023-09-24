@@ -99,7 +99,7 @@ Assuming these keybindings:
 >lua
     vim.keymap.set("n", "ga", "<cmd>Gitsigns add_hunk<CR>") -- gitsigns.nvim
     vim.keymap.set("n", "gc", function() require("tinygit").smartCommit() end)
-    vim.keymap.set("n", "gm", function() require("tinygit").ammendNoEdit() end)
+    vim.keymap.set("n", "gm", function() require("tinygit").amendNoEdit() end)
 <
 
 1. Stage some hunks (changes) via `ga`.
