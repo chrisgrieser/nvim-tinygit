@@ -87,7 +87,7 @@ local function stageAllIfNoChanges()
 	if hasStagedChanges then
 		local stagedInfo = fn.system { "git", "diff", "--staged", "--stat" }
 		if nonZeroExit(stagedInfo) then return false end
-		notify(stagedInfo, "info", "Committed Staged Changes")
+		notify(stagedInfo, "info", "Committed Changes")
 	else
 		local stderr = fn.system { "git", "add", "-A" }
 		if nonZeroExit(stderr) then return false end
