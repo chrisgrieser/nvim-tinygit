@@ -91,7 +91,7 @@ local function stageAllIfNoChanges()
 	else
 		local stderr = fn.system { "git", "add", "-A" }
 		if nonZeroExit(stderr) then return end
-		return "Staged all changes"
+		return "Staged all changes."
 	end
 end
 
@@ -177,6 +177,7 @@ local function setGitCommitAppearance()
 			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
 
 			-- treesitter highlighting
+			---@diagnostic disable-next-line: inject-field
 			vim.bo.filetype = "gitcommit"
 			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
 
@@ -200,11 +201,10 @@ function M.amendNoEdit(opts)
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
 
-	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-	local body = stageInfo .. "\n\n" .. ('"%s"'):format(lastCommitMsg)
-	if opts.forcePush then body = body .. "\n\n➤ Force Pushing…" end
-	notify(body, "info", "Amend-No-edit")
+	local body = { stageInfo, ('"%s"'):format(lastCommitMsg) }
+	if opts.forcePush then table.insert(body, "Force Pushing…") end
+	notify(table.concat(body, "\n─────\n"), "info", "Amend-No-edit")
 
 	if opts.forcePush then M.push { force = true } end
 end
@@ -269,9 +269,9 @@ function M.smartCommit(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
-		local body = stageInfo .. "\n\n" .. ('"%s"'):format(newMsg)
-		if opts.push then body = body .. "\n\n➤ Pushing…" end
-		notify(body, "info", "Smart-Commit")
+		local body = { stageInfo, ('"%s"'):format(newMsg) }
+		if opts.push then table.insert(body, "Pushing…") end
+		notify(table.concat(body, "\n─────\n"), "info", "Smart-Commit")
 
 		if opts.push then M.push { pullBefore = true } end
 	end)
