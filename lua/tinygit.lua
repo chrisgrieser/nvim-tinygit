@@ -178,12 +178,8 @@ local function setGitCommitAppearance()
 			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
 
 			-- treesitter highlighting
-			---@diagnostic disable-next-line: inject-field
 			vim.bo.filetype = "gitcommit"
 			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
-
-			-- fix confirming input field (not working in insert mode due to filetype change)
-			vim.keymap.set("i", "<CR>", "<Esc><CR>", { buffer = true, remap = true })
 
 			-- activate styling of statusline plugins
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG")
