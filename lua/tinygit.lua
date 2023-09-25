@@ -79,21 +79,20 @@ end
 
 -- if there are no staged changes, will add all changes (`git add -A`)
 -- if not, indicates the already staged changes
----@return boolean success of staging
+---@return string|nil stageInfo, nil if straging was unsuccessful
 local function stageAllIfNoChanges()
 	fn.system { "git", "diff", "--staged", "--quiet" }
 	local hasStagedChanges = vim.v.shell_error ~= 0
 
 	if hasStagedChanges then
-		local stagedInfo = fn.system { "git", "diff", "--staged", "--stat" }
-		if nonZeroExit(stagedInfo) then return false end
-		notify(stagedInfo, "info", "Committed Changes")
+		local stagedChanges = (fn.system { "git", "diff", "--staged", "--stat" }):gsub("\n.-$", "")
+		if nonZeroExit(stagedChanges) then return end
+		return "Staged Changes:\n" .. stagedChanges
 	else
 		local stderr = fn.system { "git", "add", "-A" }
-		if nonZeroExit(stderr) then return false end
-		notify("Staged all changes", "info")
+		if nonZeroExit(stderr) then return end
+		return "Staged all changes"
 	end
-	return true
 end
 
 ---also notifies if not in git repo
@@ -195,15 +194,15 @@ function M.amendNoEdit(opts)
 	vim.cmd("silent update")
 	if notInGitRepo() then return end
 
-	local success = stageAllIfNoChanges()
-	if not success then return end
+	local stageInfo = stageAllIfNoChanges()
+	if not stageInfo then return end
 
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if nonZeroExit(stderr) then return end
 
 	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-	local body = ('"%s"'):format(lastCommitMsg)
+	local body = stageInfo .. "\n" .. ('"%s"'):format(lastCommitMsg)
 	if opts.forcePush then body = body .. "\n➤ Force Pushing…" end
 	notify(body, "info", "Amend-No-edit")
 
@@ -264,13 +263,13 @@ function M.smartCommit(opts, prefillMsg)
 			return
 		end
 
-		local success = stageAllIfNoChanges()
-		if not success then return end
+		local stageInfo = stageAllIfNoChanges()
+		if not stageInfo then return end
 
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
-		local body = ('"%s"'):format(newMsg)
+		local body = stageInfo .. "\n" .. ('"%s"'):format(newMsg)
 		if opts.push then body = body .. "\n➤ Pushing…" end
 		notify(body, "info", "Smart-Commit")
 
