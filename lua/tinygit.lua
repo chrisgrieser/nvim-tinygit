@@ -87,7 +87,7 @@ local function stageAllIfNoChanges()
 	if hasStagedChanges then
 		local stagedChanges = (fn.system { "git", "diff", "--staged", "--stat" }):gsub("\n.-$", "")
 		if nonZeroExit(stagedChanges) then return end
-		return "Staged Changes:\n" .. stagedChanges
+		return stagedChanges
 	else
 		local stderr = fn.system { "git", "add", "-A" }
 		if nonZeroExit(stderr) then return end
@@ -202,8 +202,8 @@ function M.amendNoEdit(opts)
 
 	-- show the message of the last commit
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-	local body = stageInfo .. "\n" .. ('"%s"'):format(lastCommitMsg)
-	if opts.forcePush then body = body .. "\n➤ Force Pushing…" end
+	local body = stageInfo .. "\n\n" .. ('"%s"'):format(lastCommitMsg)
+	if opts.forcePush then body = body .. "\n\n➤ Force Pushing…" end
 	notify(body, "info", "Amend-No-edit")
 
 	if opts.forcePush then M.push { force = true } end
@@ -234,7 +234,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		if nonZeroExit(stderr) then return end
 
 		local body = ('"%s"'):format(cMsg)
-		if opts.forcePush then body = body .. "\n➤ Force Pushing…" end
+		if opts.forcePush then body = body .. "\n\n➤ Force Pushing…" end
 		notify(body, "info", "Amend-Only-Msg")
 
 		if opts.forcePush then M.push { force = true } end
@@ -269,8 +269,8 @@ function M.smartCommit(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "-m", newMsg }
 		if nonZeroExit(stderr) then return end
 
-		local body = stageInfo .. "\n" .. ('"%s"'):format(newMsg)
-		if opts.push then body = body .. "\n➤ Pushing…" end
+		local body = stageInfo .. "\n\n" .. ('"%s"'):format(newMsg)
+		if opts.push then body = body .. "\n\n➤ Pushing…" end
 		notify(body, "info", "Smart-Commit")
 
 		if opts.push then M.push { pullBefore = true } end
