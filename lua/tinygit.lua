@@ -164,13 +164,13 @@ local function setGitCommitAppearance()
 			-- custom highlighting
 			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
 			fn.matchadd(
-				"closeToOverlengh",
+				"closeToOverlength",
 				-- \ze = end of match, \zs = start of match
 				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen - 1, conf.maxLen - conf.mediumLen)
 			)
 			fn.matchadd("issueNumber", [[#\d\+]])
 			vim.api.nvim_set_hl(winNs, "overLength", { link = "ErrorMsg" })
-			vim.api.nvim_set_hl(winNs, "closeToOverlengh", { link = "WarningMsg" })
+			vim.api.nvim_set_hl(winNs, "closeToOverlength", { link = "WarningMsg" })
 			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
 
 			-- colorcolumn as extra indicators of overLength
