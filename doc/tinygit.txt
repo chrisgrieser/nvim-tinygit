@@ -1,19 +1,19 @@
-*tinygit.txt*          For NVIM v0.8.0          Last change: 2023 September 25
+*tinygit.txt*          For NVIM v0.8.0          Last change: 2023 September 26
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
 
-1. nvim-tinygit                                        |tinygit-nvim-tinygit-|
-  - Features                                  |tinygit-nvim-tinygit--features|
-  - Installation                          |tinygit-nvim-tinygit--installation|
-  - Usage                                        |tinygit-nvim-tinygit--usage|
-  - Example Workflows                |tinygit-nvim-tinygit--example-workflows|
-  - Configuration                        |tinygit-nvim-tinygit--configuration|
-  - Non-Goals                                |tinygit-nvim-tinygit--non-goals|
-  - Credits                                    |tinygit-nvim-tinygit--credits|
+1. nvim-tinygit                                         |tinygit-nvim-tinygit|
+  - Features                                   |tinygit-nvim-tinygit-features|
+  - Installation                           |tinygit-nvim-tinygit-installation|
+  - Usage                                         |tinygit-nvim-tinygit-usage|
+  - Example Workflows                 |tinygit-nvim-tinygit-example-workflows|
+  - Configuration                         |tinygit-nvim-tinygit-configuration|
+  - Non-Goals                                 |tinygit-nvim-tinygit-non-goals|
+  - Credits                                     |tinygit-nvim-tinygit-credits|
 
 ==============================================================================
-1. nvim-tinygit                                        *tinygit-nvim-tinygit-*
+1. nvim-tinygit                                         *tinygit-nvim-tinygit*
 
 
 
@@ -30,7 +30,7 @@ Lightweight and nimble git client for nvim.
 - |tinygit-credits|
 
 
-FEATURES                                      *tinygit-nvim-tinygit--features*
+FEATURES                                       *tinygit-nvim-tinygit-features*
 
 - Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
 - Commit Messages have syntax highlighting, indicators for commit message overlength <https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting>, and optionally enforce conventional commits keywords.
@@ -40,7 +40,7 @@ FEATURES                                      *tinygit-nvim-tinygit--features*
 - Open the GitHub URL of the current file or selection.
 
 
-INSTALLATION                              *tinygit-nvim-tinygit--installation*
+INSTALLATION                               *tinygit-nvim-tinygit-installation*
 
 >lua
     -- lazy.nvim
@@ -61,7 +61,7 @@ highlighting of your commit messages like emphasized conventional commit
 keywords: `TSInstall gitcommit`
 
 
-USAGE                                            *tinygit-nvim-tinygit--usage*
+USAGE                                             *tinygit-nvim-tinygit-usage*
 
 >lua
     -- Open a commit popup. If there are no staged changes, stage all changes (`git add -A`) before the commit. 
@@ -92,7 +92,7 @@ USAGE                                            *tinygit-nvim-tinygit--usage*
 <
 
 
-EXAMPLE WORKFLOWS                    *tinygit-nvim-tinygit--example-workflows*
+EXAMPLE WORKFLOWS                     *tinygit-nvim-tinygit-example-workflows*
 
 Assuming these keybindings:
 
@@ -115,7 +115,7 @@ You can also stage all changes, commit, and push them in one go via:
 <
 
 
-CONFIGURATION                            *tinygit-nvim-tinygit--configuration*
+CONFIGURATION                             *tinygit-nvim-tinygit-configuration*
 
 The `setup` call is optional. These are the default settings:
 
@@ -156,14 +156,14 @@ The `setup` call is optional. These are the default settings:
   field, you need to configure dressing.nvim
   <https://github.com/stevearc/dressing.nvim>.
 
-NON-GOALS                                    *tinygit-nvim-tinygit--non-goals*
+NON-GOALS                                     *tinygit-nvim-tinygit-non-goals*
 
 - Become a full-fledged git client. Use neogit <https://github.com/NeogitOrg/neogit> for that.
 - Add features available in gitsigns.nvim <https://github.com/lewis6991/gitsigns.nvim>. `tinygit` is intended to complement `gitsigns.nvim` with some simple commands, not replace it.
 - UI Customization. Configure dressing.nvim <https://github.com/stevearc/dressing.nvim> for that.
 
 
-CREDITS                                        *tinygit-nvim-tinygit--credits*
+CREDITS                                         *tinygit-nvim-tinygit-credits*
 
 **About Me** In my day job, I am a sociologist studying the social mechanisms
 underlying the digital economy. For my PhD project, I investigate the
