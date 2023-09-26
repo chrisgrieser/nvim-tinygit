@@ -1,5 +1,6 @@
 <!-- LTeX: enabled=false -->
-# nvim-tinygit <!-- LTeX: enabled=true -->
+# nvim-tinygit
+<!-- LTeX: enabled=true -->
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield" /></a>
 
 Lightweight and nimble git client for nvim.
