@@ -43,8 +43,6 @@ function M.setup(userConf) config = vim.tbl_extend("force", defaultConfig, userC
 --------------------------------------------------------------------------------
 -- HELPERS
 
-local notifySeperator = ("─"):rep(15)
-
 -- open with the OS-specific shell command
 ---@param url string
 local function openUrl(url)
@@ -83,7 +81,7 @@ end
 
 -- if there are no staged changes, will add all changes (`git add -A`)
 -- if not, indicates the already staged changes
----@return string|nil stageInfo, nil if straging was unsuccessful
+---@return string|nil stageInfo, nil if staging was unsuccessful
 local function stageAllIfNoChanges()
 	fn.system { "git", "diff", "--staged", "--quiet" }
 	local hasStagedChanges = vim.v.shell_error ~= 0
@@ -177,11 +175,9 @@ local function setGitCommitAppearance()
 			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
 
 			-- colorcolumn as extra indicators of overLength
-			---@diagnostic disable-next-line: inject-field
 			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
 
 			-- treesitter highlighting
-			---@diagnostic disable-next-line: inject-field
 			vim.bo.filetype = "gitcommit"
 			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
 
@@ -212,7 +208,7 @@ function M.amendNoEdit(opts)
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
 	local body = { stageInfo, ('"%s"'):format(lastCommitMsg) }
 	if opts.forcePush then table.insert(body, "Force Pushing…") end
-	local notifyText = table.concat(body, "\n" .. notifySeperator .. "\n")
+	local notifyText = table.concat(body, "\n \n") -- need space since empty lines are removed by nvim-notify
 	notify(notifyText, "info", "Amend-No-edit")
 
 	if opts.forcePush then M.push { force = true } end
@@ -280,7 +276,7 @@ function M.smartCommit(opts, prefillMsg)
 
 		local body = { stageInfo, ('"%s"'):format(processedMsg) }
 		if opts.push then table.insert(body, "Pushing…") end
-		local notifyText = table.concat(body, "\n" .. notifySeperator .. "\n")
+		local notifyText = table.concat(body, "\n \n") -- need space since empty lines are removed by nvim-notify
 		notify(notifyText, "info", "Smart-Commit")
 
 		local issueReferenced = processedMsg:match("#(%d+)")
