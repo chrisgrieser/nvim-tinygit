@@ -191,6 +191,10 @@ local function setGitCommitAppearance()
 	})
 end
 
+local function getRepo()
+	return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2)
+end
+
 --------------------------------------------------------------------------------
 
 ---@param opts? { forcePush?: boolean }
@@ -251,7 +255,7 @@ end
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
 ---@param prefillMsg? string
----@param opts? { push?: boolean }
+---@param opts? { push?: boolean, openReferencedIssue?: boolean }
 function M.smartCommit(opts, prefillMsg)
 	if notInGitRepo() then return end
 
@@ -278,6 +282,12 @@ function M.smartCommit(opts, prefillMsg)
 		if opts.push then table.insert(body, "Pushing…") end
 		local notifyText = table.concat(body, "\n" .. notifySeperator .. "\n")
 		notify(notifyText, "info", "Smart-Commit")
+
+		if opts.openReferencedIssue then
+			local issueReferenced = processedMsg:match("#(%d+)")
+			local url = ("https://github.com/%s/issues/%s"):format(getRepo(), issueReferenced)
+			openUrl(url)
+		end
 
 		if opts.push then M.push { pullBefore = true } end
 	end)
@@ -406,11 +416,10 @@ end
 ---@param userOpts? { state?: string, type?: string }
 function M.issuesAndPrs(userOpts)
 	if notInGitRepo() then return end
-	if not userOpts then userOpts = {} end
 	local defaultOpts = { state = "all", type = "all" }
-	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
+	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts or {})
 
-	local repo = fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2)
+	local repo = getRepo()
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
 	local rawJsonUrl = ("https://api.github.com/repos/%s/issues?per_page=100&state=%s&sort=updated"):format(

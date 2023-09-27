@@ -14,7 +14,6 @@
 ---@field maxLen number
 ---@field mediumLen number
 ---@field emptyFillIn string
----@field openReferencesIssues boolean
 ---@field enforceConvCommits enforceConvCommitsConfig
 
 ---@class enforceConvCommitsConfig
