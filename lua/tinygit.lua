@@ -3,6 +3,7 @@ local fn = vim.fn
 
 --------------------------------------------------------------------------------
 
+---@type pluginConfig
 local defaultConfig = {
 	commitMsg = {
 		-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
@@ -36,7 +37,7 @@ local defaultConfig = {
 -- set values if setup call is not run
 local config = defaultConfig
 
----@param userConf? table
+---@param userConf? pluginConfig
 function M.setup(userConf) config = vim.tbl_extend("force", defaultConfig, userConf or {}) end
 
 --------------------------------------------------------------------------------
