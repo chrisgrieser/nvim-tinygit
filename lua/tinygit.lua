@@ -36,10 +36,13 @@ local defaultConfig = {
 -- set values if setup call is not run
 local config = defaultConfig
 
-function M.setup(userConf) config = vim.tbl_extend("force", defaultConfig, userConf) end
+---@param userConf? table
+function M.setup(userConf) config = vim.tbl_extend("force", defaultConfig, userConf or {}) end
 
 --------------------------------------------------------------------------------
 -- HELPERS
+
+local notifySeperator = ("─"):rep(15)
 
 -- open with the OS-specific shell command
 ---@param url string
@@ -204,7 +207,8 @@ function M.amendNoEdit(opts)
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
 	local body = { stageInfo, ('"%s"'):format(lastCommitMsg) }
 	if opts.forcePush then table.insert(body, "Force Pushing…") end
-	notify(table.concat(body, "\n─────\n"), "info", "Amend-No-edit")
+	local notifyText = table.concat(body, "\n" .. notifySeperator .. "\n")
+	notify(notifyText, "info", "Amend-No-edit")
 
 	if opts.forcePush then M.push { force = true } end
 end
@@ -271,7 +275,8 @@ function M.smartCommit(opts, prefillMsg)
 
 		local body = { stageInfo, ('"%s"'):format(newMsg) }
 		if opts.push then table.insert(body, "Pushing…") end
-		notify(table.concat(body, "\n─────\n"), "info", "Smart-Commit")
+		local notifyText = table.concat(body, "\n" .. notifySeperator .. "\n")
+		notify(notifyText, "info", "Smart-Commit")
 
 		if opts.push then M.push { pullBefore = true } end
 	end)
