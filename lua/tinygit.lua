@@ -262,19 +262,19 @@ function M.smartCommit(opts, prefillMsg)
 	setGitCommitAppearance()
 	vim.ui.input({ prompt = "󰊢 Commit Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
-		local validMsg, newMsg = processCommitMsg(commitMsg)
+		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.smartCommit(opts, newMsg)
+			M.smartCommit(opts, processedMsg)
 			return
 		end
 
 		local stageInfo = stageAllIfNoChanges()
 		if not stageInfo then return end
 
-		local stderr = fn.system { "git", "commit", "-m", newMsg }
+		local stderr = fn.system { "git", "commit", "-m", processedMsg }
 		if nonZeroExit(stderr) then return end
 
-		local body = { stageInfo, ('"%s"'):format(newMsg) }
+		local body = { stageInfo, ('"%s"'):format(processedMsg) }
 		if opts.push then table.insert(body, "Pushing…") end
 		local notifyText = table.concat(body, "\n" .. notifySeperator .. "\n")
 		notify(notifyText, "info", "Smart-Commit")
