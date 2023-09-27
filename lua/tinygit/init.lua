@@ -283,8 +283,8 @@ function M.smartCommit(opts, prefillMsg)
 		local notifyText = table.concat(body, "\n" .. notifySeperator .. "\n")
 		notify(notifyText, "info", "Smart-Commit")
 
-		if opts.openReferencedIssue then
-			local issueReferenced = processedMsg:match("#(%d+)")
+		local issueReferenced = processedMsg:match("#(%d+)")
+		if opts.openReferencedIssue and issueReferenced then
 			local url = ("https://github.com/%s/issues/%s"):format(getRepo(), issueReferenced)
 			openUrl(url)
 		end
