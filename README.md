@@ -5,9 +5,17 @@
 
 Lightweight and nimble git client for nvim.
 
-<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase commit message writing" width=65%>
+<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase commit message input field" width=65%>
 
-<!--toc:start-->
+*Commit Message Input Field with Syntax Highlighting*
+
+<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/123fcfd9-f989-4c10-bd98-32f62ea683c3" alt="showcase commit message notification" width=50%>
+
+*Informative Notifications with Highlighting when using `nvim-notify`*
+
+## Table of Contents
+<!-- toc -->
+
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -15,10 +23,12 @@ Lightweight and nimble git client for nvim.
 - [Configuration](#configuration)
 - [Non-Goals](#non-goals)
 - [Credits](#credits)
-<!--toc:end-->
+
+<!--tocstop -->
 
 ## Features
 - Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
+- Option to automatically open references GitHub issues in the browser after committing.
 - Commit Messages have syntax highlighting, indicators for [commit message overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting), and optionally enforce conventional commits keywords.
 - Option to run `git push` in a non-blocking manner after committing.
 - Quick amends.
