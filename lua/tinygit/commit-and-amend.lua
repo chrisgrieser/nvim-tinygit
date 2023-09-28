@@ -41,7 +41,6 @@ local function processCommitMsg(commitMsg)
 			u.notify("Commit Message empty.", "warn")
 			return false, ""
 		else
-			---@diagnostic disable-next-line: return-type-mismatch -- checked above
 			return true, conf.emptyFillIn
 		end
 	end
@@ -96,59 +95,17 @@ local function setGitCommitAppearance()
 	})
 end
 
---------------------------------------------------------------------------------
+---@param title string title for nvim-notify
+---@param body string[] lines for the notification
+local function commitNotification(title, body)
+	local titlePrefix = "tinygit"
 
----@param opts? { forcePush?: boolean }
-function M.amendNoEdit(opts)
-	if not opts then opts = {} end
-	vim.cmd("silent update")
-	if u.notInGitRepo() then return end
-
-	local stageInfo = stageAllIfNoChanges()
-	if not stageInfo then return end
-
-	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
-	if u.nonZeroExit(stderr) then return end
-
-	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-	local body = { stageInfo, ('"%s"'):format(lastCommitMsg) }
-	if opts.forcePush then table.insert(body, "Force Pushing…") end
-	local notifyText = table.concat(body, "\n \n") -- need space since empty lines are removed by nvim-notify
-	u.notify(notifyText, "info", "Amend-No-edit")
-
-	if opts.forcePush then push { force = true } end
-end
-
----@param opts? { forcePush?: boolean }
----@param prefillMsg? string
-function M.amendOnlyMsg(opts, prefillMsg)
-	if not opts then opts = {} end
-	vim.cmd("silent update")
-	if u.notInGitRepo() then return end
-
-	if not prefillMsg then
-		local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-		prefillMsg = lastCommitMsg
+	local nvimNotifyInstalled, _ = pcall(require, "notify")
+	if not nvimNotifyInstalled then
+		local text = table.concat(body, "\n \n")
+		vim.notify(text, vim.log.levels.INFO, { title = titlePrefix .. ": " .. title })
+	else
 	end
-	setGitCommitAppearance()
-
-	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
-		if not commitMsg then return end -- aborted input modal
-		local validMsg, cMsg = processCommitMsg(commitMsg)
-		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.amendOnlyMsg(opts, cMsg)
-			return
-		end
-
-		local stderr = fn.system { "git", "commit", "--amend", "-m", cMsg }
-		if u.nonZeroExit(stderr) then return end
-
-		local body = ('"%s"'):format(cMsg)
-		if opts.forcePush then body = body .. "\n\n➤ Force Pushing…" end
-		u.notify(body, "info", "Amend-Only-Msg")
-
-		if opts.forcePush then push { force = true } end
-	end)
 end
 
 --------------------------------------------------------------------------------
@@ -181,8 +138,7 @@ function M.smartCommit(opts, prefillMsg)
 
 		local body = { stageInfo, ('"%s"'):format(processedMsg) }
 		if opts.push then table.insert(body, "Pushing…") end
-		local notifyText = table.concat(body, "\n \n") -- need space since empty lines are removed by nvim-notify
-		u.notify(notifyText, "info", "Smart-Commit")
+		commitNotification("Smart-Commit", body)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if opts.openReferencedIssue and issueReferenced then
@@ -191,6 +147,58 @@ function M.smartCommit(opts, prefillMsg)
 		end
 
 		if opts.push then push { pullBefore = true } end
+	end)
+end
+
+---@param opts? { forcePush?: boolean }
+function M.amendNoEdit(opts)
+	if not opts then opts = {} end
+	vim.cmd("silent update")
+	if u.notInGitRepo() then return end
+
+	local stageInfo = stageAllIfNoChanges()
+	if not stageInfo then return end
+
+	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
+	if u.nonZeroExit(stderr) then return end
+
+	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
+	local body = { stageInfo, ('"%s"'):format(lastCommitMsg) }
+	if opts.forcePush then table.insert(body, "Force Pushing…") end
+	commitNotification("Amend-No-Edit", body)
+
+	if opts.forcePush then push { force = true } end
+end
+
+---@param opts? { forcePush?: boolean }
+---@param prefillMsg? string
+function M.amendOnlyMsg(opts, prefillMsg)
+	if not opts then opts = {} end
+	vim.cmd("silent update")
+	if u.notInGitRepo() then return end
+
+	if not prefillMsg then
+		local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
+		prefillMsg = lastCommitMsg
+	end
+	setGitCommitAppearance()
+
+	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
+		if not commitMsg then return end -- aborted input modal
+		local validMsg, cMsg = processCommitMsg(commitMsg)
+		if not validMsg then -- if msg invalid, run again to fix the msg
+			M.amendOnlyMsg(opts, cMsg)
+			return
+		end
+
+		local stderr = fn.system { "git", "commit", "--amend", "-m", cMsg }
+		if u.nonZeroExit(stderr) then return end
+
+		local body = { ('"%s"'):format(cMsg) }
+		if opts.forcePush then table.insert(body, "Force Pushing…") end
+		commitNotification("Amend-Only-Msg", body)
+
+		if opts.forcePush then push { force = true } end
 	end)
 end
 
