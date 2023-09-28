@@ -31,13 +31,19 @@ Lightweight and nimble git client for nvim.
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	dependencies = "stevearc/dressing.nvim",
+	dependencies = {
+		"stevearc/dressing.nvim",
+		"rcarriga/nvim-notify", -- optional, for nice notifications
+	},
 },
 
 -- packer
 use {
 	"chrisgrieser/nvim-tinygit",
-	requires = "stevearc/dressing.nvim",
+	requires = {
+		"stevearc/dressing.nvim",
+		"rcarriga/nvim-notify", -- optional, for nice notifications
+	},
 }
 ```
 
