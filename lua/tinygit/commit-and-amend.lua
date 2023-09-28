@@ -113,7 +113,14 @@ local function commitNotification(title, stageInfo, commitMsg, extra)
 			local buf = vim.api.nvim_win_get_buf(win)
 			local winNs = 2
 			vim.api.nvim_win_set_hl_ns(win, winNs)
-			-- vim.api.nvim_buf_add_highlight(buf, winNs, "Title", commitMsgLine, ccKeyword[1], ccKeyword[2])
+
+			-- determine highlights when user uses nvim-notify
+			local lastLine = vim.api.nvim_buf_line_count(buf)
+			local commitMsgLine = extra and lastLine - 1 or lastLine
+			local ccKeywordStart, ccKeywordEnd = commitMsg:find('^"(%a+):')
+
+			if not (ccKeywordStart and ccKeywordEnd) then return end
+			vim.api.nvim_buf_add_highlight(buf, winNs, "Title", commitMsgLine, ccKeywordStart, ccKeywordEnd)
 		end,
 	})
 end
