@@ -4,6 +4,7 @@
 Table of Contents                                  *tinygit-table-of-contents*
 
 1. nvim-tinygit                                         |tinygit-nvim-tinygit|
+  - Table of Contents                 |tinygit-nvim-tinygit-table-of-contents|
   - Features                                   |tinygit-nvim-tinygit-features|
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Usage                                         |tinygit-nvim-tinygit-usage|
@@ -21,6 +22,15 @@ Lightweight and nimble git client for nvim.
 
 
 
+_Commit Message Input Field with Syntax Highlighting_
+
+
+
+_Informative Notifications with Highlighting when using nvim-notify_
+
+
+TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
+
 - |tinygit-features|
 - |tinygit-installation|
 - |tinygit-usage|
@@ -33,6 +43,7 @@ Lightweight and nimble git client for nvim.
 FEATURES                                       *tinygit-nvim-tinygit-features*
 
 - Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
+- Option to automatically open references GitHub issues in the browser after committing.
 - Commit Messages have syntax highlighting, indicators for commit message overlength <https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting>, and optionally enforce conventional commits keywords.
 - Option to run `git push` in a non-blocking manner after committing.
 - Quick amends.
