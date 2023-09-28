@@ -67,7 +67,6 @@ local function setGitCommitAppearance()
 		callback = function()
 			local conf = config.commitMsg
 			local winNs = 1
-
 			vim.api.nvim_win_set_hl_ns(0, winNs)
 
 			-- custom highlighting
@@ -101,14 +100,6 @@ end
 ---@param extra? string extra lines to display
 local function commitNotification(title, stageInfo, commitMsg, extra)
 	local titlePrefix = "tinygit"
-
-	local nvimNotifyInstalled, _ = pcall(require, "notify")
-	if nvimNotifyInstalled then
-		-- use markdown syntax to style commit messages, since fn.matchadd does
-		-- not work well here
-		commitMsg = commitMsg:gsub("^(%a)", "**%1**")
-		if extra then extra = "*" .. extra .. "*" end
-	end
 	local lines = {
 		stageInfo or nil,
 		'"' .. commitMsg .. '"',
@@ -120,8 +111,9 @@ local function commitNotification(title, stageInfo, commitMsg, extra)
 		title = titlePrefix .. ": " .. title,
 		on_open = function(win)
 			local buf = vim.api.nvim_win_get_buf(win)
-			vim.api.nvim_buf_set_option(buf, "filetype", "markdown")
-			vim.api.nvim_win_set_option(win, "conceallevel", 2)
+			local winNs = 2
+			vim.api.nvim_win_set_hl_ns(win, winNs)
+			-- vim.api.nvim_buf_add_highlight(buf, winNs, "Title", commitMsgLine, ccKeyword[1], ccKeyword[2])
 		end,
 	})
 end
