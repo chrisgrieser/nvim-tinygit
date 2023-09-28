@@ -7,20 +7,15 @@ local push = require("tinygit.push").push
 
 -- if there are no staged changes, will add all changes (`git add -A`)
 -- if not, indicates the already staged changes
----@return string|nil stageInfo, nil if staging was unsuccessful
+---@return boolean|nil stagedAllChanges nil if staging unsuccessful
 local function stageAllIfNoChanges()
 	fn.system { "git", "diff", "--staged", "--quiet" }
 	local hasStagedChanges = vim.v.shell_error ~= 0
+	if hasStagedChanges then return false end
 
-	if hasStagedChanges then
-		local stagedChanges = (fn.system { "git", "diff", "--staged", "--stat" }):gsub("\n.-$", "")
-		if u.nonZeroExit(stagedChanges) then return end
-		return stagedChanges
-	else
-		local stderr = fn.system { "git", "add", "-A" }
-		if u.nonZeroExit(stderr) then return end
-		return "Staged all changes."
-	end
+	local stderr = fn.system { "git", "add", "-A" }
+	if u.nonZeroExit(stderr) then return nil end
+	return true
 end
 
 ---process a commit message: length, not empty, adheres to conventional commits
@@ -95,31 +90,50 @@ local function setGitCommitAppearance()
 end
 
 ---@param title string title for nvim-notify
----@param stageInfo? string
+---@param stagedAllChanges boolean
 ---@param commitMsg string
 ---@param extra? string extra lines to display
-local function commitNotification(title, stageInfo, commitMsg, extra)
+local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 	local titlePrefix = "tinygit"
-	local lines = { '"' .. commitMsg .. '"' }
-	if stageInfo then table.insert(lines, 1, stageInfo) end
+	local lines = { commitMsg }
+	if stagedAllChanges then table.insert(lines, 1, "Staged all changes.") end
 	if extra then table.insert(lines, extra) end
 	local text = table.concat(lines, "\n")
 
 	vim.notify(text, vim.log.levels.INFO, {
 		title = titlePrefix .. ": " .. title,
 		on_open = function(win)
-			local buf = vim.api.nvim_win_get_buf(win)
-			local winNs = 2
-			vim.api.nvim_win_set_hl_ns(win, winNs)
+			-- HACK manually creating gitcommit highlighting, since fn.matchadd does
+			-- not work in a non-focussed window and since setting the filetype to
+			-- "gitcommit" does not work well with nvim-notify
+			local buf, ns = vim.api.nvim_win_get_buf(win), 2
+			vim.api.nvim_win_set_hl_ns(win, ns)
+			local lastLine = vim.api.nvim_buf_line_count(buf) - 1
 
-			-- determine highlights when user uses nvim-notify
-
-			local lastLine = vim.api.nvim_buf_line_count(buf)
 			local commitMsgLine = extra and lastLine - 1 or lastLine
-			local ccKeywordStart, ccKeywordEnd = commitMsg:find('^"(%a+):')
+			local ccKeywordStart, _, ccKeywordEnd, ccScopeEnd = commitMsg:find("^%a+()%b()():")
+			if not ccKeywordStart then
+				-- has cc keyword, but not scope
+				ccKeywordStart, _, ccKeywordEnd = commitMsg:find("^%a+():")
+			end
+			if ccKeywordStart then
+				-- stylua: ignore
+				vim.api.nvim_buf_add_highlight(buf, ns, "Keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd)
+			end
+			if ccScopeEnd then
+				local ccScopeStart = ccKeywordEnd
+				-- stylua: ignore
+				vim.api.nvim_buf_add_highlight(buf, ns, "@parameter", commitMsgLine, ccScopeStart + 1, ccScopeEnd - 1)
+			end
 
-			if not (ccKeywordStart and ccKeywordEnd) then return end
-			vim.api.nvim_buf_add_highlight(buf, winNs, "Title", commitMsgLine, ccKeywordStart, ccKeywordEnd)
+			local issueNumberStart, issueNumberEnd = commitMsg:find("#%d+")
+			if issueNumberStart then
+				-- stylua: ignore
+				vim.api.nvim_buf_add_highlight(buf, ns, "Number", commitMsgLine, issueNumberStart, issueNumberEnd + 1)
+			end
+
+			if stagedAllChanges then vim.api.nvim_buf_add_highlight(buf, ns, "Comment", 1, 0, -1) end
+			if extra then vim.api.nvim_buf_add_highlight(buf, ns, "Comment", lastLine, 0, -1) end
 		end,
 	})
 end
@@ -146,14 +160,14 @@ function M.smartCommit(opts, prefillMsg)
 			return
 		end
 
-		local stageInfo = stageAllIfNoChanges()
-		if not stageInfo then return end
+		local stagedAllChanges = stageAllIfNoChanges()
+		if stagedAllChanges == nil then return end
 
 		local stderr = fn.system { "git", "commit", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
 		local extra = opts.push and "Pushing…" or nil
-		commitNotification("Smart-Commit", stageInfo, processedMsg, extra)
+		commitNotification("Smart-Commit", stagedAllChanges, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if opts.openReferencedIssue and issueReferenced then
@@ -171,15 +185,15 @@ function M.amendNoEdit(opts)
 	vim.cmd("silent update")
 	if u.notInGitRepo() then return end
 
-	local stageInfo = stageAllIfNoChanges()
-	if not stageInfo then return end
+	local stagedAllChanges = stageAllIfNoChanges()
+	if stagedAllChanges == nil then return end
 
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if u.nonZeroExit(stderr) then return end
 
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
 	local extra = opts.forcePush and "Force Pushing…" or nil
-	commitNotification("Amend-No-Edit", stageInfo, lastCommitMsg, extra)
+	commitNotification("Amend-No-Edit", stagedAllChanges, lastCommitMsg, extra)
 
 	if opts.forcePush then push { force = true } end
 end
@@ -208,7 +222,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
-		commitNotification("Amend-Only-Msg", nil, processedMsg)
+		commitNotification("Amend-Only-Msg", false, processedMsg)
 
 		if opts.forcePush then push { force = true } end
 	end)
