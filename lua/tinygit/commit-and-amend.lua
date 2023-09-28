@@ -100,11 +100,9 @@ end
 ---@param extra? string extra lines to display
 local function commitNotification(title, stageInfo, commitMsg, extra)
 	local titlePrefix = "tinygit"
-	local lines = {
-		stageInfo or nil,
-		'"' .. commitMsg .. '"',
-		extra or nil,
-	}
+	local lines = { '"' .. commitMsg .. '"' }
+	if stageInfo then table.insert(lines,1,  stageInfo) end
+	if extra then table.insert(lines, extra) end
 	local text = table.concat(lines, "\n")
 
 	vim.notify(text, vim.log.levels.INFO, {
@@ -115,6 +113,7 @@ local function commitNotification(title, stageInfo, commitMsg, extra)
 			vim.api.nvim_win_set_hl_ns(win, winNs)
 
 			-- determine highlights when user uses nvim-notify
+
 			local lastLine = vim.api.nvim_buf_line_count(buf)
 			local commitMsgLine = extra and lastLine - 1 or lastLine
 			local ccKeywordStart, ccKeywordEnd = commitMsg:find('^"(%a+):')
