@@ -96,16 +96,34 @@ local function setGitCommitAppearance()
 end
 
 ---@param title string title for nvim-notify
----@param body string[] lines for the notification
-local function commitNotification(title, body)
+---@param stageInfo? string
+---@param commitMsg string
+---@param extra? string extra lines to display
+local function commitNotification(title, stageInfo, commitMsg, extra)
 	local titlePrefix = "tinygit"
 
 	local nvimNotifyInstalled, _ = pcall(require, "notify")
-	if not nvimNotifyInstalled then
-		local text = table.concat(body, "\n \n")
-		vim.notify(text, vim.log.levels.INFO, { title = titlePrefix .. ": " .. title })
-	else
+	if nvimNotifyInstalled then
+		-- use markdown syntax to style commit messages, since fn.matchadd does
+		-- not work well here
+		commitMsg = commitMsg:gsub("^(%a)", "**%1**")
+		if extra then extra = "*" .. extra .. "*" end
 	end
+	local lines = {
+		stageInfo or nil,
+		'"' .. commitMsg .. '"',
+		extra or nil,
+	}
+	local text = table.concat(lines, "\n")
+
+	vim.notify(text, vim.log.levels.INFO, {
+		title = titlePrefix .. ": " .. title,
+		on_open = function(win)
+			local buf = vim.api.nvim_win_get_buf(win)
+			vim.api.nvim_buf_set_option(buf, "filetype", "markdown")
+			vim.api.nvim_win_set_option(win, "conceallevel", 2)
+		end,
+	})
 end
 
 --------------------------------------------------------------------------------
@@ -136,9 +154,8 @@ function M.smartCommit(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
-		local body = { stageInfo, ('"%s"'):format(processedMsg) }
-		if opts.push then table.insert(body, "Pushing…") end
-		commitNotification("Smart-Commit", body)
+		local extra = opts.push and "Pushing…" or nil
+		commitNotification("Smart-Commit", stageInfo, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if opts.openReferencedIssue and issueReferenced then
@@ -163,9 +180,8 @@ function M.amendNoEdit(opts)
 	if u.nonZeroExit(stderr) then return end
 
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
-	local body = { stageInfo, ('"%s"'):format(lastCommitMsg) }
-	if opts.forcePush then table.insert(body, "Force Pushing…") end
-	commitNotification("Amend-No-Edit", body)
+	local extra = opts.forcePush and "Force Pushing…" or nil
+	commitNotification("Amend-No-Edit", stageInfo, lastCommitMsg, extra)
 
 	if opts.forcePush then push { force = true } end
 end
@@ -185,18 +201,16 @@ function M.amendOnlyMsg(opts, prefillMsg)
 
 	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
-		local validMsg, cMsg = processCommitMsg(commitMsg)
+		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.amendOnlyMsg(opts, cMsg)
+			M.amendOnlyMsg(opts, processedMsg)
 			return
 		end
 
-		local stderr = fn.system { "git", "commit", "--amend", "-m", cMsg }
+		local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
-		local body = { ('"%s"'):format(cMsg) }
-		if opts.forcePush then table.insert(body, "Force Pushing…") end
-		commitNotification("Amend-Only-Msg", body)
+		commitNotification("Amend-Only-Msg", nil, processedMsg)
 
 		if opts.forcePush then push { force = true } end
 	end)
