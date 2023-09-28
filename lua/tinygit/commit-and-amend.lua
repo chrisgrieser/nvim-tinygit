@@ -101,7 +101,7 @@ end
 local function commitNotification(title, stageInfo, commitMsg, extra)
 	local titlePrefix = "tinygit"
 	local lines = { '"' .. commitMsg .. '"' }
-	if stageInfo then table.insert(lines,1,  stageInfo) end
+	if stageInfo then table.insert(lines, 1, stageInfo) end
 	if extra then table.insert(lines, extra) end
 	local text = table.concat(lines, "\n")
 
