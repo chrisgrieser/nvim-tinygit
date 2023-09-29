@@ -2,26 +2,25 @@ local M = {}
 --------------------------------------------------------------------------------
 
 ---@param userConfig? pluginConfig
-function M.setup(userConfig)
-	require("tinygit.config").setupPlugin(userConfig or {})
-end
+function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig or {}) end
+
+--------------------------------------------------------------------------------
 
 ---@param userOpts? { forcePush?: boolean }
-function M.amendNoEdit(userOpts)
-	require("tinygit.commit-and-amend").amendNoEdit(userOpts or {})
-end
+function M.amendNoEdit(userOpts) require("tinygit.commit-and-amend").amendNoEdit(userOpts or {}) end
 
 ---@param userOpts? { forcePush?: boolean }
-function M.amendOnlyMsg(userOpts)
-	require("tinygit.commit-and-amend").amendOnlyMsg(userOpts or {})
-end
+function M.amendOnlyMsg(userOpts) require("tinygit.commit-and-amend").amendOnlyMsg(userOpts or {}) end
 
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
 ---@param userOpts? { push?: boolean, openReferencedIssue?: boolean }
-function M.smartCommit(userOpts)
-	require("tinygit.commit-and-amend").smartCommit(userOpts or {})
-end
+function M.smartCommit(userOpts) require("tinygit.commit-and-amend").smartCommit(userOpts or {}) end
+
+--------------------------------------------------------------------------------
+
+--- INFO undocumented right now
+function M.stageHunkWithInfo() require("tinygit.staging").stageHunkWithInfo() end
 
 --------------------------------------------------------------------------------
 
@@ -35,6 +34,8 @@ function M.githubUrl(justRepo) require("tinygit.github").githubUrl(justRepo) end
 ---CAVEAT Due to GitHub API liminations, only the last 100 issues are shown.
 ---@param userOpts? { state?: string, type?: string }
 function M.issuesAndPrs(userOpts) require("tinygit.github").issuesAndPrs(userOpts or {}) end
+
+--------------------------------------------------------------------------------
 
 -- pull before to avoid conflicts
 ---@param userOpts? { pullBefore?: boolean, force?: boolean }
