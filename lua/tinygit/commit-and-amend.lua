@@ -66,15 +66,20 @@ local function setGitCommitAppearance()
 
 			-- custom highlighting
 			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
+			vim.api.nvim_set_hl(winNs, "overLength", { link = "ErrorMsg" })
+
 			fn.matchadd(
 				"closeToOverlength",
 				-- \ze = end of match, \zs = start of match
 				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen - 1, conf.maxLen - conf.mediumLen)
 			)
-			fn.matchadd("issueNumber", [[#\d\+]])
-			vim.api.nvim_set_hl(winNs, "overLength", { link = "ErrorMsg" })
 			vim.api.nvim_set_hl(winNs, "closeToOverlength", { link = "WarningMsg" })
+
+			fn.matchadd("issueNumber", [[#\d\+]])
 			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
+
+			fn.matchadd("mdInlineCode", [[`\zs.\+\ze`]])
+			vim.api.nvim_set_hl(winNs, "mdInlineCode", { link = "@text.literal" })
 
 			-- colorcolumn as extra indicators of overLength
 			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
@@ -109,6 +114,7 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 			local buf, ns = vim.api.nvim_win_get_buf(win), 2
 			vim.api.nvim_win_set_hl_ns(win, ns)
 			local lastLine = vim.api.nvim_buf_line_count(buf) - 1
+			local hl = vim.api.nvim_buf_add_highlight
 
 			local commitMsgLine = extra and lastLine - 1 or lastLine
 			local ccKeywordStart, _, ccKeywordEnd, ccScopeEnd = commitMsg:find("^%a+()%b()():")
@@ -116,24 +122,25 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 				-- has cc keyword, but not scope
 				ccKeywordStart, _, ccKeywordEnd = commitMsg:find("^%a+():")
 			end
-			if ccKeywordStart then
-				-- stylua: ignore
-				vim.api.nvim_buf_add_highlight(buf, ns, "Keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd)
-			end
+			if ccKeywordStart then hl(buf, ns, "Keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd) end
 			if ccScopeEnd then
 				local ccScopeStart = ccKeywordEnd
-				-- stylua: ignore
-				vim.api.nvim_buf_add_highlight(buf, ns, "@parameter", commitMsgLine, ccScopeStart + 1, ccScopeEnd - 1)
+				hl(buf, ns, "@parameter", commitMsgLine, ccScopeStart + 1, ccScopeEnd - 1)
+			end
+
+			local mdInlineCodeStart, mdInlineCodeEnd = commitMsg:find("`(.+)`")
+			if mdInlineCodeStart and mdInlineCodeEnd then
+				hl(buf, ns, "@text.literal", commitMsgLine, mdInlineCodeStart + 1, mdInlineCodeEnd)
 			end
 
 			local issueNumberStart, issueNumberEnd = commitMsg:find("#%d+")
 			if issueNumberStart then
 				-- stylua: ignore
-				vim.api.nvim_buf_add_highlight(buf, ns, "Number", commitMsgLine, issueNumberStart, issueNumberEnd + 1)
+				hl(buf, ns, "Number", commitMsgLine, issueNumberStart, issueNumberEnd + 1)
 			end
 
-			if stagedAllChanges then vim.api.nvim_buf_add_highlight(buf, ns, "Comment", 1, 0, -1) end
-			if extra then vim.api.nvim_buf_add_highlight(buf, ns, "Comment", lastLine, 0, -1) end
+			if stagedAllChanges then hl(buf, ns, "Comment", 1, 0, -1) end
+			if extra then hl(buf, ns, "Comment", lastLine, 0, -1) end
 		end,
 	})
 end
