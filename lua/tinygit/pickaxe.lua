@@ -3,11 +3,11 @@ local fn = vim.fn
 local u = require("tinygit.utils")
 --------------------------------------------------------------------------------
 
----@param commitLine string, assuming `git log --format=%h\t%s\t%cr`
+---@param commitLine string
 ---@return string formatted as: "commitMsg (date)"
 local function commitFormatter(commitLine)
-	local _, commitMsg, date = unpack(vim.split(commitLine, "\t"))
-	return ("%s\t%s"):format(commitMsg, date)
+	local _, commitMsg, date, author = unpack(vim.split(commitLine, "\t"))
+	return ("%s\t%s\t"):format(commitMsg, date, author)
 end
 
 ---https://www.reddit.com/r/neovim/comments/oxddk9/comment/h7maerh/
@@ -90,7 +90,7 @@ function M.searchFileHistory()
 		local response = fn.system {
 			"git",
 			"log", -- DOCS https://git-scm.com/docs/git-log
-			"--format=%h\t%s\t%cr",
+			"--format=%h\t%s\t%cr\t%cn", -- hash, subject, date, author
 			"--pickaxe-regex",
 			"--regexp-ignore-case",
 			("-S%s"):format(query),
