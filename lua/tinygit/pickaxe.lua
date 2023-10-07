@@ -6,17 +6,6 @@ local u = require("tinygit.utils")
 ---@param commitLine string, assuming `git log --format=%h\t%s\t%cr`
 ---@return string formatted as: "commitMsg (date)"
 local function commitFormatter(commitLine)
-	-- set highlights for the selected text
-	vim.api.nvim_create_autocmd("FileType", {
-		once = true, -- do not affect other DressingSelects
-		pattern = "DressingSelect",
-		callback = function()
-			vim.fn.matchadd("commitDate", "\t.*$")
-			vim.api.nvim_set_hl(0, "commitDate", { link = "Comment" })
-		end,
-	})
-
-	-- format text
 	local _, commitMsg, date = unpack(vim.split(commitLine, "\t"))
 	return ("%s\t%s"):format(commitMsg, date)
 end
@@ -36,28 +25,25 @@ end
 
 --------------------------------------------------------------------------------
 
----@param selectedCommit string, assuming `git log --format=%h\t%s\t%cr`
+---@param hash string
 ---@param filename string
 ---@param query string
-local function showDiff(selectedCommit, filename, query)
-	if not selectedCommit then return end -- aborted selection
-
+local function showDiff(hash, filename, query)
 	-- get diff
-	local hash = vim.split(selectedCommit, "\t")[1]
 	local diff = fn.system { "git", "show", hash, "--", filename }
+	local diffLines = vim.split(diff, "\n")
+	table.remove(diffLines, 1) -- remove header, since shown in window title already
 	if u.nonZeroExit(diff) then return end
 
-	-- create new buffer with diff
+	-- open new win with diff
 	local bufnr = vim.api.nvim_create_buf(true, true)
-	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(diff, "\n"))
+	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
 	vim.api.nvim_buf_set_name(bufnr, hash .. " " .. filename)
-	local ft = vim.filetype.match { filename = filename }
-	vim.api.nvim_buf_set_option(bufnr, "filetype", ft)
-
-	-- open new win
+	vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+	vim.api.nvim_buf_set_option(bufnr, "list", false)
 	vim.api.nvim_open_win(bufnr, true, {
 		width = vim.api.nvim_win_get_width(0),
-		height = vim.api.nvim_win_get_height(0) - 2, -- don't buffer statusline
+		height = vim.api.nvim_win_get_height(0) - 2, -- -2 to not obfuscate statusline
 		relative = "win",
 		row = 0,
 		col = 0,
@@ -69,6 +55,10 @@ local function showDiff(selectedCommit, filename, query)
 	-- keymaps
 	vim.keymap.set("n", "q", vim.cmd.close, { buffer = bufnr, nowait = true })
 	vim.keymap.set("n", "<Esc>", vim.cmd.close, { buffer = bufnr, nowait = true })
+
+	-- filetype-specific highlighting
+	local ft = vim.filetype.match { filename = filename }
+	vim.api.nvim_buf_set_option(bufnr, "filetype", ft)
 
 	-- diff-highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
@@ -85,7 +75,7 @@ local function showDiff(selectedCommit, filename, query)
 	vim.api.nvim_set_hl(0, "DiffAdd_", { fg = fg, bg = addBg })
 	vim.api.nvim_set_hl(0, "DiffDelete_", { fg = fg, bg = delBg })
 
-	-- search query
+	-- search for the query
 	fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 	vim.fn.search(query) -- move cursor
 	vim.fn.execute("/" .. query, "silent!") -- insert query so only `n` needs to be pressed
@@ -121,7 +111,11 @@ function M.searchFileHistory()
 			prompt = "󰊢 Select Commit",
 			format_item = commitFormatter,
 			kind = "commit_selection",
-		}, function(selectedCommit) showDiff(selectedCommit, filename, query) end)
+		}, function(selectedCommit)
+			if not selectedCommit then return end -- aborted selection
+			local hash = vim.split(selectedCommit, "\t")[1]
+			showDiff(hash, filename, query)
+		end)
 	end)
 end
 
