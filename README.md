@@ -14,17 +14,22 @@ Lightweight and nimble git client for nvim.
 *Informative Notifications with Highlighting when using `nvim-notify`*
 
 ## Table of Contents
+
 <!-- toc -->
 
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Example Workflows](#example-workflows)
+	* [Smart-Commit](#smart-commit)
+	* [Quick Amends](#quick-amends)
+	* [GitHub Interaction](#github-interaction)
+	* [Push](#push)
+	* [Search File History ("git pickaxe")](#search-file-history-git-pickaxe)
 - [Configuration](#configuration)
 - [Non-Goals](#non-goals)
 - [Credits](#credits)
 
-<!--tocstop -->
+<!-- tocstop -->
 
 ## Features
 - Smart-Commit: Open a popup to enter a commit message. If there are no staged changed, stages all changes before doing so (`git add -A`).
@@ -34,6 +39,7 @@ Lightweight and nimble git client for nvim.
 - Quick amends.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
+- Search the history of the current file ("git pickaxe").
 
 ## Installation
 
@@ -61,60 +67,71 @@ Optionally, install the Treesitter parser for git commits for some syntax highli
 
 ## Usage
 
+### Smart-Commit
+- Open a commit popup. If there are no staged changes, stage all changes (`git add -A`) before the commit.
+- Right now, only supports the commit subject line. Optionally runs `git push` afterward or opens references issues in the browser.
+- 💡 To use vim commands in the input field, set dressing.nvim's `insert_only` to `false`.
+
 ```lua
--- Open a commit popup. If there are no staged changes, stage all changes (`git add -A`) before the commit. 
--- Right now, only supports the commit subject line. Optionally runs `git push` afterwards or opens references issues in the browser.
--- 💡 Use gitsigns.nvim's `add_hunk` command to conveniently stage changes.
--- 💡 To use vim commands in the input field, set dressing.nvim's `insert_only` to `false`.
-require("tinygit").smartCommit({ push = false, openReferencedIssue = false }) -- options default to `false`
-
--- Quick amends. 
--- `amendOnlyMsg` just opens the commit popup to change the last commit message, and does not stage any changes.
--- `amendNoEdit` keeps the last commit message; if there are no staged changes, it will stage all changes (`git add -A`).
--- Optionally runs `git push --force` afterwards (only recommended for single-person repos).
-require("tinygit").amendOnlyMsg({ forcePush = false }) -- options default to `false`
-require("tinygit").amendNoEdit({ forcePush = false }) -- options default to `false`
-
--- Search issues & PRs. Requires `curl`.
--- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
--- state: all|closed|open (default: all)
--- type: all|issue|pr (default: all)
-require("tinygit").issuesAndPrs({ type = "all", state = "all" }) 
-
--- Open at GitHub and copy the URL to the system clipboard.
--- Normal mode: the current file, visual mode: the current selection.
-require("tinygit").githubUrl("file") -- file|repo (default: file)
-
--- `git push`
-require("tinygit").push({ pullBefore = false, force = false }) -- options default to `false`
-
--- Search the git history of the current file for a (case-insensitive) term ("git pickaxe")
--- Select from the matching commits to open a diff popup.
-require("tinygit").searchFileHistory()
+-- options default to `false`
+require("tinygit").smartCommit { push = false, openReferencedIssue = false }
 ```
 
-## Example Workflows
+**Example Workflow**
 Assuming these keybindings:
 
 ```lua
 vim.keymap.set("n", "ga", "<cmd>Gitsigns add_hunk<CR>") -- gitsigns.nvim
 vim.keymap.set("n", "gc", function() require("tinygit").smartCommit() end)
-vim.keymap.set("n", "gm", function() require("tinygit").amendNoEdit() end)
 ```
 
 1. Stage some hunks (changes) via `ga`.
 2. Press `gc` to enter a commit message.
-3. You have forgotten to add a comment. You add the comment.
-4. Stage & amend the added comment in one go via `gm`.
 
----
-
-You can also stage all changes, commit, and push them in one go via:
+### Quick Amends
+- `amendOnlyMsg` just opens the commit popup to change the last commit message, and does not stage any changes.
+- `amendNoEdit` keeps the last commit message; if there are no staged changes, it stages all changes (`git add -A`).
+- Optionally runs `git push --force` afterward (only recommended for single-person repos).
 
 ```lua
-vim.keymap.set("n", "gC", function() require("tinygit").smartCommit({ push = true }) end)
+-- options default to `false`
+require("tinygit").amendOnlyMsg { forcePush = false }
+require("tinygit").amendNoEdit { forcePush = false }
 ```
 
+### GitHub Interaction
+- Search issues & PRs. Requires `curl`.
+- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
+
+```lua
+-- state: all|closed|open (default: all)
+-- type: all|issue|pr (default: all)
+require("tinygit").issuesAndPrs { type = "all", state = "all" }
+```
+
+- Open at GitHub and copy the URL to the system clipboard.
+- Normal mode: the current file; visual mode: the current selection.
+
+```lua
+-- file|repo (default: file)
+require("tinygit").githubUrl("file")
+```
+
+### Push
+
+```lua
+-- options default to `false`
+require("tinygit").push { pullBefore = false, force = false }
+```
+
+### Search File History ("git pickaxe")
+- Search the git history of the current file for a term ("git pickaxe")
+- The search is case-insensitive and supports regex.
+- Select from the matching commits to open a diff popup.
+
+```lua
+require("tinygit").searchFileHistory()
+```
 
 ## Configuration
 The `setup` call is optional. These are the default settings:
@@ -126,7 +143,7 @@ local defaultConfig = {
 		mediumLen = 50,
 		maxLen = 72,
 
-		-- When conforming the commit message popup with an empty message, fill 
+		-- When conforming the commit message popup with an empty message, fill
 		-- in this message. `false` to disallow empty commit messages.
 		emptyFillIn = "chore", ---@type string|false
 
@@ -161,13 +178,13 @@ local defaultConfig = {
 
 <!-- vale Google.FirstPerson = NO -->
 ## Credits
-__About Me__  
+**About Me**  
 In my day job, I am a sociologist studying the social mechanisms underlying the digital economy. For my PhD project, I investigate the governance of the app economy and how software ecosystems manage the tension between innovation and compatibility. If you are interested in this subject, feel free to get in touch.
 
-__Blog__  
+**Blog**  
 I also occasionally blog about vim: [Nano Tips for Vim](https://nanotipsforvim.prose.sh)
 
-__Profiles__  
+**Profiles**  
 - [reddit](https://www.reddit.com/user/pseudometapseudo)
 - [Discord](https://discordapp.com/users/462774483044794368/)
 - [Academic Website](https://chris-grieser.de/)
@@ -176,6 +193,6 @@ __Profiles__
 - [ResearchGate](https://www.researchgate.net/profile/Christopher-Grieser)
 - [LinkedIn](https://www.linkedin.com/in/christopher-grieser-ba693b17a/)
 
-__Buy Me a Coffee__  
+**Buy Me a Coffee**  
 <br>
 <a href='https://ko-fi.com/Y8Y86SQ91' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
