@@ -2,7 +2,8 @@ local M = {}
 local u = require("tinygit.utils")
 --------------------------------------------------------------------------------
 
----@deprecated
+---@deprecated 
+---WARN subject to be removed without change
 ---TODO make PR to gitsigns.nvim instead?
 function M.stageHunkWithInfo()
 	-- stage

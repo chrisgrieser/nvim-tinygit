@@ -19,11 +19,6 @@ function M.smartCommit(userOpts) require("tinygit.commit-and-amend").smartCommit
 
 --------------------------------------------------------------------------------
 
---- INFO undocumented right now
-function M.stageHunkWithInfo() require("tinygit.staging").stageHunkWithInfo() end
-
---------------------------------------------------------------------------------
-
 ---opens current buffer in the browser & copies the link to the clipboard
 ---normal mode: link to file
 ---visual mode: link to selected lines
