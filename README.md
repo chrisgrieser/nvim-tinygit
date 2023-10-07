@@ -113,7 +113,6 @@ vim.keymap.set("n", "gC", function() require("tinygit").smartCommit({ push = tru
 
 
 ## Configuration
-
 The `setup` call is optional. These are the default settings:
 
 ```lua
