@@ -32,9 +32,12 @@ function M.issuesAndPrs(userOpts) require("tinygit.github").issuesAndPrs(userOpt
 
 --------------------------------------------------------------------------------
 
--- pull before to avoid conflicts
 ---@param userOpts? { pullBefore?: boolean, force?: boolean }
 function M.push(userOpts) require("tinygit.push").push(userOpts or {}) end
+
+--------------------------------------------------------------------------------
+
+function M.searchFileHistory() require("tinygit.pickaxe").searchFileHistory() end
 
 --------------------------------------------------------------------------------
 return M

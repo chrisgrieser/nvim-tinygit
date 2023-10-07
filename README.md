@@ -43,7 +43,7 @@ Lightweight and nimble git client for nvim.
 	"chrisgrieser/nvim-tinygit",
 	dependencies = {
 		"stevearc/dressing.nvim",
-		"rcarriga/nvim-notify", -- optional, for nice notifications
+		"rcarriga/nvim-notify", -- recommended for better notifications
 	},
 },
 
@@ -52,7 +52,7 @@ use {
 	"chrisgrieser/nvim-tinygit",
 	requires = {
 		"stevearc/dressing.nvim",
-		"rcarriga/nvim-notify", -- optional, for nice notifications
+		"rcarriga/nvim-notify", -- recommended for nice notifications
 	},
 }
 ```
@@ -87,6 +87,10 @@ require("tinygit").githubUrl("file") -- file|repo (default: file)
 
 -- `git push`
 require("tinygit").push({ pullBefore = false, force = false }) -- options default to `false`
+
+-- Search the git history of the current file for a (case-insensitive) term ("git pickaxe")
+-- Select from the matching commits to open a diff popup.
+require("tinygit").searchFileHistory()
 ```
 
 ## Example Workflows
