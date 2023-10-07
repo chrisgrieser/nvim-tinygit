@@ -29,8 +29,8 @@ local M = {}
 local defaultConfig = {
 	commitMsg = {
 		-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
-		maxLen = 72,
 		mediumLen = 50,
+		maxLen = 72,
 
 		-- When conforming the commit message popup with an empty message, fill in
 		-- this message. Set to `false` to disallow empty commit messages.
@@ -56,16 +56,13 @@ local defaultConfig = {
 	},
 }
 
-
 --------------------------------------------------------------------------------
 
 -- in case user does not call `setup`
 M.config = defaultConfig
 
 ---@param userConfig pluginConfig
-function M.setupPlugin(userConfig)
-	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig)
-end
+function M.setupPlugin(userConfig) M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig) end
 
 --------------------------------------------------------------------------------
 return M

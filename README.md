@@ -120,8 +120,8 @@ The `setup` call is optional. These are the default settings:
 local defaultConfig = {
 	commitMsg = {
 		-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
-		maxLen = 72,
 		mediumLen = 50,
+		maxLen = 72,
 
 		-- When conforming the commit message popup with an empty message, fill 
 		-- in this message. `false` to disallow empty commit messages.

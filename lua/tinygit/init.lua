@@ -31,7 +31,7 @@ function M.stageHunkWithInfo() require("tinygit.staging").stageHunkWithInfo() en
 function M.githubUrl(justRepo) require("tinygit.github").githubUrl(justRepo) end
 
 ---Choose a GitHub issue/PR from the current repo to open in the browser.
----CAVEAT Due to GitHub API liminations, only the last 100 issues are shown.
+---CAVEAT Due to GitHub API limitations, only the last 100 issues are shown.
 ---@param userOpts? { state?: string, type?: string }
 function M.issuesAndPrs(userOpts) require("tinygit.github").issuesAndPrs(userOpts or {}) end
 
