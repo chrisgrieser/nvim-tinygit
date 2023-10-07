@@ -156,6 +156,7 @@ local defaultConfig = {
 - Add features available in [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim). `tinygit` is intended to complement `gitsigns.nvim` with some simple commands, not replace it.
 - UI Customization. Configure [dressing.nvim](https://github.com/stevearc/dressing.nvim) for that.
 
+<!-- vale Google.FirstPerson = NO -->
 ## Credits
 __About Me__  
 In my day job, I am a sociologist studying the social mechanisms underlying the digital economy. For my PhD project, I investigate the governance of the app economy and how software ecosystems manage the tension between innovation and compatibility. If you are interested in this subject, feel free to get in touch.
