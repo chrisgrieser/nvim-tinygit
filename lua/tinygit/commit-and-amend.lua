@@ -5,17 +5,12 @@ local config = require("tinygit.config").config
 local push = require("tinygit.push").push
 --------------------------------------------------------------------------------
 
--- if there are no staged changes, will add all changes (`git add -A`)
--- if not, indicates the already staged changes
----@return boolean|nil stagedAllChanges nil if staging unsuccessful
-local function stageAllIfNoChanges()
+---@nodiscard
+---@return boolean
+local function hasStagedChanges()
 	fn.system { "git", "diff", "--staged", "--quiet" }
-	local hasStagedChanges = vim.v.shell_error ~= 0
-	if hasStagedChanges then return false end
-
-	local stderr = fn.system { "git", "add", "-A" }
-	if u.nonZeroExit(stderr) then return nil end
-	return true
+	local hasStaged = vim.v.shell_error == 0
+	return hasStaged
 end
 
 ---process a commit message: length, not empty, adheres to conventional commits
@@ -159,7 +154,12 @@ function M.smartCommit(opts, prefillMsg)
 	if not prefillMsg then prefillMsg = "" end
 
 	setGitCommitAppearance()
-	vim.ui.input({ prompt = "󰊢 Commit Message", default = prefillMsg }, function(commitMsg)
+	local stageAllChanges = hasStagedChanges()
+	local title = "Commit"
+	if stageAllChanges then title = "Stage All · " .. title end
+	if opts.push then title = title .. " · Push" end
+
+	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
@@ -167,14 +167,16 @@ function M.smartCommit(opts, prefillMsg)
 			return
 		end
 
-		local stagedAllChanges = stageAllIfNoChanges()
-		if stagedAllChanges == nil then return end
+		if stageAllChanges then
+			local stderr = fn.system { "git", "add", "-A" }
+			if u.nonZeroExit(stderr) then return end
+		end
 
 		local stderr = fn.system { "git", "commit", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
 		local extra = opts.push and "Pushing…" or nil
-		commitNotification("Smart-Commit", stagedAllChanges, processedMsg, extra)
+		commitNotification("Smart-Commit", stageAllChanges, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if opts.openReferencedIssue and issueReferenced then
@@ -192,15 +194,18 @@ function M.amendNoEdit(opts)
 	vim.cmd("silent update")
 	if u.notInGitRepo() then return end
 
-	local stagedAllChanges = stageAllIfNoChanges()
-	if stagedAllChanges == nil then return end
+	local stageAllChanges = hasStagedChanges()
+	if stageAllChanges then
+		local stderr = fn.system { "git", "add", "-A" }
+		if u.nonZeroExit(stderr) then return end
+	end
 
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if u.nonZeroExit(stderr) then return end
 
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
 	local extra = opts.forcePush and "Force Pushing…" or nil
-	commitNotification("Amend-No-Edit", stagedAllChanges, lastCommitMsg, extra)
+	commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, extra)
 
 	if opts.forcePush then push { force = true } end
 end
