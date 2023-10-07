@@ -36,7 +36,6 @@ local function processCommitMsg(commitMsg)
 	end
 
 	if conf.enforceConvCommits.enabled then
-		-- stylua: ignore
 		local firstWord = commitMsg:match("^%w+")
 		if not vim.tbl_contains(conf.enforceConvCommits.keywords, firstWord) then
 			u.notify("Not using a Conventional Commits keyword.", "warn")
@@ -144,7 +143,7 @@ end
 
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
----@param prefillMsg? string
+---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
 ---@param opts? { push?: boolean, openReferencedIssue?: boolean }
 function M.smartCommit(opts, prefillMsg)
 	if u.notInGitRepo() then return end
@@ -211,7 +210,7 @@ function M.amendNoEdit(opts)
 end
 
 ---@param opts? { forcePush?: boolean }
----@param prefillMsg? string
+---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
 function M.amendOnlyMsg(opts, prefillMsg)
 	if not opts then opts = {} end
 	vim.cmd("silent update")
