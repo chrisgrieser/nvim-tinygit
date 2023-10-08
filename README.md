@@ -49,7 +49,7 @@ Lightweight and nimble git client for nvim.
 	"chrisgrieser/nvim-tinygit",
 	dependencies = {
 		"stevearc/dressing.nvim",
-		"rcarriga/nvim-notify", -- recommended for better notifications
+		"rcarriga/nvim-notify", -- optional, but recommended
 	},
 },
 
@@ -58,7 +58,7 @@ use {
 	"chrisgrieser/nvim-tinygit",
 	requires = {
 		"stevearc/dressing.nvim",
-		"rcarriga/nvim-notify", -- recommended for nice notifications
+		"rcarriga/nvim-notify", -- optional, but recommended
 	},
 }
 ```
@@ -83,10 +83,13 @@ Assuming these keybindings:
 ```lua
 vim.keymap.set("n", "ga", "<cmd>Gitsigns add_hunk<CR>") -- gitsigns.nvim
 vim.keymap.set("n", "gc", function() require("tinygit").smartCommit() end)
+vim.keymap.set("n", "gp", function() require("tinygit").push() end)
 ```
 
 1. Stage some hunks (changes) via `ga`.
-2. Press `gc` to enter a commit message.
+2. Use `gc` to enter a commit message.
+3. Repeat 1 and 2.
+4. When done, `gp` to push the commits.
 
 ### Quick Amends
 - `amendOnlyMsg` just opens the commit popup to change the last commit message, and does not stage any changes.
@@ -101,7 +104,7 @@ require("tinygit").amendNoEdit { forcePush = false }
 
 ### GitHub Interaction
 - Search issues & PRs. Requires `curl`.
-- (Uses telescope, if you configure dressing.nvim to use telescope as selector.)
+- The appearance of the selector is controlled by `dressing.nvim`. (You can configure `dressing` to use `telescope`.)
 
 ```lua
 -- state: all|closed|open (default: all)
@@ -109,8 +112,9 @@ require("tinygit").amendNoEdit { forcePush = false }
 require("tinygit").issuesAndPrs { type = "all", state = "all" }
 ```
 
-- Open at GitHub and copy the URL to the system clipboard.
-- Normal mode: the current file; visual mode: the current selection.
+- Open the current file at GitHub in the browser and copy the URL to the system clipboard.
+- Normal mode: open the current file or repo.
+- Visual mode: open the current selection.
 
 ```lua
 -- file|repo (default: file)
@@ -125,9 +129,11 @@ require("tinygit").push { pullBefore = false, force = false }
 ```
 
 ### Search File History ("git pickaxe")
-- Search the git history of the current file for a term ("git pickaxe")
+- Search the git history of the current file for a term ("git pickaxe").
 - The search is case-insensitive and supports regex.
 - Select from the matching commits to open a diff popup.
+- Use `n`/`N` in the popup to go to the next/previous occurrence of the query.
+- Use `<Tab>`/`<S-Tab>` to cycle through the commits.
 
 ```lua
 require("tinygit").searchFileHistory()
