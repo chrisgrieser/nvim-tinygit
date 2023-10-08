@@ -15,7 +15,7 @@ local currentPickaxe = { hashList = {}, filename = "", query = "" }
 --------------------------------------------------------------------------------
 
 ---@param commitLine string
----@return string formatted as: "commitMsg (date)"
+---@return string formatted text
 local function commitFormatter(commitLine)
 	local _, commitMsg, date, author = unpack(vim.split(commitLine, "\t"))
 	return table.concat({ commitMsg, date, author }, " · ")
