@@ -62,8 +62,10 @@ local function showDiff(commitIdx)
 	a.nvim_win_set_option(winnr, "signcolumn", "no")
 
 	-- keymaps: closing
-	vim.keymap.set("n", "q", vim.cmd.close, { buffer = bufnr, nowait = true })
-	vim.keymap.set("n", "<Esc>", vim.cmd.close, { buffer = bufnr, nowait = true })
+	vim.keymap.set("n", "q", function()
+		vim.api.nvim_win_close(winnr, true)
+		a.nvim_buf_delete(bufnr, { force = true })
+	end, { buffer = bufnr, nowait = true })
 
 	-- keymaps: info message as extmark
 	local infotext = "n/N: next/prev occurrence  ·  <Tab>/<S-Tab>: next/prev commit  ·  q: close"
