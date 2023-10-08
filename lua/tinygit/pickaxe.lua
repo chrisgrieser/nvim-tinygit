@@ -36,21 +36,27 @@ local function showDiff(hash, filename, query)
 	if u.nonZeroExit(diff) then return end
 
 	-- open new win with diff
-	local bufnr = vim.api.nvim_create_buf(true, true)
-	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
-	vim.api.nvim_buf_set_name(bufnr, hash .. " " .. filename)
-	vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-	vim.api.nvim_buf_set_option(bufnr, "list", false)
-	vim.api.nvim_open_win(bufnr, true, {
-		width = vim.api.nvim_win_get_width(0),
-		height = vim.api.nvim_win_get_height(0) - 2, -- -2 to not obfuscate statusline
+	local height = 0.8
+	local width = 0.8
+	local bufnr = a.nvim_create_buf(true, true)
+	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
+	a.nvim_buf_set_name(bufnr, hash .. " " .. filename)
+	a.nvim_buf_set_option(bufnr, "modifiable", false)
+	local winnr = a.nvim_open_win(bufnr, true, {
 		relative = "win",
-		row = 0,
-		col = 0,
+		-- center of current win
+		width = math.floor(width * a.nvim_win_get_width(0)),
+		height = math.floor(height * a.nvim_win_get_height(0)),
+		row = math.floor((1 - height) * a.nvim_win_get_height(0) / 2),
+		col = math.floor((1 - width) * a.nvim_win_get_width(0) / 2),
 		title = filename .. " @ " .. hash,
 		title_pos = "center",
 		border = "single",
+		style = "minimal",
+		zindex = 1, -- below nvim-notify floats
 	})
+	a.nvim_win_set_option(winnr, "list", false)
+	a.nvim_win_set_option(winnr, "signcolumn", "no")
 
 	-- keymaps
 	vim.keymap.set("n", "q", vim.cmd.close, { buffer = bufnr, nowait = true })
