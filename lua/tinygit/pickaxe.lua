@@ -86,18 +86,23 @@ function M.searchFileHistory()
 
 	local filename = fn.expand("%")
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
-		if not query then return end
-		local response = fn.system {
-			"git",
-			"log", -- DOCS https://git-scm.com/docs/git-log
-			"--format=%h\t%s\t%cr\t%cn", -- hash, subject, date, author
-			"--pickaxe-regex",
-			"--regexp-ignore-case",
-			("-S%s"):format(query),
-			"--",
-			filename,
-		}
-		response = vim.trim(response)
+		if not query then return end -- aborted
+		local response
+		if query == "" then
+			-- empty query
+			response = fn.system { "git", "log", "--format=%h\t%s\t%cr\t%cn", "--", filename }
+		else
+			response = fn.system {
+				"git",
+				"log",
+				"--format=%h\t%s\t%cr\t%cn", -- format: hash, subject, date, author
+				"--pickaxe-regex",
+				"--regexp-ignore-case",
+				("-S%s"):format(query),
+				"--",
+				filename,
+			}
+		end
 
 		-- guards
 		if u.nonZeroExit(response) then return end
