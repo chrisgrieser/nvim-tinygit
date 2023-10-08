@@ -30,10 +30,13 @@ end
 ---@param query string
 local function showDiff(hash, filename, query)
 	-- get diff
-	local diff = fn.system { "git", "show", hash, "--", filename }
-	local diffLines = vim.split(diff, "\n")
-	table.remove(diffLines, 1) -- remove header, since shown in window title already
+	local diff = fn.system { "git", "show", hash, "--format=", "--", filename }
 	if u.nonZeroExit(diff) then return end
+	local diffLines = vim.split(diff, "\n")
+	for _ = 1, 4, 1 do -- remove first four lines (irrelevant diff header)
+		table.remove(diffLines, 1)
+		table.insert(diffLines, 1, "") -- empty line for extmark
+	end
 
 	-- open new win with diff
 	local height = 0.8
