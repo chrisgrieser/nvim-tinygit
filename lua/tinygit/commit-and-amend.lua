@@ -72,7 +72,7 @@ local function setGitCommitAppearance()
 			fn.matchadd("issueNumber", [[#\d\+]])
 			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
 
-			fn.matchadd("mdInlineCode", [[`\zs.\+\ze`]])
+			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
 			vim.api.nvim_set_hl(winNs, "mdInlineCode", { link = "@text.literal" })
 
 			-- colorcolumn as extra indicators of overLength
