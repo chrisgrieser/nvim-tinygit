@@ -32,10 +32,11 @@ local function showDiff(commitIdx)
 	local diff = fn.system { "git", "show", hash, "--format=", "--", filename }
 	if u.nonZeroExit(diff) then return end
 	local diffLines = vim.split(diff, "\n")
-	for _ = 1, 4, 1 do -- remove first four lines (irrelevant diff header)
+	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
 		table.remove(diffLines, 1)
-		table.insert(diffLines, 1, "") -- empty line for extmark
 	end
+	table.insert(diffLines, 1, "") -- empty line for extmark
+	table.insert(diffLines, 1, "") -- empty line for extmark
 
 	-- open new win with diff
 	local height = 0.8
@@ -63,6 +64,13 @@ local function showDiff(commitIdx)
 	-- keymaps: closing
 	vim.keymap.set("n", "q", vim.cmd.close, { buffer = bufnr, nowait = true })
 	vim.keymap.set("n", "<Esc>", vim.cmd.close, { buffer = bufnr, nowait = true })
+
+	-- keymaps: info message as extmark
+	local infotext = "n/N: next/prev occurrence  ·  <Tab>/<S-Tab>: next/prev commit  ·  q: close"
+	vim.api.nvim_buf_set_extmark(bufnr, 1, 0, 0, {
+		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
+		virt_text_pos = "overlay",
+	})
 
 	-- keymaps: next/prev commit
 	vim.keymap.set("n", "<Tab>", function()
@@ -96,9 +104,11 @@ local function showDiff(commitIdx)
 	fn.matchadd("PreProc", "^@@.*")
 
 	-- search for the query
-	fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
-	vim.fn.search(query) -- move cursor
-	vim.fn.execute("/" .. query, "silent!") -- insert query so only `n` needs to be pressed
+	if query ~= "" then
+		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
+		vim.fn.search(query) -- move cursor
+		vim.fn.execute("/" .. query, "silent!") -- insert query so only `n` needs to be pressed
+	end
 end
 
 --------------------------------------------------------------------------------
