@@ -116,7 +116,7 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 				-- has cc keyword, but not scope
 				ccKeywordStart, _, ccKeywordEnd = commitMsg:find("^%a+():")
 			end
-			if ccKeywordStart then hl(buf, ns, "Keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd) end
+			if ccKeywordStart then hl(buf, ns, "@keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd) end
 			if ccScopeEnd then
 				local ccScopeStart = ccKeywordEnd
 				hl(buf, ns, "@parameter", commitMsgLine, ccScopeStart + 1, ccScopeEnd - 1)
@@ -130,7 +130,7 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 			local issueNumberStart, issueNumberEnd = commitMsg:find("#%d+")
 			if issueNumberStart then
 				-- stylua: ignore
-				hl(buf, ns, "Number", commitMsgLine, issueNumberStart, issueNumberEnd + 1)
+				hl(buf, ns, "@number", commitMsgLine, issueNumberStart, issueNumberEnd + 1)
 			end
 
 			if stagedAllChanges then hl(buf, ns, "Comment", 1, 0, -1) end
