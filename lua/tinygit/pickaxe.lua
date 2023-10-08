@@ -1,34 +1,33 @@
 local M = {}
 local fn = vim.fn
 local u = require("tinygit.utils")
+local a = vim.api
+--------------------------------------------------------------------------------
+
+---@class currentPickaxe saves metadata for the current pickaxe operation
+---@field hashList string[] list of all hashes where the string was found
+---@field filename string
+---@field query string search query pickaxed for
+
+---@type currentPickaxe
+local currentPickaxe = { hashList = {}, filename = "", query = "" }
+
 --------------------------------------------------------------------------------
 
 ---@param commitLine string
 ---@return string formatted as: "commitMsg (date)"
 local function commitFormatter(commitLine)
 	local _, commitMsg, date, author = unpack(vim.split(commitLine, "\t"))
-	return ("%s\t%s\t"):format(commitMsg, date, author)
+	return table.concat({ commitMsg, date, author }, " · ")
 end
 
----https://www.reddit.com/r/neovim/comments/oxddk9/comment/h7maerh/
----@param name string name of highlight group
----@param key "fg"|"bg"
----@nodiscard
----@return string|nil the value, or nil if hlgroup or key is not available
-local function getHighlightValue(name, key)
-	local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name })
-	if not ok then return end
-	local value = hl[key]
-	if not value then return end
-	return string.format("#%06x", value)
-end
+---@param commitIdx number index of the selected commit in the list of commits
+local function showDiff(commitIdx)
+	local hashList = currentPickaxe.hashList
+	local hash = hashList[commitIdx]
+	local filename = currentPickaxe.filename
+	local query = currentPickaxe.query
 
---------------------------------------------------------------------------------
-
----@param hash string
----@param filename string
----@param query string
-local function showDiff(hash, filename, query)
 	-- get diff
 	local diff = fn.system { "git", "show", hash, "--format=", "--", filename }
 	if u.nonZeroExit(diff) then return end
@@ -61,13 +60,33 @@ local function showDiff(hash, filename, query)
 	a.nvim_win_set_option(winnr, "list", false)
 	a.nvim_win_set_option(winnr, "signcolumn", "no")
 
-	-- keymaps
+	-- keymaps: closing
 	vim.keymap.set("n", "q", vim.cmd.close, { buffer = bufnr, nowait = true })
 	vim.keymap.set("n", "<Esc>", vim.cmd.close, { buffer = bufnr, nowait = true })
 
+	-- keymaps: next/prev commit
+	vim.keymap.set("n", "<Tab>", function()
+		if commitIdx == #hashList then
+			u.notify("Already on last commit", "warn")
+			return
+		end
+		a.nvim_win_close(winnr, true)
+		a.nvim_buf_delete(bufnr, { force = true })
+		showDiff(commitIdx + 1)
+	end, { buffer = bufnr, nowait = true })
+	vim.keymap.set("n", "<S-Tab>", function()
+		if commitIdx == 1 then
+			u.notify("Already on first commit", "warn")
+			return
+		end
+		a.nvim_win_close(winnr, true)
+		a.nvim_buf_delete(bufnr, { force = true })
+		showDiff(commitIdx - 1)
+	end, { buffer = bufnr, nowait = true })
+
 	-- filetype-specific highlighting
 	local ft = vim.filetype.match { filename = filename }
-	vim.api.nvim_buf_set_option(bufnr, "filetype", ft)
+	a.nvim_buf_set_option(bufnr, "filetype", ft)
 
 	-- diff-highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
@@ -76,19 +95,13 @@ local function showDiff(hash, filename, query)
 	fn.matchadd("DiffDelete", "^-.*")
 	fn.matchadd("PreProc", "^@@.*")
 
-	local addBg = getHighlightValue("DiffAdd", "bg")
-	local delBg = getHighlightValue("DiffDelete", "bg")
-	local fg = getHighlightValue("Comment", "fg")
-	fn.matchadd("DiffAdd_", "^+++.*")
-	fn.matchadd("DiffDelete_", "^---.*")
-	vim.api.nvim_set_hl(0, "DiffAdd_", { fg = fg, bg = addBg })
-	vim.api.nvim_set_hl(0, "DiffDelete_", { fg = fg, bg = delBg })
-
 	-- search for the query
 	fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 	vim.fn.search(query) -- move cursor
 	vim.fn.execute("/" .. query, "silent!") -- insert query so only `n` needs to be pressed
 end
+
+--------------------------------------------------------------------------------
 
 function M.searchFileHistory()
 	if u.notInGitRepo() then return end
@@ -115,20 +128,32 @@ function M.searchFileHistory()
 
 		-- guards
 		if u.nonZeroExit(response) then return end
+		response = vim.trim(response)
 		if response == "" then
 			u.notify(("No commits found for '%s'"):format(query))
 			return
 		end
 
+		-- data
 		local commits = vim.split(response, "\n")
+		local hashList = vim.tbl_map(function(commitLine)
+			local hash = vim.split(commitLine, "\t")[1]
+			return hash
+		end, commits)
+		currentPickaxe = {
+			hashList = hashList,
+			query = query,
+			filename = filename,
+		}
+
+		-- select
 		vim.ui.select(commits, {
 			prompt = "󰊢 Select Commit",
 			format_item = commitFormatter,
 			kind = "commit_selection",
-		}, function(selectedCommit)
-			if not selectedCommit then return end -- aborted selection
-			local hash = vim.split(selectedCommit, "\t")[1]
-			showDiff(hash, filename, query)
+		}, function(_, commitIdx)
+			if not commitIdx then return end -- aborted selection
+			showDiff(commitIdx)
 		end)
 	end)
 end
