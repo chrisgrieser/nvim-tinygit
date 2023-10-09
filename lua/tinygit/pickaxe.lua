@@ -142,7 +142,7 @@ function M.searchFileHistory()
 		if u.nonZeroExit(response) then return end
 		response = vim.trim(response)
 		if response == "" then
-			u.notify(("No commits found for '%s'"):format(query))
+			u.notify(('No commits found where "%s" was changed.'):format(query))
 			return
 		end
 
