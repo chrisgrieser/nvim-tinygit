@@ -123,7 +123,6 @@ function M.searchFileHistory()
 		if not query then return end -- aborted
 		local response
 		if query == "" then
-			-- empty query
 			response = fn.system { "git", "log", "--format=%h\t%s\t%cr\t%cn", "--", filename }
 		else
 			response = fn.system {
