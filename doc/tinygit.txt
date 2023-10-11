@@ -21,11 +21,15 @@ Lightweight and nimble git client for nvim.
 
 
 
-_Commit Message Input Field with Syntax Highlighting_
+_Commit Message Input with highlighting_
 
 
 
-_Informative Notifications with Highlighting when using nvim-notify_
+_Informative notifications with highlighting (using nvim-notify)_
+
+
+
+_Search File history (“git pickaxe”) and inspect the commit diffs._
 
 
 TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
