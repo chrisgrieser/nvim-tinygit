@@ -182,7 +182,7 @@ function M.searchFileHistory()
 			return
 		end
 
-		-- data
+		-- save data
 		local commits = vim.split(response, "\n")
 		local hashList = vim.tbl_map(function(commitLine)
 			local hash = vim.split(commitLine, "\t")[1]
@@ -196,7 +196,7 @@ function M.searchFileHistory()
 
 		-- select
 		vim.ui.select(commits, {
-			prompt = "󰊢 Select Commit",
+			prompt = ("󰊢 Commits that changed '%s'"):format(query),
 			format_item = commitFormatter,
 			kind = "tinygit.pickaxe_diff",
 		}, function(_, commitIdx)
