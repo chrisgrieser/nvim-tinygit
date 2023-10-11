@@ -32,11 +32,29 @@ local function showDiff(commitIdx)
 	local diff = fn.system { "git", "show", hash, "--format=", "--", filename }
 	if u.nonZeroExit(diff) then return end
 	local diffLines = vim.split(diff, "\n")
-	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
+	-- remove first four lines (irrelevant diff header)
+	for _ = 1, 4 do 
 		table.remove(diffLines, 1)
 	end
-	table.insert(diffLines, 1, "") -- empty line for extmark
-	table.insert(diffLines, 1, "") -- empty line for extmark
+	-- empty line for extmark, as side effect also shifts line numbers up, which
+	-- then match the zero-based line numbers for nvim_buf_add_highlight
+	table.insert(diffLines, 1, "") 
+
+	-- remove diff signs and remember line numbers
+	local diffAddLines = {}
+	local diffDelLines = {}
+	local diffPreProcLines = {}
+	for i = 1, #diffLines, 1 do
+		local firstChar = diffLines[i]:sub(1, 1)
+		if firstChar == "+" then
+			table.insert(diffAddLines, i)
+		elseif firstChar == "-" then
+			table.insert(diffDelLines, i)
+		elseif firstChar == "@" then
+			table.insert(diffPreProcLines, i)
+		end
+		diffLines[i] = diffLines[i]:sub(2)
+	end
 
 	-- open new win with diff
 	local height = 0.8
@@ -61,11 +79,28 @@ local function showDiff(commitIdx)
 	a.nvim_win_set_option(winnr, "list", false)
 	a.nvim_win_set_option(winnr, "signcolumn", "no")
 
-	-- keymaps: closing
-	vim.keymap.set("n", "q", function()
-		vim.api.nvim_win_close(winnr, true)
-		a.nvim_buf_delete(bufnr, { force = true })
-	end, { buffer = bufnr, nowait = true })
+	-- Highlighting
+	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
+	local ft = vim.filetype.match { filename = filename }
+	a.nvim_buf_set_option(bufnr, "filetype", ft)
+
+	local ns = a.nvim_create_namespace("pickaxe")
+	for _, ln in pairs(diffAddLines) do
+		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
+	end
+	for _, ln in pairs(diffDelLines) do
+		a.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
+	end
+	for _, ln in pairs(diffPreProcLines) do
+		a.nvim_buf_add_highlight(bufnr, ns, "PreProc", ln, 0, -1)
+	end
+
+	-- search for the query
+	if query ~= "" then
+		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
+		vim.fn.search(query) -- move cursor
+		vim.fn.execute("/" .. query, "silent!") -- insert query so only `n` needs to be pressed
+	end
 
 	-- keymaps: info message as extmark
 	local infotext = "n/N: next/prev occurrence  ·  <Tab>/<S-Tab>: next/prev commit  ·  q: close"
@@ -73,6 +108,14 @@ local function showDiff(commitIdx)
 		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
 		virt_text_pos = "overlay",
 	})
+
+	-- keymaps: closing
+	local function close()
+		vim.api.nvim_win_close(winnr, true)
+		a.nvim_buf_delete(bufnr, { force = true })
+	end
+	vim.keymap.set("n", "q", close, { buffer = bufnr, nowait = true })
+	vim.keymap.set("n", "<Esc>", close, { buffer = bufnr, nowait = true })
 
 	-- keymaps: next/prev commit
 	vim.keymap.set("n", "<Tab>", function()
@@ -93,24 +136,6 @@ local function showDiff(commitIdx)
 		a.nvim_buf_delete(bufnr, { force = true })
 		showDiff(commitIdx - 1)
 	end, { buffer = bufnr, nowait = true })
-
-	-- filetype-specific highlighting
-	local ft = vim.filetype.match { filename = filename }
-	a.nvim_buf_set_option(bufnr, "filetype", ft)
-
-	-- diff-highlighting
-	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
-	-- INFO highlights from `matchadd` are restricted to the current window
-	fn.matchadd("DiffAdd", "^+.*")
-	fn.matchadd("DiffDelete", "^-.*")
-	fn.matchadd("PreProc", "^@@.*")
-
-	-- search for the query
-	if query ~= "" then
-		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
-		vim.fn.search(query) -- move cursor
-		vim.fn.execute("/" .. query, "silent!") -- insert query so only `n` needs to be pressed
-	end
 end
 
 --------------------------------------------------------------------------------
