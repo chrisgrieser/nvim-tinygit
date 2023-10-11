@@ -55,32 +55,32 @@ local function setGitCommitAppearance()
 		once = true, -- do not affect other DressingInputs
 		callback = function()
 			local conf = config.commitMsg
-			local winNs = 1
-			vim.api.nvim_win_set_hl_ns(0, winNs)
+			local ns = vim.api.nvim_create_namespace("tinygit_commit_input")
+			vim.api.nvim_win_set_hl_ns(0, ns)
 
 			-- custom highlighting
 			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
-			vim.api.nvim_set_hl(winNs, "overLength", { link = "ErrorMsg" })
+			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
 
 			fn.matchadd(
 				"closeToOverlength",
 				-- \ze = end of match, \zs = start of match
 				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen - 1, conf.maxLen - conf.mediumLen)
 			)
-			vim.api.nvim_set_hl(winNs, "closeToOverlength", { link = "WarningMsg" })
+			vim.api.nvim_set_hl(ns, "closeToOverlength", { link = "WarningMsg" })
 
 			fn.matchadd("issueNumber", [[#\d\+]])
-			vim.api.nvim_set_hl(winNs, "issueNumber", { link = "Number" })
+			vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
 
 			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-			vim.api.nvim_set_hl(winNs, "mdInlineCode", { link = "@text.literal" })
+			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@text.literal" })
 
 			-- colorcolumn as extra indicators of overLength
 			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
 
 			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
-			vim.api.nvim_set_hl(winNs, "Title", { link = "Normal" })
+			vim.api.nvim_set_hl(ns, "Title", { link = "Normal" })
 
 			-- activate styling of statusline plugins
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG")
@@ -105,7 +105,8 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 			-- HACK manually creating gitcommit highlighting, since fn.matchadd does
 			-- not work in a non-focussed window and since setting the filetype to
 			-- "gitcommit" does not work well with nvim-notify
-			local buf, ns = vim.api.nvim_win_get_buf(win), 2
+			local buf = vim.api.nvim_win_get_buf(win)
+			local ns = vim.api.nvim_create_namespace("tinygit_commit_notify")
 			vim.api.nvim_win_set_hl_ns(win, ns)
 			local lastLine = vim.api.nvim_buf_line_count(buf) - 1
 			local hl = vim.api.nvim_buf_add_highlight
