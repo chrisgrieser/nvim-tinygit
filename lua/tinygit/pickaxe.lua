@@ -104,36 +104,35 @@ local function showDiff(commitIdx)
 
 	-- keymaps: info message as extmark
 	local infotext = "n/N: next/prev occurrence  ·  <Tab>/<S-Tab>: next/prev commit  ·  q: close"
-	vim.api.nvim_buf_set_extmark(bufnr, 1, 0, 0, {
+	a.nvim_buf_set_extmark(bufnr, 1, 0, 0, {
 		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
 		virt_text_pos = "overlay",
 	})
 
 	-- keymaps: closing
+	local keymap = vim.keymap.set
 	local function close()
-		vim.api.nvim_win_close(winnr, true)
+		a.nvim_win_close(winnr, true)
 		a.nvim_buf_delete(bufnr, { force = true })
 	end
-	vim.keymap.set("n", "q", close, { buffer = bufnr, nowait = true })
-	vim.keymap.set("n", "<Esc>", close, { buffer = bufnr, nowait = true })
+	keymap("n", "q", close, { buffer = bufnr, nowait = true })
+	keymap("n", "<Esc>", close, { buffer = bufnr, nowait = true })
 
 	-- keymaps: next/prev commit
-	vim.keymap.set("n", "<Tab>", function()
+	keymap("n", "<Tab>", function()
 		if commitIdx == #hashList then
 			u.notify("Already on last commit", "warn")
 			return
 		end
-		a.nvim_win_close(winnr, true)
-		a.nvim_buf_delete(bufnr, { force = true })
+		close()
 		showDiff(commitIdx + 1)
 	end, { buffer = bufnr, nowait = true })
-	vim.keymap.set("n", "<S-Tab>", function()
+	keymap("n", "<S-Tab>", function()
 		if commitIdx == 1 then
 			u.notify("Already on first commit", "warn")
 			return
 		end
-		a.nvim_win_close(winnr, true)
-		a.nvim_buf_delete(bufnr, { force = true })
+		close()
 		showDiff(commitIdx - 1)
 	end, { buffer = bufnr, nowait = true })
 end
