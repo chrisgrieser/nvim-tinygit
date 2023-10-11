@@ -52,7 +52,7 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
 - Quick amends.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
-- Search the history of the current file ("git pickaxe").
+- Search the file history for a string ("git pickaxe"), show results in a diff with filetype syntax highlighting.
 
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
@@ -194,12 +194,16 @@ The `setup` call is optional. These are the default settings:
         },
         asyncOpConfirmationSound = true, -- currently macOS only
         issueIcons = {
-            closedIssue = "🟣",
             openIssue = "🟢",
-            openPR = "🟦",
-            mergedPR = "🟨",
+            closedIssue = "🟣",
+            openPR = "🟩",
+            mergedPR = "🟪",
             closedPR = "🟥",
         },
+        searchFileHistory = {
+            diffPopupWidth = 0.8, -- float, 0 to 1
+            diffPopupHeight = 0.8, -- float, 0 to 1
+        } 
     }
 <
 
