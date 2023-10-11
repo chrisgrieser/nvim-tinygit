@@ -157,8 +157,10 @@ SEARCH FILE HISTORY (“GIT PICKAXE”) ~
 - Search the git history of the current file for a term ("git pickaxe").
 - The search is case-insensitive and supports regex.
 - Select from the matching commits to open a diff popup.
-- Use `n`/`N` in the popup to go to the next/previous occurrence of the query.
-- Use `<Tab>`/`<S-Tab>` to cycle through the commits.
+- Keymaps in the diff popup:
+    - `n`/`N`go to the next/previous occurrence of the query.
+    - `<Tab>`/`<S-Tab>`cycle through the commits.
+    - `yh`yank the commit hash to the system clipboard.
 
 >lua
     require("tinygit").searchFileHistory()
