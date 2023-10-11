@@ -23,6 +23,10 @@ local M = {}
 ---@field enabled boolean
 ---@field keywords string[]
 
+---@class searchFileHistoryConfig 
+---@field diffPopupWidth number
+---@field diffPopupHeight number
+
 --------------------------------------------------------------------------------
 
 ---@type pluginConfig
@@ -54,6 +58,10 @@ local defaultConfig = {
 		mergedPR = "🟪",
 		closedPR = "🟥",
 	},
+	searchFileHistory = {
+		diffPopupWidth = 0.8,
+		diffPopupHeight = 0.8,
+	} 
 }
 
 --------------------------------------------------------------------------------

@@ -2,6 +2,7 @@ local M = {}
 local fn = vim.fn
 local u = require("tinygit.utils")
 local a = vim.api
+local config = require("tinygit.config").config.searchFileHistory
 --------------------------------------------------------------------------------
 
 ---@class currentPickaxe saves metadata for the current pickaxe operation
@@ -62,8 +63,9 @@ local function showDiff(commitIdx)
 	a.nvim_buf_set_option(bufnr, "modifiable", false)
 
 	-- open new win for the buff
-	local height = 0.8
-	local width = 0.8
+	local width = math.min(config.diffPopupWidth, 0.99)
+	local height = math.min(config.diffPopupHeight, 0.99)
+
 	local winnr = a.nvim_open_win(bufnr, true, {
 		relative = "win",
 		-- center of current win

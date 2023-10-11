@@ -39,7 +39,7 @@ Lightweight and nimble git client for nvim.
 - Quick amends.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
-- Search the history of the current file ("git pickaxe").
+- Search the file history for a string ("git pickaxe"), show results in a diff with filetype syntax highlighting.
 
 ## Installation
 
@@ -173,6 +173,10 @@ local defaultConfig = {
 		mergedPR = "🟪",
 		closedPR = "🟥",
 	},
+	searchFileHistory = {
+		diffPopupWidth = 0.8, -- float, 0 to 1
+		diffPopupHeight = 0.8, -- float, 0 to 1
+	} 
 }
 ```
 
