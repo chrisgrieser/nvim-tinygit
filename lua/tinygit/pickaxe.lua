@@ -84,7 +84,7 @@ local function showDiff(commitIdx)
 	local ft = vim.filetype.match { filename = filename }
 	a.nvim_buf_set_option(bufnr, "filetype", ft)
 
-	local ns = a.nvim_create_namespace("pickaxe")
+	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
 	end
@@ -186,7 +186,7 @@ function M.searchFileHistory()
 		vim.ui.select(commits, {
 			prompt = "󰊢 Select Commit",
 			format_item = commitFormatter,
-			kind = "commit_selection",
+			kind = "tinygit.pickaxe_diff",
 		}, function(_, commitIdx)
 			if not commitIdx then return end -- aborted selection
 			showDiff(commitIdx)

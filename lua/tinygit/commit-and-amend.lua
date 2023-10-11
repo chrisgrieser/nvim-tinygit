@@ -55,7 +55,7 @@ local function setGitCommitAppearance()
 		once = true, -- do not affect other DressingInputs
 		callback = function()
 			local conf = config.commitMsg
-			local ns = vim.api.nvim_create_namespace("tinygit_commit_input")
+			local ns = vim.api.nvim_create_namespace("tinygit.commit_input")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
 			-- custom highlighting
@@ -106,7 +106,7 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 			-- not work in a non-focussed window and since setting the filetype to
 			-- "gitcommit" does not work well with nvim-notify
 			local buf = vim.api.nvim_win_get_buf(win)
-			local ns = vim.api.nvim_create_namespace("tinygit_commit_notify")
+			local ns = vim.api.nvim_create_namespace("tinygit.commit_notify")
 			vim.api.nvim_win_set_hl_ns(win, ns)
 			local lastLine = vim.api.nvim_buf_line_count(buf) - 1
 			local hl = vim.api.nvim_buf_add_highlight
