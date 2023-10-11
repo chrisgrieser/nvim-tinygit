@@ -195,8 +195,9 @@ function M.searchFileHistory()
 		}
 
 		-- select
+		local searchMode = query == "" and filename or query
 		vim.ui.select(commits, {
-			prompt = ("󰊢 Commits that changed '%s'"):format(query),
+			prompt = ("󰊢 Commits that changed '%s'"):format(searchMode),
 			format_item = commitFormatter,
 			kind = "tinygit.pickaxe_diff",
 		}, function(_, commitIdx)
