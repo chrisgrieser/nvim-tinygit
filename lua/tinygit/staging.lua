@@ -3,8 +3,6 @@ local u = require("tinygit.utils")
 --------------------------------------------------------------------------------
 
 ---@deprecated 
----WARN subject to be removed without change
----TODO make PR to gitsigns.nvim instead?
 function M.stageHunkWithInfo()
 	-- stage
 	local ok, gitsigns = pcall(require, "gitsigns")
@@ -15,6 +13,7 @@ function M.stageHunkWithInfo()
 	gitsigns.stage_hunk()
 
 	-- HACK defer since stage_hunk is async
+	-- PENDING https://github.com/lewis6991/gitsigns.nvim/issues/906
 	vim.defer_fn(function()
 		-- display total stage info
 		local info = vim.fn.system { "git", "diff", "--staged", "--stat" }
