@@ -80,7 +80,7 @@ local function setGitCommitAppearance()
 
 			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
-			vim.api.nvim_set_hl(ns, "Title", { link = "Normal" })
+			vim.api.nvim_set_hl(ns, "@text.title.gitcommit", { link = "Normal" })
 
 			-- activate styling of statusline plugins
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG")
