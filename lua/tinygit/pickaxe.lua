@@ -92,7 +92,7 @@ local function showDiff(commitIdx)
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
 	end
 	for _, ln in pairs(diffPreProcLines) do
-		local divider = ("─"):rep(80)
+		local divider = ("─"):rep(110)
 		a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
 			virt_text = { { divider, "PreProc" } },
 			virt_text_pos = "overlay",
@@ -107,7 +107,8 @@ local function showDiff(commitIdx)
 	end
 
 	-- keymaps: info message as extmark
-	local infotext = "n/N: next/prev occurrence  ·  <Tab>/<S-Tab>: next/prev commit  ·  q: close      "
+	local infotext =
+		"n/N: next/prev occurrence   <Tab>/<S-Tab>: next/prev commit   q: close   yh: yank hash   "
 	a.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
 		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
 		virt_text_pos = "overlay",
@@ -139,6 +140,12 @@ local function showDiff(commitIdx)
 		close()
 		showDiff(commitIdx - 1)
 	end, { buffer = bufnr, nowait = true })
+
+	-- keymaps: yank hash
+	keymap("n", "yh", function()
+		vim.fn.setreg("+", hash)
+		u.notify("Copied hash: " .. hash)
+	end)
 end
 
 --------------------------------------------------------------------------------
