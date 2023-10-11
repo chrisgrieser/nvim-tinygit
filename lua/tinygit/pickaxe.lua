@@ -27,42 +27,43 @@ local function showDiff(commitIdx)
 	local hash = hashList[commitIdx]
 	local filename = currentPickaxe.filename
 	local query = currentPickaxe.query
+	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 
 	-- get diff
 	local diff = fn.system { "git", "show", hash, "--format=", "--", filename }
 	if u.nonZeroExit(diff) then return end
 	local diffLines = vim.split(diff, "\n")
-	-- remove first four lines (irrelevant diff header)
-	for _ = 1, 4 do 
+	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
 		table.remove(diffLines, 1)
 	end
-	-- empty line for extmark, as side effect also shifts line numbers up, which
-	-- then match the zero-based line numbers for nvim_buf_add_highlight
-	table.insert(diffLines, 1, "") 
+	table.insert(diffLines, 1, "") -- empty line for extmark
 
 	-- remove diff signs and remember line numbers
 	local diffAddLines = {}
 	local diffDelLines = {}
 	local diffPreProcLines = {}
 	for i = 1, #diffLines, 1 do
-		local firstChar = diffLines[i]:sub(1, 1)
-		if firstChar == "+" then
-			table.insert(diffAddLines, i)
-		elseif firstChar == "-" then
-			table.insert(diffDelLines, i)
-		elseif firstChar == "@" then
-			table.insert(diffPreProcLines, i)
+		local line = diffLines[i]
+		if line:find("^%+") then
+			table.insert(diffAddLines, i - 1)
+		elseif line:find("^%-") then
+			table.insert(diffDelLines, i - 1)
+		elseif line:find("^@@") then
+			table.insert(diffPreProcLines, i - 1)
+			diffLines[i] = "" -- removing preproc info, since it breaks ft highlighting
 		end
 		diffLines[i] = diffLines[i]:sub(2)
 	end
 
-	-- open new win with diff
-	local height = 0.8
-	local width = 0.8
+	-- create new buf with diff
 	local bufnr = a.nvim_create_buf(true, true)
 	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. filename)
 	a.nvim_buf_set_option(bufnr, "modifiable", false)
+
+	-- open new win for the buff
+	local height = 0.8
+	local width = 0.8
 	local winnr = a.nvim_open_win(bufnr, true, {
 		relative = "win",
 		-- center of current win
@@ -84,7 +85,6 @@ local function showDiff(commitIdx)
 	local ft = vim.filetype.match { filename = filename }
 	a.nvim_buf_set_option(bufnr, "filetype", ft)
 
-	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
 	end
@@ -92,7 +92,11 @@ local function showDiff(commitIdx)
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
 	end
 	for _, ln in pairs(diffPreProcLines) do
-		a.nvim_buf_add_highlight(bufnr, ns, "PreProc", ln, 0, -1)
+		local divider = ("─"):rep(80)
+		a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
+			virt_text = { { divider, "PreProc" } },
+			virt_text_pos = "overlay",
+		})
 	end
 
 	-- search for the query
@@ -103,8 +107,8 @@ local function showDiff(commitIdx)
 	end
 
 	-- keymaps: info message as extmark
-	local infotext = "n/N: next/prev occurrence  ·  <Tab>/<S-Tab>: next/prev commit  ·  q: close"
-	a.nvim_buf_set_extmark(bufnr, 1, 0, 0, {
+	local infotext = "n/N: next/prev occurrence  ·  <Tab>/<S-Tab>: next/prev commit  ·  q: close      "
+	a.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
 		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
 		virt_text_pos = "overlay",
 	})
