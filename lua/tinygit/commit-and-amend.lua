@@ -65,7 +65,7 @@ local function setGitCommitAppearance()
 			fn.matchadd(
 				"closeToOverlength",
 				-- \ze = end of match, \zs = start of match
-				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen - 1, conf.maxLen - conf.mediumLen)
+				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen, conf.maxLen - conf.mediumLen)
 			)
 			vim.api.nvim_set_hl(ns, "closeToOverlength", { link = "WarningMsg" })
 
