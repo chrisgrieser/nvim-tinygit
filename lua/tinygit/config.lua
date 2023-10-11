@@ -48,10 +48,10 @@ local defaultConfig = {
 	},
 	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {
-		closedIssue = "🟣",
 		openIssue = "🟢",
-		openPR = "🟦",
-		mergedPR = "🟨",
+		closedIssue = "🟣",
+		openPR = "🟩",
+		mergedPR = "🟪",
 		closedPR = "🟥",
 	},
 }
