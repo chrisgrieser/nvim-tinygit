@@ -7,11 +7,15 @@ Lightweight and nimble git client for nvim.
 
 <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase commit message input field" width=65%>
 
-*Commit Message Input Field with Syntax Highlighting*
+*Commit Message Input with highlighting*
 
 <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/123fcfd9-f989-4c10-bd98-32f62ea683c3" alt="showcase commit message notification" width=50%>
 
-*Informative Notifications with Highlighting when using `nvim-notify`*
+*Informative notifications with highlighting (using `nvim-notify`)*
+
+<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb" alt="Pasted image 2023-10-11 at 18 49 40" width=60%>
+
+*Search File history ("git pickaxe") and inspect the commit diffs.*
 
 ## Table of Contents
 
