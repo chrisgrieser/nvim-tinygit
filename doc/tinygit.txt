@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0           Last change: 2023 October 11
+*tinygit.txt*           For NVIM v0.8.0           Last change: 2023 October 12
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -129,13 +129,17 @@ QUICK AMENDS ~
 
 GITHUB INTERACTION ~
 
-- Search issues & PRs. Requires `curl`.
+- Search issues & PRs. (Requires `curl`.)
 - The appearance of the selector is controlled by `dressing.nvim`. (You can configure `dressing` to use `telescope`.)
 
 >lua
     -- state: all|closed|open (default: all)
     -- type: all|issue|pr (default: all)
     require("tinygit").issuesAndPrs { type = "all", state = "all" }
+    
+    -- alternative: if the word under the cursor is of the form `#123`, 
+    -- just open that issue/PR
+    require("tinygit").openIssueUnderCursor()
 <
 
 - Open the current file at GitHub in the browser and copy the URL to the system clipboard.
