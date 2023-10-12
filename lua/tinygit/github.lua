@@ -115,5 +115,23 @@ function M.issuesAndPrs(userOpts)
 	end)
 end
 
+function M.openIssueUnderCursor()
+	-- ensure `#` is part of cword
+	local prevKeywordSetting = vim.opt_local.iskeyword:get()
+	vim.opt_local.iskeyword:append("#")
+
+	local cword = vim.fn.expand("<cword>")
+	if not cword:match("^#%d+$") then
+		u.notify("Word under cursor is not an issue id of the form `#123`", "warn")
+		return
+	end
+
+	local issue = cword:sub(2) -- remove the `#`
+	local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issue)
+	u.openUrl(url)
+
+	vim.opt_local.iskeyword = prevKeywordSetting
+end
+
 --------------------------------------------------------------------------------
 return M

@@ -47,7 +47,7 @@ function M.notInGitRepo()
 	return notInRepo
 end
 
----@return string user/name of repo
+---@return string "user/name" of repo
 ---@nodiscard
 function M.getRepo()
 	return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2)

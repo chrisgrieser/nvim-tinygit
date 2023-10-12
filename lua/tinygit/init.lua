@@ -30,6 +30,8 @@ function M.githubUrl(justRepo) require("tinygit.github").githubUrl(justRepo) end
 ---@param userOpts? { state?: string, type?: string }
 function M.issuesAndPrs(userOpts) require("tinygit.github").issuesAndPrs(userOpts or {}) end
 
+function M.openIssueUnderCursor() require("tinygit.github").openIssueUnderCursor() end
+
 --------------------------------------------------------------------------------
 
 ---@param userOpts? { pullBefore?: boolean, force?: boolean }
