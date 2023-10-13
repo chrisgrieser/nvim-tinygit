@@ -104,8 +104,8 @@ local function showDiff(commitIdx)
 	-- search for the query
 	if query ~= "" then
 		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
-		vim.fn.search(query) -- move cursor
-		vim.fn.execute("/" .. query, "silent!") -- insert query so only `n` needs to be pressed
+		vim.fn.setreg("/", query) -- so `n` searches directly
+		vim.cmd.normal { "n", bang = true } -- move to first match
 	end
 
 	-- keymaps: info message as extmark
