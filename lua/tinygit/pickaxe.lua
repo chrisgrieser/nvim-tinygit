@@ -57,7 +57,7 @@ local function showDiff(commitIdx)
 	end
 
 	-- create new buf with diff
-	local bufnr = a.nvim_create_buf(true, true)
+	local bufnr = a.nvim_create_buf(false, true)
 	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. filename)
 	a.nvim_buf_set_option(bufnr, "modifiable", false)
