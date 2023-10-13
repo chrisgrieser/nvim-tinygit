@@ -84,7 +84,7 @@ local function showDiff(commitIdx)
 
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
-	local ft = vim.filetype.match { filename = filename }
+	local ft = vim.filetype.match { filename = vim.fs.basename(filename) }
 	a.nvim_buf_set_option(bufnr, "filetype", ft)
 
 	for _, ln in pairs(diffAddLines) do
@@ -118,12 +118,13 @@ local function showDiff(commitIdx)
 
 	-- keymaps: closing
 	local keymap = vim.keymap.set
+	local opts = { buffer = bufnr, nowait = true }
 	local function close()
 		a.nvim_win_close(winnr, true)
 		a.nvim_buf_delete(bufnr, { force = true })
 	end
-	keymap("n", "q", close, { buffer = bufnr, nowait = true })
-	keymap("n", "<Esc>", close, { buffer = bufnr, nowait = true })
+	keymap("n", "q", close, opts)
+	keymap("n", "<Esc>", close, opts)
 
 	-- keymaps: next/prev commit
 	keymap("n", "<Tab>", function()
@@ -133,7 +134,7 @@ local function showDiff(commitIdx)
 		end
 		close()
 		showDiff(commitIdx + 1)
-	end, { buffer = bufnr, nowait = true })
+	end, opts)
 	keymap("n", "<S-Tab>", function()
 		if commitIdx == 1 then
 			u.notify("Already on first commit", "warn")
@@ -141,13 +142,13 @@ local function showDiff(commitIdx)
 		end
 		close()
 		showDiff(commitIdx - 1)
-	end, { buffer = bufnr, nowait = true })
+	end, opts)
 
 	-- keymaps: yank hash
 	keymap("n", "yh", function()
 		vim.fn.setreg("+", hash)
 		u.notify("Copied hash: " .. hash)
-	end)
+	end, opts)
 end
 
 --------------------------------------------------------------------------------
@@ -195,7 +196,7 @@ function M.searchFileHistory()
 		}
 
 		-- select
-		local searchMode = query == "" and filename or query
+		local searchMode = query == "" and vim.fs.basename(filename) or query
 		vim.ui.select(commits, {
 			prompt = ("󰊢 Commits that changed '%s'"):format(searchMode),
 			format_item = commitFormatter,
