@@ -26,6 +26,7 @@ local M = {}
 ---@class searchFileHistoryConfig 
 ---@field diffPopupWidth number
 ---@field diffPopupHeight number
+---@field diffPopupBorder "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]
 
 --------------------------------------------------------------------------------
 
@@ -61,6 +62,7 @@ local defaultConfig = {
 	searchFileHistory = {
 		diffPopupWidth = 0.8,
 		diffPopupHeight = 0.8,
+		diffPopupBorder = "single",
 	} 
 }
 

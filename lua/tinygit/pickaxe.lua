@@ -75,7 +75,7 @@ local function showDiff(commitIdx)
 		col = math.floor((1 - width) * a.nvim_win_get_width(0) / 2),
 		title = filename .. " @ " .. hash,
 		title_pos = "center",
-		border = "single",
+		border = config.diffPopupBorder,
 		style = "minimal",
 		zindex = 1, -- below nvim-notify floats
 	})

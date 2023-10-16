@@ -184,6 +184,7 @@ local defaultConfig = {
 	searchFileHistory = {
 		diffPopupWidth = 0.8, -- float, 0 to 1
 		diffPopupHeight = 0.8, -- float, 0 to 1
+		diffPopupBorder = "single",
 	} 
 }
 ```
