@@ -123,7 +123,7 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 				hl(buf, ns, "@parameter", commitMsgLine, ccScopeStart + 1, ccScopeEnd - 1)
 			end
 
-			local mdInlineCodeStart, mdInlineCodeEnd = commitMsg:find("`(.+)`")
+			local mdInlineCodeStart, mdInlineCodeEnd = commitMsg:find("`(.-)`")
 			if mdInlineCodeStart and mdInlineCodeEnd then
 				hl(buf, ns, "@text.literal", commitMsgLine, mdInlineCodeStart + 1, mdInlineCodeEnd)
 			end
