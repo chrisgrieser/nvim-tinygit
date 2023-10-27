@@ -17,11 +17,8 @@ local M = {}
 ---@field maxLen number
 ---@field mediumLen number
 ---@field emptyFillIn string
----@field enforceConvCommits enforceConvCommitsConfig
-
----@class enforceConvCommitsConfig
----@field enabled boolean
----@field keywords string[]
+---@field enforceConvCommits {enabled: boolean, keywords: string[]}
+---@field spellcheck boolean
 
 ---@class searchFileHistoryConfig 
 ---@field diffPopupWidth number
@@ -50,6 +47,10 @@ local defaultConfig = {
 				"style", "revert", "ci", "docs", "break", "improv",
 			},
 		},
+
+		-- enable vim's builtin spellcheck for the commit message input field.
+		-- (configured to ignore capitalization and correctly consider camelCase)
+		spellcheck = false, 
 	},
 	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {

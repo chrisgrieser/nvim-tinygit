@@ -197,6 +197,10 @@ local defaultConfig = {
 				"style", "revert", "ci", "docs", "break", "improv",
 			},
 		},
+
+		-- enable vim's builtin spellcheck for the commit message input field
+		-- (configured to ignore capitalization and correctly consider camelCase)
+		spellcheck = false, 
 	},
 	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {

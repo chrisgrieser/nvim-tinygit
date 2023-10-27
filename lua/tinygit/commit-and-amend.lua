@@ -96,6 +96,13 @@ local function setGitCommitAppearance()
 
 			-- activate styling of statusline plugins
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG")
+
+			-- spellcheck
+			if conf.spellcheck then
+				vim.opt_local.spell = true
+				vim.opt_local.spelloptions = "camel"
+				vim.opt_local.spellcapcheck = ""
+			end
 		end,
 	})
 end
