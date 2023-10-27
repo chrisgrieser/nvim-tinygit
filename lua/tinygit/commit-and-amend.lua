@@ -17,7 +17,10 @@ end
 ---@return boolean
 local function hasNoUnstagedChanges()
 	fn.system { "git", "diff", "--quiet" }
-	local hasNoUnstaged = vim.v.shell_error ~= 0
+	-- SIC yes, in this case the meaning of the exit codes 1 and 0 is indeed
+	-- switched as compared to `--staged`, for whatever reason. Thus, the exit
+	-- code 0 means *no* changes here.
+	local hasNoUnstaged = vim.v.shell_error == 0
 	return hasNoUnstaged
 end
 
