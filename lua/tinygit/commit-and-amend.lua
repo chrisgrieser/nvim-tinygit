@@ -67,6 +67,13 @@ local function setGitCommitAppearance()
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
 			-- custom highlighting
+			-- (INFO the order the highlights are added matters, later has priority)
+			fn.matchadd("issueNumber", [[#\d\+]])
+			vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
+
+			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
+			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@text.literal" })
+
 			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
 			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
 
@@ -76,12 +83,6 @@ local function setGitCommitAppearance()
 				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen, conf.maxLen - conf.mediumLen)
 			)
 			vim.api.nvim_set_hl(ns, "closeToOverlength", { link = "WarningMsg" })
-
-			fn.matchadd("issueNumber", [[#\d\+]])
-			vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
-
-			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@text.literal" })
 
 			-- colorcolumn as extra indicators of overLength
 			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
