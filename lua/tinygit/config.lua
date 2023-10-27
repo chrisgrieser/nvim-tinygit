@@ -41,9 +41,9 @@ local defaultConfig = {
 		-- this message. Set to `false` to disallow empty commit messages.
 		emptyFillIn = "chore", ---@type string|false
 
-		-- disallow commit messages without a conventinal commit keyword
+		-- disallow commit messages without a conventional commit keyword
 		enforceConvCommits = {
-			enabled = true,
+			enabled = false,
 			-- stylua: ignore
 			keywords = {
 				"chore", "build", "test", "fix", "feat", "refactor", "perf",
