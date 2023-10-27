@@ -85,15 +85,18 @@ keywords: `TSInstall gitcommit`
 
 ### Smart-Commit
 - Open a commit popup. If there are no staged changes, stage all changes (`git
-  add -A`) before the commit.
-- Right now, only supports the commit subject line. Optionally runs `git push`
-  afterward or opens references issues in the browser.
+  add -A`) before the commit. Only supports the commit subject line.
+- Optionally run `git push` if the repo is clean after committing, or opens
+  references issues in the browser.
+- The title of the input field displays what actions are going to be performed.
+  You can see at glance, whether all changes are going to be committed or whether
+  there a `git push` is triggered afterward, so there are no surprises.
 - 💡 To use vim commands in the input field, set dressing.nvim's `insert_only`
   to `false`.
 
 ```lua
 -- options default to `false`
-require("tinygit").smartCommit { push = false, openReferencedIssue = false }
+require("tinygit").smartCommit { pushIfClean = false, openReferencedIssue = false }
 ```
 
 **Example Workflow**
@@ -109,6 +112,9 @@ vim.keymap.set("n", "gp", function() require("tinygit").push() end)
 2. Use `gc` to enter a commit message.
 3. Repeat 1 and 2.
 4. When done, `gp` to push the commits.
+
+Using `pushIfClean = true` allows you to combine staging, committing, and
+pushing into a single step, when it is the last commit you intend to make.
 
 ### Quick Amends
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,

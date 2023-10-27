@@ -13,6 +13,14 @@ local function hasStagedChanges()
 	return hasStaged
 end
 
+---@nodiscard
+---@return boolean
+local function hasNoUnstagedChanges()
+	fn.system { "git", "diff", "--quiet" }
+	local hasNoUnstaged = vim.v.shell_error ~= 0
+	return hasNoUnstaged
+end
+
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
@@ -145,7 +153,7 @@ end
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
 ---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
----@param opts? { push?: boolean, openReferencedIssue?: boolean }
+---@param opts? { pushIfClean?: boolean, openReferencedIssue?: boolean }
 function M.smartCommit(opts, prefillMsg)
 	if u.notInGitRepo() then return end
 
@@ -153,11 +161,18 @@ function M.smartCommit(opts, prefillMsg)
 	if not opts then opts = {} end
 	if not prefillMsg then prefillMsg = "" end
 
-	setGitCommitAppearance()
-	local stageAllChanges = hasStagedChanges()
+	local doStageAllChanges = hasStagedChanges()
+	-- When committing with no staged changes, all changes are staged, resulting
+	-- in a clean repo afterwards. Alternatively, if there are no unstaged
+	-- changes, the repo will also be clean after committing. If one of the two
+	-- conditions is fulfilled, we can safely push after committing.
+	local cleanAfterCommit = hasNoUnstagedChanges() or doStageAllChanges
+
 	local title = "Commit"
-	if stageAllChanges then title = "Stage All · " .. title end
-	if opts.push then title = title .. " · Push" end
+	if doStageAllChanges then title = "Stage All · " .. title end
+	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
+
+	setGitCommitAppearance()
 
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
@@ -167,7 +182,7 @@ function M.smartCommit(opts, prefillMsg)
 			return
 		end
 
-		if stageAllChanges then
+		if doStageAllChanges then
 			local stderr = fn.system { "git", "add", "-A" }
 			if u.nonZeroExit(stderr) then return end
 		end
@@ -175,8 +190,13 @@ function M.smartCommit(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
-		local extra = opts.push and "Pushing…" or nil
-		commitNotification("Smart-Commit", stageAllChanges, processedMsg, extra)
+		local extra = nil
+		if opts.pushIfClean and cleanAfterCommit then
+			extra = "Pushing…"
+		elseif opts.pushIfClean and not cleanAfterCommit then
+			extra = "(Not pushing since not repo clean.)"
+		end
+		commitNotification("Smart-Commit", doStageAllChanges, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if opts.openReferencedIssue and issueReferenced then
@@ -184,7 +204,7 @@ function M.smartCommit(opts, prefillMsg)
 			u.openUrl(url)
 		end
 
-		if opts.push then push { pullBefore = true } end
+		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
 	end)
 end
 
