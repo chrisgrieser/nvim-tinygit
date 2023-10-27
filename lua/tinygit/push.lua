@@ -20,7 +20,7 @@ function M.push(userOpts)
 	local title = userOpts.force and "Force Push" or "Push"
 	local shellCmd = userOpts.force and "git push --force" or "git push"
 	if userOpts.pullBefore then
-		shellCmd = "git pull ; " .. shellCmd
+		shellCmd = "git pull && " .. shellCmd
 		title = "Pull & " .. title
 	end
 
