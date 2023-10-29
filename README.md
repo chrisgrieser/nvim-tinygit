@@ -88,8 +88,7 @@ keywords: `TSInstall gitcommit`
 ### Smart-Commit
 - Open a commit popup. If there are no staged changes, stage all changes (`git
   add -A`) before the commit. Only supports the commit subject line.
-- Optionally run `git push` if the repo is clean after committing, or opens
-  references issues in the browser.
+- Optionally run `git push` if the repo is clean after committing.
 - The title of the input field displays what actions are going to be performed.
   You can see at glance, whether all changes are going to be committed or whether
   there a `git push` is triggered afterward, so there are no surprises.
@@ -97,8 +96,7 @@ keywords: `TSInstall gitcommit`
   to `false`.
 
 ```lua
--- options default to `false`
-require("tinygit").smartCommit { pushIfClean = false, openReferencedIssue = false }
+require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
 ```
 
 **Example Workflow**
@@ -203,6 +201,9 @@ local defaultConfig = {
 		-- enable vim's builtin spellcheck for the commit message input field
 		-- (configured to ignore capitalization and correctly consider camelCase)
 		spellcheck = false, 
+
+		-- if commit message references issue/PR, open it in the browser
+		openReferencedIssue = false,
 	},
 	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {

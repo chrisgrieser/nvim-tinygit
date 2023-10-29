@@ -19,6 +19,7 @@ local M = {}
 ---@field emptyFillIn string
 ---@field enforceConvCommits {enabled: boolean, keywords: string[]}
 ---@field spellcheck boolean
+---@field openReferencedIssue boolean
 
 ---@class searchFileHistoryConfig 
 ---@field diffPopupWidth number
@@ -51,6 +52,9 @@ local defaultConfig = {
 		-- enable vim's builtin spellcheck for the commit message input field.
 		-- (configured to ignore capitalization and correctly consider camelCase)
 		spellcheck = false, 
+
+		-- if commit message references issue/PR, open it in the browser
+		openReferencedIssue = false,
 	},
 	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {

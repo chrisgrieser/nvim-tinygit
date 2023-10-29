@@ -164,7 +164,7 @@ end
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
 ---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
----@param opts? { pushIfClean?: boolean, openReferencedIssue?: boolean }
+---@param opts? { pushIfClean?: boolean }
 function M.smartCommit(opts, prefillMsg)
 	if u.notInGitRepo() then return end
 
@@ -210,7 +210,7 @@ function M.smartCommit(opts, prefillMsg)
 		commitNotification("Smart-Commit", doStageAllChanges, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
-		if opts.openReferencedIssue and issueReferenced then
+		if config.commitMsg.openReferencedIssue and issueReferenced then
 			local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
 			u.openUrl(url)
 		end
@@ -266,6 +266,12 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		if u.nonZeroExit(stderr) then return end
 
 		commitNotification("Amend-Only-Msg", false, processedMsg)
+
+		local issueReferenced = processedMsg:match("#(%d+)")
+		if config.commitMsg.openReferencedIssue and issueReferenced then
+			local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
+			u.openUrl(url)
+		end
 
 		if opts.forcePush then push { force = true } end
 	end)
