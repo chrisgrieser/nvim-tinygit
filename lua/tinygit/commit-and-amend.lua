@@ -203,9 +203,9 @@ function M.smartCommit(opts, prefillMsg)
 		if opts.pushIfClean and cleanAfterCommit then
 			extra = "Pushing…"
 		elseif opts.pushIfClean and not cleanAfterCommit then
-			extra = "(Not pushing since repo still dirty.)"
+			extra = "(not pushing since repo still dirty)"
 		end
-		commitNotification("Smart-Commit", doStageAllChanges, processedMsg, extra)
+		commitNotification("Smart Commit", doStageAllChanges, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if config.openReferencedIssue and issueReferenced then
@@ -263,7 +263,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
-		commitNotification("Amend-Only-Msg", false, processedMsg)
+		commitNotification("Amend Message", false, processedMsg)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if config.openReferencedIssue and issueReferenced then
