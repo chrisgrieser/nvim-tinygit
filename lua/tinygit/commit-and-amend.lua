@@ -205,7 +205,7 @@ function M.smartCommit(opts, prefillMsg)
 		if opts.pushIfClean and cleanAfterCommit then
 			extra = "Pushing…"
 		elseif opts.pushIfClean and not cleanAfterCommit then
-			extra = "(Not pushing since not repo clean.)"
+			extra = "(Not pushing since repo still dirty.)"
 		end
 		commitNotification("Smart-Commit", doStageAllChanges, processedMsg, extra)
 
