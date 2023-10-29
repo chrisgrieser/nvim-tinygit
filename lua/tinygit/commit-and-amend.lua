@@ -1,7 +1,7 @@
 local M = {}
 local fn = vim.fn
 local u = require("tinygit.utils")
-local config = require("tinygit.config").config
+local config = require("tinygit.config").config.commitMsg
 local push = require("tinygit.push").push
 --------------------------------------------------------------------------------
 
@@ -31,24 +31,23 @@ end
 ---@return string the (modified) commit message
 local function processCommitMsg(commitMsg)
 	commitMsg = vim.trim(commitMsg)
-	local conf = config.commitMsg
 
-	if #commitMsg > conf.maxLen then
+	if #commitMsg > config.maxLen then
 		u.notify("Commit Message too long.", "warn")
-		local shortenedMsg = commitMsg:sub(1, conf.maxLen)
+		local shortenedMsg = commitMsg:sub(1, config.maxLen)
 		return false, shortenedMsg
 	elseif commitMsg == "" then
-		if not conf.emptyFillIn then
+		if not config.emptyFillIn then
 			u.notify("Commit Message empty.", "warn")
 			return false, ""
 		else
-			return true, conf.emptyFillIn
+			return true, config.emptyFillIn
 		end
 	end
 
-	if conf.enforceConvCommits.enabled then
+	if config.enforceConvCommits.enabled then
 		local firstWord = commitMsg:match("^%w+")
-		if not vim.tbl_contains(conf.enforceConvCommits.keywords, firstWord) then
+		if not vim.tbl_contains(config.enforceConvCommits.keywords, firstWord) then
 			u.notify("Not using a Conventional Commits keyword.", "warn")
 			return false, commitMsg
 		end
@@ -65,7 +64,6 @@ local function setGitCommitAppearance()
 		pattern = "DressingInput",
 		once = true, -- do not affect other DressingInputs
 		callback = function()
-			local conf = config.commitMsg
 			local ns = vim.api.nvim_create_namespace("tinygit.commit_input")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
@@ -77,18 +75,18 @@ local function setGitCommitAppearance()
 			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
 			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@text.literal" })
 
-			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(conf.maxLen - 1))
+			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(config.maxLen - 1))
 			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
 
 			fn.matchadd(
 				"closeToOverlength",
 				-- \ze = end of match, \zs = start of match
-				([[.\{%s}\zs.\{1,%s}\ze]]):format(conf.mediumLen, conf.maxLen - conf.mediumLen)
+				([[.\{%s}\zs.\{1,%s}\ze]]):format(config.mediumLen, config.maxLen - config.mediumLen)
 			)
 			vim.api.nvim_set_hl(ns, "closeToOverlength", { link = "WarningMsg" })
 
 			-- colorcolumn as extra indicators of overLength
-			vim.opt_local.colorcolumn = { conf.mediumLen, conf.maxLen }
+			vim.opt_local.colorcolumn = { config.mediumLen, config.maxLen }
 
 			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
@@ -98,7 +96,7 @@ local function setGitCommitAppearance()
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG")
 
 			-- spellcheck
-			if conf.spellcheck then
+			if config.spellcheck then
 				vim.opt_local.spell = true
 				vim.opt_local.spelloptions = "camel"
 				vim.opt_local.spellcapcheck = ""
@@ -210,7 +208,7 @@ function M.smartCommit(opts, prefillMsg)
 		commitNotification("Smart-Commit", doStageAllChanges, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
-		if config.commitMsg.openReferencedIssue and issueReferenced then
+		if config.openReferencedIssue and issueReferenced then
 			local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
 			u.openUrl(url)
 		end
@@ -268,7 +266,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		commitNotification("Amend-Only-Msg", false, processedMsg)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
-		if config.commitMsg.openReferencedIssue and issueReferenced then
+		if config.openReferencedIssue and issueReferenced then
 			local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
 			u.openUrl(url)
 		end
