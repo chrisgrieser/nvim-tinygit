@@ -14,7 +14,7 @@ function M.amendOnlyMsg(userOpts) require("tinygit.commit-and-amend").amendOnlyM
 
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
----@param userOpts? { push?: boolean, openReferencedIssue?: boolean }
+---@param userOpts? table
 function M.smartCommit(userOpts) require("tinygit.commit-and-amend").smartCommit(userOpts or {}) end
 
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ function M.githubUrl(justRepo) require("tinygit.github").githubUrl(justRepo) end
 
 ---Choose a GitHub issue/PR from the current repo to open in the browser.
 ---CAVEAT Due to GitHub API limitations, only the last 100 issues are shown.
----@param userOpts? { state?: string, type?: string }
+---@param userOpts? table
 function M.issuesAndPrs(userOpts) require("tinygit.github").issuesAndPrs(userOpts or {}) end
 
 function M.openIssueUnderCursor() require("tinygit.github").openIssueUnderCursor() end
