@@ -49,14 +49,16 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
 
 FEATURES                                       *tinygit-nvim-tinygit-features*
 
-- Smart-Commit: Open a popup to enter a commit message. If there are no staged
-    changed, stages all changes before doing so (`git add -A`).
-- Option to automatically open references GitHub issues in the browser after committing.
-- Commit Messages have syntax highlighting, indicators for commit message
+- **Smart-Commit**Open a popup to enter a commit message with syntax
+    highlighting and indicators for commit message
+    overlength <https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting>.
+    If there are no staged changed, stages all changes before doing so (`git add -A`).
+- Commit messages have syntax highlighting, indicators for commit message
     overlength <https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting>,
-    and optionally enforce conventional commits keywords.
-- Option to run `git push` in a non-blocking manner after committing.
-- Quick amends.
+    and options to automatically open references GitHub issues in the browser
+    after committing, `git push` if the repo is clean, spellcheck, enforce
+    conventional commits, …
+- Quick amend commands.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
@@ -96,8 +98,7 @@ USAGE                                             *tinygit-nvim-tinygit-usage*
 SMART-COMMIT ~
 
 - Open a commit popup. If there are no staged changes, stage all changes (`git   add -A`) before the commit. Only supports the commit subject line.
-- Optionally run `git push` if the repo is clean after committing, or opens
-    references issues in the browser.
+- Optionally run `git push` if the repo is clean after committing.
 - The title of the input field displays what actions are going to be performed.
     You can see at glance, whether all changes are going to be committed or whether
     there a `git push` is triggered afterward, so there are no surprises.
@@ -105,8 +106,7 @@ SMART-COMMIT ~
     to `false`.
 
 >lua
-    -- options default to `false`
-    require("tinygit").smartCommit { pushIfClean = false, openReferencedIssue = false }
+    require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
 <
 
 **Example Workflow** Assuming these keybindings:
@@ -219,6 +219,9 @@ The `setup` call is optional. These are the default settings:
             -- enable vim's builtin spellcheck for the commit message input field
             -- (configured to ignore capitalization and correctly consider camelCase)
             spellcheck = false, 
+    
+            -- if commit message references issue/PR, open it in the browser
+            openReferencedIssue = false,
         },
         asyncOpConfirmationSound = true, -- currently macOS only
         issueIcons = {
