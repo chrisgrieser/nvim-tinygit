@@ -42,14 +42,16 @@ Lightweight and nimble git client for nvim.
 <!-- tocstop -->
 
 ## Features
-- Smart-Commit: Open a popup to enter a commit message. If there are no staged
-  changed, stages all changes before doing so (`git add -A`).
-- Option to automatically open references GitHub issues in the browser after committing.
-- Commit Messages have syntax highlighting, indicators for [commit message
+- **Smart-Commit**: Open a popup to enter a commit message with syntax
+  highlighting and indicators for [commit message
+  overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting).
+  If there are no staged changed, stages all changes before doing so (`git add -A`).
+- Commit messages have syntax highlighting, indicators for [commit message
   overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting),
-  and optionally enforce conventional commits keywords.
-- Option to run `git push` in a non-blocking manner after committing.
-- Quick amends.
+  and options to automatically open references GitHub issues in the browser
+  after committing, `git push` if the repo is clean, spellcheck, enforce
+  conventional commits, …
+- Quick amend commands.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
