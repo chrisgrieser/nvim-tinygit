@@ -161,6 +161,7 @@ function M.searchFileHistory()
 		if not query then return end -- aborted
 		local response
 		if query == "" then
+			-- without argument, search all commits that touched the current file
 			response = fn.system { "git", "log", "--format=%h\t%s\t%cr\t%cn", "--", filename }
 		else
 			response = fn.system {
