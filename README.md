@@ -126,7 +126,7 @@ require("dressing").setup({
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
-  it stages all changes (`git add -A`).
+  it stages all changes (`git add -A`), like `smartCommit`.
 - Optionally runs `git push --force` afterward (only recommended for
   single-person repos).
 
