@@ -79,9 +79,9 @@ use {
 }
 ```
 
-Optionally, install the Treesitter parser for git commits for some syntax
-highlighting of your commit messages like emphasized conventional commit
-keywords: `TSInstall gitcommit`
+Install the Treesitter parser for git commits for some syntax highlighting of
+your commit messages like emphasized conventional commit keywords: `TSInstall
+gitcommit`
 
 ## Usage
 
@@ -92,8 +92,6 @@ keywords: `TSInstall gitcommit`
 - The title of the input field displays what actions are going to be performed.
   You can see at glance, whether all changes are going to be committed or whether
   there a `git push` is triggered afterward, so there are no surprises.
-- 💡 To use vim commands in the input field, set dressing.nvim's `insert_only`
-  to `false`.
 
 ```lua
 require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
@@ -115,6 +113,14 @@ vim.keymap.set("n", "gp", function() require("tinygit").push() end)
 
 Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
+
+```lua
+-- to enable normal mode in the commit message input field, configure
+-- dressing.nvim like this:
+require("dressing").setup({ 
+	input = { insert_only = false }
+})
+```
 
 ### Quick Amends
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,

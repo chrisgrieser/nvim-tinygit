@@ -232,7 +232,7 @@ function M.amendNoEdit(opts)
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if u.nonZeroExit(stderr) then return end
 
-	local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
+	local lastCommitMsg = vim.trim(fn.system("git log -1 --format=%s"))
 	local extra = opts.forcePush and "Force Pushing…" or nil
 	commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, extra)
 
