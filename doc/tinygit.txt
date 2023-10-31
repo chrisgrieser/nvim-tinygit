@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0           Last change: 2023 October 30
+*tinygit.txt*           For NVIM v0.8.0           Last change: 2023 October 31
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -87,9 +87,9 @@ INSTALLATION                               *tinygit-nvim-tinygit-installation*
     }
 <
 
-Optionally, install the Treesitter parser for git commits for some syntax
-highlighting of your commit messages like emphasized conventional commit
-keywords: `TSInstall gitcommit`
+Install the Treesitter parser for git commits for some syntax highlighting of
+your commit messages like emphasized conventional commit keywords: `TSInstall
+gitcommit`
 
 
 USAGE                                             *tinygit-nvim-tinygit-usage*
@@ -102,8 +102,6 @@ SMART-COMMIT ~
 - The title of the input field displays what actions are going to be performed.
     You can see at glance, whether all changes are going to be committed or whether
     there a `git push` is triggered afterward, so there are no surprises.
-- To use vim commands in the input field, set dressing.nvim’s `insert_only`
-    to `false`.
 
 >lua
     require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
@@ -125,13 +123,21 @@ SMART-COMMIT ~
 Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
 
+>lua
+    -- to enable normal mode in the commit message input field, configure
+    -- dressing.nvim like this:
+    require("dressing").setup({ 
+        input = { insert_only = false }
+    })
+<
+
 
 QUICK AMENDS ~
 
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
     and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
-    it stages all changes (`git add -A`).
+    it stages all changes (`git add -A`), like `smartCommit`.
 - Optionally runs `git push --force` afterward (only recommended for
     single-person repos).
 
