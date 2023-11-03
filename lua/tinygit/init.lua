@@ -37,9 +37,10 @@ function M.openIssueUnderCursor() require("tinygit.github").openIssueUnderCursor
 ---@param userOpts? { pullBefore?: boolean, force?: boolean }
 function M.push(userOpts) require("tinygit.push").push(userOpts or {}) end
 
---------------------------------------------------------------------------------
-
 function M.searchFileHistory() require("tinygit.pickaxe").searchFileHistory() end
+
+function M.stashPop() require("tinygit.stash").stashPop() end
+function M.stashPush() require("tinygit.stash").stashPush() end
 
 --------------------------------------------------------------------------------
 return M
