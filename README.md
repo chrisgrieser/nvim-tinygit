@@ -35,6 +35,7 @@ Lightweight and nimble git client for nvim.
 	* [GitHub Interaction](#github-interaction)
 	* [Push](#push)
 	* [Search File History ("git pickaxe")](#search-file-history-git-pickaxe)
+	* [Stash](#stash)
 - [Configuration](#configuration)
 - [Non-Goals](#non-goals)
 - [Credits](#credits)
@@ -51,7 +52,7 @@ Lightweight and nimble git client for nvim.
   and options to automatically open references GitHub issues in the browser
   after committing, `git push` if the repo is clean, spellcheck, enforce
   conventional commits, …
-- Quick amend commands.
+- Quick amend and stash commands.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
@@ -178,6 +179,13 @@ require("tinygit").push { pullBefore = false, force = false }
 
 ```lua
 require("tinygit").searchFileHistory()
+```
+
+### Stash
+
+```lua
+require("tinygit").stashPush()
+require("tinygit").stashPop()
 ```
 
 ## Configuration
