@@ -42,6 +42,7 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
     - |tinygit-github-interaction|
     - |tinygit-push|
     - |tinygit-search-file-history-("git-pickaxe")|
+    - |tinygit-stash|
 - |tinygit-configuration|
 - |tinygit-non-goals|
 - |tinygit-credits|
@@ -58,7 +59,7 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
     and options to automatically open references GitHub issues in the browser
     after committing, `git push` if the repo is clean, spellcheck, enforce
     conventional commits, …
-- Quick amend commands.
+- Quick amend and stash commands.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
@@ -194,6 +195,14 @@ SEARCH FILE HISTORY (“GIT PICKAXE”) ~
 
 >lua
     require("tinygit").searchFileHistory()
+<
+
+
+STASH ~
+
+>lua
+    require("tinygit").stashPush()
+    require("tinygit").stashPop()
 <
 
 
