@@ -104,6 +104,10 @@ local function showDiff(commitIdx)
 	-- search for the query
 	if query ~= "" then
 		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
+
+		vim.opt_local.ignorecase = true -- consistent with `--regexp-ignore-case`
+		vim.opt_local.smartcase = false
+
 		vim.fn.setreg("/", query) -- so `n` searches directly
 		vim.cmd.normal { "n", bang = true } -- move to first match
 	end
