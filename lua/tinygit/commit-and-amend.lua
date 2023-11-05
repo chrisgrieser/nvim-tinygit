@@ -244,7 +244,13 @@ end
 function M.amendOnlyMsg(opts, prefillMsg)
 	if not opts then opts = {} end
 	vim.cmd("silent update")
+
+	-- GUARD
 	if u.notInGitRepo() then return end
+	if hasStagedChanges() then
+		u.notify("Aborting: There are staged changes.", "warn", "Amend Only Msg")
+		return
+	end
 
 	if not prefillMsg then
 		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
