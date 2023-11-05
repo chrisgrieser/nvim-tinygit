@@ -283,13 +283,15 @@ function M.amendOnlyMsg(opts, prefillMsg)
 	end)
 end
 
----@param opts { selectFromLastXCommits?: number }
-function M.fixupCommit(opts)
-	local commitRange = opts.selectFromLastXCommits or 15
+---@param userOpts { selectFromLastXCommits?: number }
+function M.fixupCommit(userOpts)
+	local defaultOpts = { selectFromLastXCommits = 15 }
+	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
 	local response = fn.system{
 		"git",
 		"log",
+		"-n".. tostring(opts.selectFromLastXCommits),
 		"--format=%h\t%s\t%cr\t%cn", -- format: hash, subject, date, author
 	}
 
@@ -298,7 +300,7 @@ function M.fixupCommit(opts)
 	local commits = vim.split(vim.trim(response), "\n")
 
 	vim.ui.select(commits, {
-		prompt = ("󰊢 Last %s Commits:"):format(commitRange),
+		prompt = ("󰊢 Last %s Commits:"):format(opts.selectFromLastXCommits),
 		format_item = u.commitListFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)
