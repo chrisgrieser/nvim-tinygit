@@ -91,8 +91,10 @@ local function setGitCommitAppearance()
 			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
 			vim.api.nvim_set_hl(ns, "@text.title.gitcommit", { link = "Normal" })
+			-- prevent auto-wrapping due to filetype "gitcommit" being set
+			vim.opt_local.formatoptions:remove("t")
 
-			-- activate styling of statusline plugins
+			-- activates styling for statusline plugins (e.g., filename icons)
 			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG")
 
 			-- spellcheck
