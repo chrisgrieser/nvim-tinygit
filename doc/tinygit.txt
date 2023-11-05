@@ -8,6 +8,7 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Features                                   |tinygit-nvim-tinygit-features|
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Usage                                         |tinygit-nvim-tinygit-usage|
+  - Improved Interactive Rebasing|tinygit-nvim-tinygit-improved-interactive-rebasing|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
   - Non-Goals                                 |tinygit-nvim-tinygit-non-goals|
   - Credits                                     |tinygit-nvim-tinygit-credits|
@@ -38,11 +39,13 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
 - |tinygit-installation|
 - |tinygit-usage|
     - |tinygit-smart-commit|
-    - |tinygit-amend-&-fixup|
+    - |tinygit-amend|
+    - |tinygit-fixup-&-squash-commits|
     - |tinygit-github-interaction|
     - |tinygit-push|
     - |tinygit-search-file-history-("git-pickaxe")|
     - |tinygit-stash|
+- |tinygit-improved-interactive-rebasing|
 - |tinygit-configuration|
     - |tinygit-appearance-of-input-field|
     - |tinygit-use-telescope-for-selections|
@@ -61,11 +64,12 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
     and options to automatically open references GitHub issues in the browser
     after committing, `git push` if the repo is clean, spellcheck, enforce
     conventional commits, …
-- Quick commands for amend, stash, or fixup.
+- Quick commands for amend, stash, fixup, and squash commits.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
     with filetype syntax highlighting.
+- Improvements for interactive rebasing with nvim as sequence editor.
 
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
@@ -74,6 +78,7 @@ INSTALLATION                               *tinygit-nvim-tinygit-installation*
     -- lazy.nvim
     {
         "chrisgrieser/nvim-tinygit",
+        ft = { "gitrebase", "gitcommit" }, -- so ftplugins are loaded
         dependencies = {
             "stevearc/dressing.nvim",
             "rcarriga/nvim-notify", -- optional, but recommended
@@ -135,7 +140,7 @@ pushing into a single step, when it is the last commit you intend to make.
 <
 
 
-AMEND & FIXUP ~
+AMEND ~
 
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
     and does not stage any changes.
@@ -143,16 +148,26 @@ AMEND & FIXUP ~
     it stages all changes (`git add -A`), like `smartCommit`.
 - Optionally runs `git push --force` afterward. (Remember to only do this when
     you work alone on the branch though.)
-- `fixupCommit` lets you select a commit from the last X commits and runs `git   commit --fixup` on the selected commit (that is, marking the commit for a
-    future `git rebase --autosquash`).
 
 >lua
     -- options default to `false`
     require("tinygit").amendOnlyMsg { forcePush = false }
     require("tinygit").amendNoEdit { forcePush = false }
-    
-    -- number of commits to select from, default: 15
-    require("tinygit").fixupCommit { selectFromLastXCommits = 15 }
+<
+
+
+FIXUP & SQUASH COMMITS ~
+
+- `fixupCommit` lets you select a commit from the last X commits and runs `git   commit --fixup` on the selected commit (that is, marking the commit for a
+    future `git rebase --autosquash`).
+- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`)
+
+>lua
+    -- options show default values
+    require("tinygit").fixupCommit { 
+        selectFromLastXCommits = 15
+        squashInstead = false, 
+    }
 <
 
 
@@ -160,7 +175,7 @@ GITHUB INTERACTION ~
 
 - Search issues & PRs. (Requires `curl`.)
 - The appearance of the selector is controlled by `dressing.nvim`. (You can
-    configure `dressing` to use `telescope`.)
+    |tinygit-configure-`dressing`-to-use-`telescope`|.)
 
 >lua
     -- state: all|closed|open (default: all)
@@ -213,6 +228,23 @@ STASH ~
 <
 
 
+IMPROVED INTERACTIVE REBASING*tinygit-nvim-tinygit-improved-interactive-rebasing*
+
+`tinygit` also comes with some improvements for interactive rebasing (`git
+rebase -i`) with nvim: - Improved syntax highlighting of commit messages. -
+`<Tab>` (normal mode): Cycle through the common rebase actions: `pick`,
+`reword`, `fixup`, `squash`, `drop`. Also supports their short forms.
+
+
+  [!NOTE] This requires that your git editor (or sequence editor) is set to use
+  `nvim`. You can do so with `git config --global core.editor "nvim"`.
+If you want to disable those modifications, set:
+
+>lua
+    vim.g.tinygit_no_rebase_ftplugin = true
+<
+
+
 CONFIGURATION                             *tinygit-nvim-tinygit-configuration*
 
 The `setup` call is optional. These are the default settings:
@@ -245,7 +277,10 @@ The `setup` call is optional. These are the default settings:
             -- if commit message references issue/PR, open it in the browser
             openReferencedIssue = false,
         },
-        asyncOpConfirmationSound = true, -- currently macOS only
+        push = {
+            preventPushingFixupOrSquashCommits = true,
+            confirmationSound = true, -- currently macOS only
+        },
         issueIcons = {
             openIssue = "🟢",
             closedIssue = "🟣",
