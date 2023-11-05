@@ -21,6 +21,8 @@ local function showDiff(commitIdx)
 	local hash = hashList[commitIdx]
 	local filename = currentPickaxe.filename
 	local query = currentPickaxe.query
+	local date = vim.trim(fn.system({ "git", "log", "-n1", "--format=%cr", hash }))
+	local shortMsg = vim.trim(fn.system { "git", "log", "-n1", "--format=%s", hash }:sub(1, 50))
 	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 
 	-- get diff
@@ -66,7 +68,7 @@ local function showDiff(commitIdx)
 		height = math.floor(height * a.nvim_win_get_height(0)),
 		row = math.floor((1 - height) * a.nvim_win_get_height(0) / 2),
 		col = math.floor((1 - width) * a.nvim_win_get_width(0) / 2),
-		title = filename .. " @ " .. hash,
+		title = (" %s (%s) "):format(shortMsg, date),
 		title_pos = "center",
 		border = config.diffPopupBorder,
 		style = "minimal",
