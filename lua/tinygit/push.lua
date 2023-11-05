@@ -1,6 +1,7 @@
 local M = {}
 local fn = vim.fn
 local u = require("tinygit.utils")
+local config = require("tinygit.config").config.push
 --------------------------------------------------------------------------------
 
 ---CAVEAT currently only on macOS
@@ -12,16 +13,34 @@ local function confirmationSound(soundFilepath)
 	fn.system(("afplay %q &"):format(soundFilepath))
 end
 
+---@return string
+local function getFixupOrSquashCommits()
+	return vim.trim(fn.system { "git", "log", "--oneline", "--grep=^fixup!", "--grep=^squash!" })
+end
+
 --------------------------------------------------------------------------------
 
 -- pull before to avoid conflicts
 ---@param userOpts { pullBefore?: boolean|nil, force?: boolean|nil }
 function M.push(userOpts)
+	-- GUARD
+	if u.notInGitRepo() then return end
+
 	local title = userOpts.force and "Force Push" or "Push"
 	local shellCmd = userOpts.force and "git push --force" or "git push"
 	if userOpts.pullBefore then
 		shellCmd = "git pull && " .. shellCmd
 		title = "Pull & " .. title
+	end
+
+	-- GUARD
+	if config.preventPushingFixupOrSquashCommits then
+		local fixupOrSquashCommits = getFixupOrSquashCommits()
+		if fixupOrSquashCommits ~= "" then
+			---- stylua: ignore
+			u.notify("Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits, "warn", "Push")
+			return
+		end
 	end
 
 	fn.jobstart(shellCmd, {
@@ -33,7 +52,9 @@ function M.push(userOpts)
 			local output = vim.trim(table.concat(data, "\n"))
 
 			-- no need to notify that the pull in `git pull ; git push` yielded no update
-			if output:find("Current branch .* is up to date") then return end
+			if output:find("Current branch .* is up to date") or output:find("Already up to date.") then
+				return
+			end
 
 			u.notify(output, "info", title)
 			confirmationSound(

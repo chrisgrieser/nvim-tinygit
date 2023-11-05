@@ -257,6 +257,9 @@ local defaultConfig = {
 		-- if commit message references issue/PR, open it in the browser
 		openReferencedIssue = false,
 	},
+	push = {
+		preventPushingFixupOrSquashCommits = true,
+	},
 	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {
 		openIssue = "🟢",

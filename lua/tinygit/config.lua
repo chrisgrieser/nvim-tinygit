@@ -5,6 +5,7 @@ local M = {}
 ---@field commitMsg commitConfig
 ---@field asyncOpConfirmationSound boolean
 ---@field issueIcons issueIconConfig
+---@field push pushConfig
 
 ---@class issueIconConfig
 ---@field closedIssue string
@@ -25,6 +26,9 @@ local M = {}
 ---@field diffPopupWidth number
 ---@field diffPopupHeight number
 ---@field diffPopupBorder "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]
+
+---@class pushConfig 
+---@field preventPushingFixupOrSquashCommits boolean
 
 --------------------------------------------------------------------------------
 
@@ -55,6 +59,9 @@ local defaultConfig = {
 
 		-- if commit message references issue/PR, open it in the browser
 		openReferencedIssue = false,
+	},
+	push = {
+		preventPushingFixupOrSquashCommits = true,
 	},
 	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {
