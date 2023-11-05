@@ -107,7 +107,7 @@ function M.issuesAndPrs(userOpts)
 	local title = opts.type == "all" and "Issue/PR" or opts.type
 	vim.ui.select(issues, {
 		prompt = " Select " .. title,
-		kind = "tinygit.github_issue",
+		kind = "tinygit.githubIssue",
 		format_item = function(issue) return issueListFormatter(issue) end,
 	}, function(choice)
 		if not choice then return end

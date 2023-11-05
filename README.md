@@ -31,7 +31,7 @@ Lightweight and nimble git client for nvim.
 - [Installation](#installation)
 - [Usage](#usage)
 	* [Smart-Commit](#smart-commit)
-	* [Quick Amends](#quick-amends)
+	* [Amend & Fixup](#amend--fixup)
 	* [GitHub Interaction](#github-interaction)
 	* [Push](#push)
 	* [Search File History ("git pickaxe")](#search-file-history-git-pickaxe)
@@ -52,7 +52,7 @@ Lightweight and nimble git client for nvim.
   and options to automatically open references GitHub issues in the browser
   after committing, `git push` if the repo is clean, spellcheck, enforce
   conventional commits, …
-- Quick amend and stash commands.
+- Quick commands for amend, stash, or fixup.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
@@ -123,18 +123,24 @@ require("dressing").setup({
 })
 ```
 
-### Quick Amends
+### Amend & Fixup
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
   it stages all changes (`git add -A`), like `smartCommit`.
-- Optionally runs `git push --force` afterward (only recommended for
-  single-person repos).
+- Optionally runs `git push --force` afterward. (Remember to only do this when
+  you work alone on the branch though.)
+- `fixupCommit` lets you select a commit from the last X commits and runs `git
+  commit --fixup` on the selected commit (that is, marking the commit for a
+  future `git rebase --autosquash`).
 
 ```lua
 -- options default to `false`
 require("tinygit").amendOnlyMsg { forcePush = false }
 require("tinygit").amendNoEdit { forcePush = false }
+
+-- number of commits to select from, default: 15
+require("tinygit").fixupCommit { selectFromLastXCommits = 15 }
 ```
 
 ### GitHub Interaction

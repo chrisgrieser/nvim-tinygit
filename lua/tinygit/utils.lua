@@ -53,6 +53,14 @@ function M.getRepo()
 	return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2)
 end
 
+---formats a list of commits
+---@param commitLine string input of form `--format=%h\t%s\t%cr\t%cn`
+---@return string formatted text
+function M.commitListFormatter(commitLine)
+	local _, commitMsg, date, author = unpack(vim.split(commitLine, "\t"))
+	return table.concat({ commitMsg, date, author }, " · ")
+end
+
 
 --------------------------------------------------------------------------------
 return M

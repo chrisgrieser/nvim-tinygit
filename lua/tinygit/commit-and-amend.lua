@@ -283,5 +283,32 @@ function M.amendOnlyMsg(opts, prefillMsg)
 	end)
 end
 
+---@param opts { selectFromLastXCommits?: number }
+function M.fixupCommit(opts)
+	local commitRange = opts.selectFromLastXCommits or 15
+
+	local response = fn.system{
+		"git",
+		"log",
+		"--format=%h\t%s\t%cr\t%cn", -- format: hash, subject, date, author
+	}
+
+	-- GUARD
+	if u.nonZeroExit(response) then return end
+	local commits = vim.split(vim.trim(response), "\n")
+
+	vim.ui.select(commits, {
+		prompt = ("󰊢 Last %s Commits:"):format(commitRange),
+		format_item = u.commitListFormatter,
+		kind = "tinygit.fixupCommit",
+	}, function(commit)
+		if not commit then return end
+		local hash = commit:match("^%w+")
+		local stdout = fn.system { "git", "commit", "--fixup", hash }
+		if u.nonZeroExit(stdout) then return end
+		u.notify(stdout, "info", "Fixup Commit")
+	end)
+end
+
 --------------------------------------------------------------------------------
 return M

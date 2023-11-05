@@ -15,13 +15,6 @@ local currentPickaxe = { hashList = {}, filename = "", query = "" }
 
 --------------------------------------------------------------------------------
 
----@param commitLine string
----@return string formatted text
-local function commitFormatter(commitLine)
-	local _, commitMsg, date, author = unpack(vim.split(commitLine, "\t"))
-	return table.concat({ commitMsg, date, author }, " · ")
-end
-
 ---@param commitIdx number index of the selected commit in the list of commits
 local function showDiff(commitIdx)
 	local hashList = currentPickaxe.hashList
@@ -180,7 +173,7 @@ function M.searchFileHistory()
 			}
 		end
 
-		-- guards
+		-- GUARD
 		if u.nonZeroExit(response) then return end
 		response = vim.trim(response)
 		if response == "" then
@@ -204,8 +197,8 @@ function M.searchFileHistory()
 		local searchMode = query == "" and vim.fs.basename(filename) or query
 		vim.ui.select(commits, {
 			prompt = ("󰊢 Commits that changed '%s'"):format(searchMode),
-			format_item = commitFormatter,
-			kind = "tinygit.pickaxe_diff",
+			format_item = u.commitListFormatter,
+			kind = "tinygit.pickaxeDiff",
 		}, function(_, commitIdx)
 			if not commitIdx then return end -- aborted selection
 			showDiff(commitIdx)

@@ -17,6 +17,9 @@ function M.amendOnlyMsg(userOpts) require("tinygit.commit-and-amend").amendOnlyM
 ---@param userOpts? table
 function M.smartCommit(userOpts) require("tinygit.commit-and-amend").smartCommit(userOpts or {}) end
 
+---@param userOpts? { selectFromLastXCommits?: number }
+function M.fixupCommit(userOpts) require("tinygit.commit-and-amend").fixupCommit(userOpts or {}) end
+
 --------------------------------------------------------------------------------
 
 ---opens current buffer in the browser & copies the link to the clipboard
