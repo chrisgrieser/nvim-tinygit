@@ -247,7 +247,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 	if u.notInGitRepo() then return end
 
 	if not prefillMsg then
-		local lastCommitMsg = vim.trim(fn.system("git log -1 --pretty=%B"))
+		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
 		prefillMsg = lastCommitMsg
 	end
 	setGitCommitAppearance()
