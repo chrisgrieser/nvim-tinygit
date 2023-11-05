@@ -37,6 +37,8 @@ Lightweight and nimble git client for nvim.
 	* [Search File History ("git pickaxe")](#search-file-history-git-pickaxe)
 	* [Stash](#stash)
 - [Configuration](#configuration)
+	* [Appearance of Input Field](#appearance-of-input-field)
+	* [Use Telescope for selections](#use-telescope-for-selections)
 - [Non-Goals](#non-goals)
 - [Credits](#credits)
 
@@ -146,7 +148,7 @@ require("tinygit").fixupCommit { selectFromLastXCommits = 15 }
 ### GitHub Interaction
 - Search issues & PRs. (Requires `curl`.)
 - The appearance of the selector is controlled by `dressing.nvim`. (You can
-  configure `dressing` to use `telescope`.)
+  [configure `dressing` to use `telescope`](#use-telescope-for-selections).)
 
 ```lua
 -- state: all|closed|open (default: all)
@@ -241,9 +243,29 @@ local defaultConfig = {
 }
 ```
 
-> [!NOTE]
-> To change the appearance and behavior of the commit message input field, you
-> need to configure [dressing.nvim](https://github.com/stevearc/dressing.nvim).
+### Appearance of Input Field
+
+```lua
+-- see: https://github.com/stevearc/dressing.nvim#configuration
+require("dressing").setup({ 
+	input = { 
+		insert_only = false, -- enable normal mode in the input field
+		-- other appearance settings
+	}
+})
+```
+
+### Use Telescope for selections
+
+```lua
+-- see: https://github.com/stevearc/dressing.nvim#configuration
+require("dressing").setup({ 
+	select = { 
+		backend = { "telescope" },
+		-- other appearance settings
+	}
+})
+```
 
 ## Non-Goals
 - Become a full-fledged git client. Use
