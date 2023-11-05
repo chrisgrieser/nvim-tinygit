@@ -38,12 +38,14 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
 - |tinygit-installation|
 - |tinygit-usage|
     - |tinygit-smart-commit|
-    - |tinygit-quick-amends|
+    - |tinygit-amend-&-fixup|
     - |tinygit-github-interaction|
     - |tinygit-push|
     - |tinygit-search-file-history-("git-pickaxe")|
     - |tinygit-stash|
 - |tinygit-configuration|
+    - |tinygit-appearance-of-input-field|
+    - |tinygit-use-telescope-for-selections|
 - |tinygit-non-goals|
 - |tinygit-credits|
 
@@ -59,7 +61,7 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
     and options to automatically open references GitHub issues in the browser
     after committing, `git push` if the repo is clean, spellcheck, enforce
     conventional commits, …
-- Quick amend and stash commands.
+- Quick commands for amend, stash, or fixup.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
@@ -133,19 +135,24 @@ pushing into a single step, when it is the last commit you intend to make.
 <
 
 
-QUICK AMENDS ~
+AMEND & FIXUP ~
 
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
     and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
     it stages all changes (`git add -A`), like `smartCommit`.
-- Optionally runs `git push --force` afterward (only recommended for
-    single-person repos).
+- Optionally runs `git push --force` afterward. (Remember to only do this when
+    you work alone on the branch though.)
+- `fixupCommit` lets you select a commit from the last X commits and runs `git   commit --fixup` on the selected commit (that is, marking the commit for a
+    future `git rebase --autosquash`).
 
 >lua
     -- options default to `false`
     require("tinygit").amendOnlyMsg { forcePush = false }
     require("tinygit").amendNoEdit { forcePush = false }
+    
+    -- number of commits to select from, default: 15
+    require("tinygit").fixupCommit { selectFromLastXCommits = 15 }
 <
 
 
@@ -255,9 +262,31 @@ The `setup` call is optional. These are the default settings:
 <
 
 
-  [!NOTE] To change the appearance and behavior of the commit message input
-  field, you need to configure dressing.nvim
-  <https://github.com/stevearc/dressing.nvim>.
+APPEARANCE OF INPUT FIELD ~
+
+>lua
+    -- see: https://github.com/stevearc/dressing.nvim#configuration
+    require("dressing").setup({ 
+        input = { 
+            insert_only = false, -- enable normal mode in the input field
+            -- other appearance settings
+        }
+    })
+<
+
+
+USE TELESCOPE FOR SELECTIONS ~
+
+>lua
+    -- see: https://github.com/stevearc/dressing.nvim#configuration
+    require("dressing").setup({ 
+        select = { 
+            backend = { "telescope" },
+            -- other appearance settings
+        }
+    })
+<
+
 
 NON-GOALS                                     *tinygit-nvim-tinygit-non-goals*
 
