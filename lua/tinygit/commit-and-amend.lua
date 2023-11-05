@@ -291,10 +291,10 @@ function M.fixupCommit(userOpts)
 	}
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
-	local response = fn.system{
+	local response = fn.system {
 		"git",
 		"log",
-		"-n".. tostring(opts.selectFromLastXCommits),
+		"-n" .. tostring(opts.selectFromLastXCommits),
 		"--format=%h\t%s\t%cr\t%cn", -- format: hash, subject, date, author
 	}
 
@@ -302,10 +302,12 @@ function M.fixupCommit(userOpts)
 	if u.nonZeroExit(response) then return end
 	local commits = vim.split(vim.trim(response), "\n")
 
+	local title = opts.squashInstead and "Squash" or "Fixup"
+
 	vim.ui.select(commits, {
-		prompt = ("󰊢 Last %s Commits:"):format(opts.selectFromLastXCommits),
+		prompt = ("󰊢 Select Commit to %s"):format(title),
 		format_item = u.commitListFormatter,
-		kind = "tinygit.fixupCommit",
+		kind = "):format()tinygit.fixupCommit",
 	}, function(commit)
 		if not commit then return end
 		local hash = commit:match("^%w+")
@@ -314,7 +316,6 @@ function M.fixupCommit(userOpts)
 		local stdout = fn.system { "git", "commit", fixupOrSquash, hash }
 		if u.nonZeroExit(stdout) then return end
 
-		local title = opts.squashInstead and "Squash" or "Fixup"
 		u.notify(stdout, "info", title .. " Commit")
 	end)
 end
