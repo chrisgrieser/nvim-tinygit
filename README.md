@@ -37,6 +37,7 @@ Lightweight and nimble git client for nvim.
 	* [Push](#push)
 	* [Search File History ("git pickaxe")](#search-file-history-git-pickaxe)
 	* [Stash](#stash)
+- [Improved Interactive Rebasing](#improved-interactive-rebasing)
 - [Configuration](#configuration)
 	* [Appearance of Input Field](#appearance-of-input-field)
 	* [Use Telescope for selections](#use-telescope-for-selections)
@@ -60,6 +61,7 @@ Lightweight and nimble git client for nvim.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
   with filetype syntax highlighting.
+- Improvements for interactive rebasing with nvim as sequence editor.
 
 ## Installation
 
@@ -67,6 +69,7 @@ Lightweight and nimble git client for nvim.
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
+	ft = { "gitrebase", "gitcommit" }, -- so ftplugins are loaded
 	dependencies = {
 		"stevearc/dressing.nvim",
 		"rcarriga/nvim-notify", -- optional, but recommended
@@ -203,6 +206,24 @@ require("tinygit").searchFileHistory()
 ```lua
 require("tinygit").stashPush()
 require("tinygit").stashPop()
+```
+
+## Improved Interactive Rebasing
+`tinygit` also comes with some improvements for interactive rebasing (`git
+rebase -i`) with nvim: 
+- Improved syntax highlighting of commit messages.
+- `<Tab>` (normal mode): Cycle through the common rebase actions: `pick`,
+  `reword`, `fixup`, `squash`, `drop`. Also supports their short forms.
+
+> [!NOTE]
+> This requires that your git editor (or sequence editor) is set to use `nvim`.
+> You can do so with `git config --global core.editor "nvim"`.
+
+
+If you want to disable those modifications, set:
+
+```lua
+vim.g.tinygit_no_rebase_ftplugin = true
 ```
 
 ## Configuration
