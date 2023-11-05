@@ -259,8 +259,8 @@ local defaultConfig = {
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
+		confirmationSound = true, -- currently macOS only
 	},
-	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {
 		openIssue = "🟢",
 		closedIssue = "🟣",

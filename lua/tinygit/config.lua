@@ -3,7 +3,6 @@ local M = {}
 
 ---@class pluginConfig
 ---@field commitMsg commitConfig
----@field asyncOpConfirmationSound boolean
 ---@field issueIcons issueIconConfig
 ---@field push pushConfig
 
@@ -29,6 +28,7 @@ local M = {}
 
 ---@class pushConfig 
 ---@field preventPushingFixupOrSquashCommits boolean
+---@field confirmationSound boolean
 
 --------------------------------------------------------------------------------
 
@@ -62,8 +62,8 @@ local defaultConfig = {
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
+		confirmationSound = true, -- currently macOS only
 	},
-	asyncOpConfirmationSound = true, -- currently macOS only
 	issueIcons = {
 		openIssue = "🟢",
 		closedIssue = "🟣",

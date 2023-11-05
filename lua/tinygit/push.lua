@@ -8,8 +8,7 @@ local config = require("tinygit.config").config.push
 ---@param soundFilepath string
 local function confirmationSound(soundFilepath)
 	local onMacOs = fn.has("macunix") == 1
-	local useSound = require("tinygit.config").config.asyncOpConfirmationSound
-	if not (onMacOs and useSound) then return end
+	if not (onMacOs and config.confirmationSound) then return end
 	fn.system(("afplay %q &"):format(soundFilepath))
 end
 
