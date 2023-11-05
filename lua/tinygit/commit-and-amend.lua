@@ -283,9 +283,12 @@ function M.amendOnlyMsg(opts, prefillMsg)
 	end)
 end
 
----@param userOpts { selectFromLastXCommits?: number }
+---@param userOpts { selectFromLastXCommits?: number, squashInstead: boolean }
 function M.fixupCommit(userOpts)
-	local defaultOpts = { selectFromLastXCommits = 15 }
+	local defaultOpts = {
+		selectFromLastXCommits = 15,
+		squashInstead = false,
+	}
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
 	local response = fn.system{
@@ -306,9 +309,13 @@ function M.fixupCommit(userOpts)
 	}, function(commit)
 		if not commit then return end
 		local hash = commit:match("^%w+")
-		local stdout = fn.system { "git", "commit", "--fixup", hash }
+		local fixupOrSquash = opts.squashInstead and "--squash" or "--fixup"
+
+		local stdout = fn.system { "git", "commit", fixupOrSquash, hash }
 		if u.nonZeroExit(stdout) then return end
-		u.notify(stdout, "info", "Fixup Commit")
+
+		local title = opts.squashInstead and "Squash" or "Fixup"
+		u.notify(stdout, "info", title .. " Commit")
 	end)
 end
 

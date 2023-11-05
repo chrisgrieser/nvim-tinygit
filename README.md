@@ -31,7 +31,8 @@ Lightweight and nimble git client for nvim.
 - [Installation](#installation)
 - [Usage](#usage)
 	* [Smart-Commit](#smart-commit)
-	* [Amend & Fixup](#amend--fixup)
+	* [Amend](#amend)
+	* [Fixup & Squash Commits](#fixup--squash-commits)
 	* [GitHub Interaction](#github-interaction)
 	* [Push](#push)
 	* [Search File History ("git pickaxe")](#search-file-history-git-pickaxe)
@@ -54,7 +55,7 @@ Lightweight and nimble git client for nvim.
   and options to automatically open references GitHub issues in the browser
   after committing, `git push` if the repo is clean, spellcheck, enforce
   conventional commits, …
-- Quick commands for amend, stash, or fixup.
+- Quick commands for amend, stash, fixup, and squash commits.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
@@ -125,24 +126,32 @@ require("dressing").setup({
 })
 ```
 
-### Amend & Fixup
+### Amend
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
   it stages all changes (`git add -A`), like `smartCommit`.
 - Optionally runs `git push --force` afterward. (Remember to only do this when
   you work alone on the branch though.)
-- `fixupCommit` lets you select a commit from the last X commits and runs `git
-  commit --fixup` on the selected commit (that is, marking the commit for a
-  future `git rebase --autosquash`).
 
 ```lua
 -- options default to `false`
 require("tinygit").amendOnlyMsg { forcePush = false }
 require("tinygit").amendNoEdit { forcePush = false }
+```
 
--- number of commits to select from, default: 15
-require("tinygit").fixupCommit { selectFromLastXCommits = 15 }
+### Fixup & Squash Commits
+- `fixupCommit` lets you select a commit from the last X commits and runs `git
+  commit --fixup` on the selected commit (that is, marking the commit for a
+  future `git rebase --autosquash`).
+- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`)
+
+```lua
+-- options show default values
+require("tinygit").fixupCommit { 
+	selectFromLastXCommits = 15
+	squashInstead = false, 
+}
 ```
 
 ### GitHub Interaction
