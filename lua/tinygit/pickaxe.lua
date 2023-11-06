@@ -21,8 +21,8 @@ local function showDiff(commitIdx)
 	local hash = hashList[commitIdx]
 	local filename = currentPickaxe.filename
 	local query = currentPickaxe.query
-	local date = vim.trim(fn.system({ "git", "log", "-n1", "--format=%cr", hash }))
-	local shortMsg = vim.trim(fn.system { "git", "log", "-n1", "--format=%s", hash }:sub(1, 50))
+	local date = vim.trim(fn.system { "git", "log", "-n1", "--format=%cr", hash })
+	local shortMsg = vim.trim(fn.system({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50))
 	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 
 	-- get diff
@@ -37,7 +37,7 @@ local function showDiff(commitIdx)
 	-- remove diff signs and remember line numbers
 	local diffAddLines = {}
 	local diffDelLines = {}
-	local diffPreProcLines = {}
+	local diffHunkHeaderLines = {}
 	for i = 1, #diffLines, 1 do
 		local line = diffLines[i]
 		if line:find("^%+") then
@@ -45,8 +45,9 @@ local function showDiff(commitIdx)
 		elseif line:find("^%-") then
 			table.insert(diffDelLines, i - 1)
 		elseif line:find("^@@") then
-			table.insert(diffPreProcLines, i - 1)
-			diffLines[i] = "" -- removing preproc info, since it breaks ft highlighting
+			table.insert(diffHunkHeaderLines, i - 1)
+			-- removing preproc info, since it breaks ft highlighting
+			diffLines[i] = line:gsub("@@.-@@", "")
 		end
 		diffLines[i] = diffLines[i]:sub(2)
 	end
@@ -88,12 +89,9 @@ local function showDiff(commitIdx)
 	for _, ln in pairs(diffDelLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
 	end
-	for _, ln in pairs(diffPreProcLines) do
-		local divider = ("─"):rep(110)
-		a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
-			virt_text = { { divider, "PreProc" } },
-			virt_text_pos = "overlay",
-		})
+	for _, ln in pairs(diffHunkHeaderLines) do
+		a.nvim_buf_add_highlight(bufnr, ns, "PreProcLine", ln, 0, -1)
+		vim.api.nvim_set_hl(0, "PreProcLine", { underline = true })
 	end
 
 	-- search for the query
