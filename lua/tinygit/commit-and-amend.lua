@@ -295,7 +295,7 @@ function M.fixupCommit(userOpts)
 		"git",
 		"log",
 		"-n" .. tostring(opts.selectFromLastXCommits),
-		"--format=%h\t%s\t%cr\t%cn", -- format: hash, subject, date, author
+		"--format=" .. u.commitListFormat,
 	}
 
 	-- GUARD
@@ -307,7 +307,7 @@ function M.fixupCommit(userOpts)
 	vim.ui.select(commits, {
 		prompt = ("󰊢 Select Commit to %s"):format(title),
 		format_item = u.commitListFormatter,
-		kind = "):format()tinygit.fixupCommit",
+		kind = "tinygit.fixupCommit",
 	}, function(commit)
 		if not commit then return end
 		local hash = commit:match("^%w+")

@@ -61,6 +61,9 @@ function M.commitListFormatter(commitLine)
 	return table.concat({ commitMsg, date, author }, " · ")
 end
 
+-- for git log --format
+-- hash, subject, date, author
+M.commitListFormat = "%h\t%s\t%cr\t%cn"
 
 --------------------------------------------------------------------------------
 return M

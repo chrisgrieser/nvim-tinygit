@@ -5,30 +5,33 @@ local a = vim.api
 local config = require("tinygit.config").config.searchFileHistory
 --------------------------------------------------------------------------------
 
----@class currentPickaxe saves metadata for the current pickaxe operation
----@field hashList string[] list of all hashes where the string was found
+---@class currentRun saves metadata for the current pickaxe operation
+---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field filename string
 ---@field query string search query pickaxed for
 
----@type currentPickaxe
-local currentPickaxe = { hashList = {}, filename = "", query = "" }
+---@type currentRun
+local currentRun = { hashList = {}, filename = "", query = "" }
 
 --------------------------------------------------------------------------------
 
 ---@param commitIdx number index of the selected commit in the list of commits
-local function showDiff(commitIdx)
-	local hashList = currentPickaxe.hashList
+---@param type "file"|"function"
+local function showDiff(commitIdx, type)
+	local hashList = currentRun.hashList
 	local hash = hashList[commitIdx]
-	local filename = currentPickaxe.filename
-	local query = currentPickaxe.query
+	local filename = currentRun.filename
+	local query = currentRun.query
 	local date = vim.trim(fn.system { "git", "log", "-n1", "--format=%cr", hash })
 	local shortMsg = vim.trim(fn.system({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50))
 	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 
 	-- get diff
-	local diff = fn.system { "git", "show", hash, "--format=", "--", filename }
+	local diff = type == "file" and fn.system { "git", "show", hash, "--format=", "--", filename }
+		or fn.system { "git", "log", hash, "--format=", "-n1", ("-L:%s:%s"):format(query, filename) }
+
 	if u.nonZeroExit(diff) then return end
-	local diffLines = vim.split(diff, "\n")
+	local diffLines = vim.split(vim.trim(diff), "\n")
 	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
 		table.remove(diffLines, 1)
 	end
@@ -95,7 +98,7 @@ local function showDiff(commitIdx)
 	end
 
 	-- search for the query
-	if query ~= "" then
+	if query ~= "" and type == "file" then
 		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 
 		vim.opt_local.ignorecase = true -- consistent with `--regexp-ignore-case`
@@ -106,8 +109,8 @@ local function showDiff(commitIdx)
 	end
 
 	-- keymaps: info message as extmark
-	local infotext =
-		"n/N: next/prev occurrence   <Tab>/<S-Tab>: next/prev commit   q: close   yh: yank hash   "
+	local infotext = "<[S-]Tab>: prev/next commit   q: close   yh: yank hash"
+	if type == "file" then infotext = infotext .. "   n/N: next/prev occurrence" end
 	a.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
 		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
 		virt_text_pos = "overlay",
@@ -130,7 +133,7 @@ local function showDiff(commitIdx)
 			return
 		end
 		close()
-		showDiff(commitIdx + 1)
+		showDiff(commitIdx + 1, type)
 	end, opts)
 	keymap("n", "<S-Tab>", function()
 		if commitIdx == 1 then
@@ -138,7 +141,7 @@ local function showDiff(commitIdx)
 			return
 		end
 		close()
-		showDiff(commitIdx - 1)
+		showDiff(commitIdx - 1, type)
 	end, opts)
 
 	-- keymaps: yank hash
@@ -148,62 +151,132 @@ local function showDiff(commitIdx)
 	end, opts)
 end
 
+---@param commitList string raw response from `git log`, will be validated
+---@param type "file"|"function"
+local function selectFromCommits(commitList, type)
+	-- GUARD
+	if u.nonZeroExit(commitList) then return end
+	commitList = vim.trim(commitList)
+	if commitList == "" then
+		u.notify(('No commits found where "%s" was changed.'):format(currentRun.query))
+		return
+	end
+
+	-- save data
+	local commits = vim.split(commitList, "\n")
+	currentRun.hashList = vim.tbl_map(function(commitLine)
+		local hash = vim.split(commitLine, "\t")[1]
+		return hash
+	end, commits)
+
+	-- select
+	local searchMode = currentRun.query == "" and vim.fs.basename(currentRun.filename) or currentRun.query
+	vim.ui.select(commits, {
+		prompt = ("󰊢 Commits that changed '%s'"):format(searchMode),
+		format_item = u.commitListFormatter,
+		kind = "tinygit.pickaxeDiff",
+	}, function(_, commitIdx)
+		if not commitIdx then return end -- aborted selection
+		showDiff(commitIdx, type)
+	end)
+end
+
 --------------------------------------------------------------------------------
 
 function M.searchFileHistory()
 	if u.notInGitRepo() then return end
+	currentRun.filename = fn.expand("%")
 
-	local filename = fn.expand("%")
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
+		currentRun.query = query
 		local response
 		if query == "" then
 			-- without argument, search all commits that touched the current file
-			response = fn.system { "git", "log", "--format=%h\t%s\t%cr\t%cn", "--", filename }
+			response = fn.system {
+				"git",
+				"log",
+				"--format=" .. u.commitListFormat,
+				"--",
+				currentRun.filename,
+			}
 		else
 			response = fn.system {
 				"git",
 				"log",
-				"--format=%h\t%s\t%cr\t%cn", -- format: hash, subject, date, author
+				"--format=" .. u.commitListFormat,
 				"--pickaxe-regex",
 				"--regexp-ignore-case",
 				("-S%s"):format(query),
 				"--",
-				filename,
+				currentRun.filename,
 			}
 		end
-
-		-- GUARD
-		if u.nonZeroExit(response) then return end
-		response = vim.trim(response)
-		if response == "" then
-			u.notify(('No commits found where "%s" was changed.'):format(query))
-			return
-		end
-
-		-- save data
-		local commits = vim.split(response, "\n")
-		local hashList = vim.tbl_map(function(commitLine)
-			local hash = vim.split(commitLine, "\t")[1]
-			return hash
-		end, commits)
-		currentPickaxe = {
-			hashList = hashList,
-			query = query,
-			filename = filename,
-		}
-
-		-- select
-		local searchMode = query == "" and vim.fs.basename(filename) or query
-		vim.ui.select(commits, {
-			prompt = ("󰊢 Commits that changed '%s'"):format(searchMode),
-			format_item = u.commitListFormatter,
-			kind = "tinygit.pickaxeDiff",
-		}, function(_, commitIdx)
-			if not commitIdx then return end -- aborted selection
-			showDiff(commitIdx)
-		end)
+		selectFromCommits(response, "file")
 	end)
+end
+
+---@param funcname? string -- nil: aborted
+local function selectFromFunctionHistory(funcname)
+	if not funcname or funcname == "" then return end
+
+	local response = fn.system {
+		"git",
+		"log",
+		"--format=" .. u.commitListFormat,
+		("-L:%s:%s"):format(funcname, currentRun.filename),
+		"--no-patch",
+	}
+	selectFromCommits(response, "function")
+end
+
+function M.functionHistory()
+	if u.notInGitRepo() then return end
+
+	-- TODO figure out how to query treesitter for function names, and use
+	-- treesitter instead
+	currentRun.filename = fn.expand("%")
+	local lspWithSymbolSupport = false
+	local clients = vim.lsp.get_active_clients { bufnr = 0 }
+	for _, client in pairs(clients) do
+		if client.server_capabilities.documentSymbolProvider then
+			lspWithSymbolSupport = true
+			break
+		end
+	end
+
+	if lspWithSymbolSupport then
+		-- 1. query LSP for symbols,
+		-- 2. filter by kind function, prompt to select a function name,
+		-- 3. prompt to select a commit that changed that function
+		vim.lsp.buf.document_symbol {
+			on_list = function(response)
+				local funcsObjs = vim.tbl_filter(function(item) return item.kind == "Function" end, response.items)
+				if #funcsObjs == 0 then
+					local client = response.context.client_id
+					u.notify(("LSP (client #%s) could not find any functions."):format(client), "warn")
+				end
+
+				local funcNames = vim.tbl_map(function(item) return item.text:gsub("^%[Function%] ", "") end, funcsObjs)
+				vim.ui.select(
+					funcNames,
+					{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
+					function(funcname)
+						currentRun.query = funcname
+						selectFromFunctionHistory(funcname)
+					end
+				)
+			end,
+		}
+	else
+		vim.ui.input(
+			{ prompt = "󰊢 Search History of Function named:" },
+			function(funcname)
+				currentRun.query = funcname
+				selectFromFunctionHistory(funcname)
+			end
+		)
+	end
 end
 
 --------------------------------------------------------------------------------

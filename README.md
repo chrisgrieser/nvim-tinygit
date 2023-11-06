@@ -35,7 +35,7 @@ Lightweight and nimble git client for nvim.
 	* [Fixup & Squash Commits](#fixup--squash-commits)
 	* [GitHub Interaction](#github-interaction)
 	* [Push](#push)
-	* [Search File History ("git pickaxe")](#search-file-history-git-pickaxe)
+	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
 - [Improved Interactive Rebasing](#improved-interactive-rebasing)
 - [Configuration](#configuration)
@@ -188,17 +188,27 @@ require("tinygit").githubUrl("file")
 require("tinygit").push { pullBefore = false, force = false }
 ```
 
-### Search File History ("git pickaxe")
-- Search the git history of the current file for a term ("git pickaxe").
-- The search is case-insensitive and supports regex.
-- Select from the matching commits to open a diff popup.
-- Keymaps in the diff popup:
-	* `n`/`N`: go to the next/previous occurrence of the query.
-	* `<Tab>`/`<S-Tab>`: cycle through the commits.
-	* `yh`: yank the commit hash to the system clipboard.
+### Search File/Function History ("git pickaxe")
+- Search the git **history of the current file for a term** (`git log -S`).
+	* The search is case-insensitive and supports regex.
+	* Select from the matching commits to open a diff popup.
+- Explore the **history of a function in the current file** (`git log -L`).
+	* If the current buffer has an LSP with support for document symbols
+	  attached, you select can select a function. (Otherwise, you are prompted to
+	  enter a function name.)
+	* Select from the matching commits to open a diff popup.
+	* Note that [`git` uses heuristics to determine the enclosing function of a
+	  change](https://news.ycombinator.com/item?id=38153309), so this is not
+	  100% perfect, and has varying reliability across languages.
+
+Keymaps in the diff popup:
+- `<Tab>`/`<S-Tab>`: cycle through the commits.
+- `yh`: yank the commit hash to the system clipboard.
+- `n`/`N` (file history): go to the next/previous occurrence of the query.
 
 ```lua
 require("tinygit").searchFileHistory()
+require("tinygit").functionHistory()
 ```
 
 ### Stash
@@ -210,7 +220,7 @@ require("tinygit").stashPop()
 
 ## Improved Interactive Rebasing
 `tinygit` also comes with some improvements for interactive rebasing (`git
-rebase -i`) with nvim: 
+rebase -i`) with nvim:
 - Improved syntax highlighting of commit messages.
 - `<Tab>` (normal mode): Cycle through the common rebase actions: `pick`,
   `reword`, `fixup`, `squash`, `drop`. Also supports their short forms.
@@ -218,7 +228,6 @@ rebase -i`) with nvim:
 > [!NOTE]
 > This requires that your git editor (or sequence editor) is set to use `nvim`.
 > You can do so with `git config --global core.editor "nvim"`.
-
 
 If you want to disable those modifications, set:
 
