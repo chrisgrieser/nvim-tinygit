@@ -43,7 +43,7 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
     - |tinygit-fixup-&-squash-commits|
     - |tinygit-github-interaction|
     - |tinygit-push|
-    - |tinygit-search-file-history-("git-pickaxe")|
+    - |tinygit-search-file/function-history-("git-pickaxe")|
     - |tinygit-stash|
 - |tinygit-improved-interactive-rebasing|
 - |tinygit-configuration|
@@ -205,18 +205,27 @@ PUSH ~
 <
 
 
-SEARCH FILE HISTORY (“GIT PICKAXE”) ~
+SEARCH FILE/FUNCTION HISTORY (“GIT PICKAXE”) ~
 
-- Search the git history of the current file for a term ("git pickaxe").
-- The search is case-insensitive and supports regex.
-- Select from the matching commits to open a diff popup.
-- Keymaps in the diff popup:
-    - `n`/`N`go to the next/previous occurrence of the query.
-    - `<Tab>`/`<S-Tab>`cycle through the commits.
-    - `yh`yank the commit hash to the system clipboard.
+- Search the git **history of the current file for a term** (`git log -S`).
+    - The search is case-insensitive and supports regex.
+    - Select from the matching commits to open a diff popup.
+- Explore the **history of a function in the current file** (`git log -L`).
+    - If the current buffer has an LSP with support for document symbols
+        attached, you select can select a function. (Otherwise, you are prompted to
+        enter a function name.)
+    - Select from the matching commits to open a diff popup.
+    - Note that `git` uses heuristics to determine the enclosing function of a
+        change <https://news.ycombinator.com/item?id=38153309>, so this is not
+        100% perfect, and has varying reliability across languages.
+
+Keymaps in the diff popup: - `<Tab>`/`<S-Tab>`cycle through the commits. -
+`yh`yank the commit hash to the system clipboard. - `n`/`N` (file history): go
+to the next/previous occurrence of the query.
 
 >lua
     require("tinygit").searchFileHistory()
+    require("tinygit").functionHistory()
 <
 
 
