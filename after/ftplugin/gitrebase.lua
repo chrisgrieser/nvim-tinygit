@@ -15,7 +15,7 @@ vim.api.nvim_set_hl(ns, "tinygit_rebase_mdInlineCode", { link = "@text.literal" 
 
 vim.fn.matchadd(
 	"tinygit_rebase_conventionalCommit",
-	[[\v (feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv)(!|(.{-}))?\ze:]]
+	[[\v (feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
 )
 vim.api.nvim_set_hl(ns, "tinygit_rebase_conventionalCommit", { link = "Title" })
 

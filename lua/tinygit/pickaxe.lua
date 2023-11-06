@@ -170,10 +170,11 @@ local function selectFromCommits(commitList, type)
 	end, commits)
 
 	-- select
+	u.commitList.setupAppearance()
 	local searchMode = currentRun.query == "" and vim.fs.basename(currentRun.filename) or currentRun.query
 	vim.ui.select(commits, {
 		prompt = ("󰊢 Commits that changed '%s'"):format(searchMode),
-		format_item = u.commitListFormatter,
+		format_item = u.commitList.selectorFormatter,
 		kind = "tinygit.pickaxeDiff",
 	}, function(_, commitIdx)
 		if not commitIdx then return end -- aborted selection
@@ -196,7 +197,7 @@ function M.searchFileHistory()
 			response = fn.system {
 				"git",
 				"log",
-				"--format=" .. u.commitListFormat,
+				"--format=" .. u.commitList.gitlogFormat,
 				"--",
 				currentRun.filename,
 			}
@@ -204,7 +205,7 @@ function M.searchFileHistory()
 			response = fn.system {
 				"git",
 				"log",
-				"--format=" .. u.commitListFormat,
+				"--format=" .. u.commitList.gitlogFormat,
 				"--pickaxe-regex",
 				"--regexp-ignore-case",
 				("-S%s"):format(query),
@@ -223,7 +224,7 @@ local function selectFromFunctionHistory(funcname)
 	local response = fn.system {
 		"git",
 		"log",
-		"--format=" .. u.commitListFormat,
+		"--format=" .. u.commitList.gitlogFormat,
 		("-L:%s:%s"):format(funcname, currentRun.filename),
 		"--no-patch",
 	}

@@ -295,18 +295,19 @@ function M.fixupCommit(userOpts)
 		"git",
 		"log",
 		"-n" .. tostring(opts.selectFromLastXCommits),
-		"--format=" .. u.commitListFormat,
+		"--format=" .. u.commitList.gitlogFormat,
 	}
 
 	-- GUARD
 	if u.nonZeroExit(response) then return end
 	local commits = vim.split(vim.trim(response), "\n")
 
-	local title = opts.squashInstead and "Squash" or "Fixup"
 
+	u.commitList.setupAppearance()
+	local title = opts.squashInstead and "Squash" or "Fixup"
 	vim.ui.select(commits, {
 		prompt = ("󰊢 Select Commit to %s"):format(title),
-		format_item = u.commitListFormatter,
+		format_item = u.commitList.selectorFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)
 		if not commit then return end

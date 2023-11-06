@@ -49,21 +49,66 @@ end
 
 ---@return string "user/name" of repo
 ---@nodiscard
-function M.getRepo()
-	return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2)
-end
+function M.getRepo() return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2) end
 
----formats a list of commits
----@param commitLine string input of form `--format=%h\t%s\t%cr\t%cn`
----@return string formatted text
-function M.commitListFormatter(commitLine)
-	local _, commitMsg, date, author = unpack(vim.split(commitLine, "\t"))
-	return table.concat({ commitMsg, date, author }, " · ")
-end
+---Since the various elements of this object must be changed together, since
+---they depend on the configuration of the other
+---@type { selectorFormatter: fun(commitLine: string): string; gitlogFormat: string; setupAppearance: fun() }
+M.commitList = {
+	-- what is passed to `git log --format`. hash/`%h` follows by a tab is required
+	-- at the beginning, the rest is decorative, though \t as delimiter as
+	-- assumed by the others parts here.
+	gitlogFormat = "%h\t%s\t%cr", -- hash, subject, date
 
--- for git log --format
--- hash, subject, date, author
-M.commitListFormat = "%h\t%s\t%cr\t%cn"
+	-- how the commits are displayed in the selector
+	---@param commitLine string, formatted as gitlogFormat
+	---@return string formatted text
+	selectorFormatter = function(commitLine)
+		local _, subject, date = unpack(vim.split(commitLine, "\t"))
+		return ("%s\t%s"):format(subject, date)
+	end,
+
+	-- highlights for the items in the selector
+	setupAppearance = function()
+		-- get effective backend for the selector
+		-- https://github.com/stevearc/dressing.nvim/blob/master/lua/dressing/config.lua#L164-L179
+		local dressingTinygitConfig = require("dressing.config").select.get_config { kind = "tinygit" }
+		local dressingBackend = dressingTinygitConfig.backend
+			or require("dressing.config").select.backend[1]
+
+		local backendMap = {
+			telescope = "TelescopeResults",
+			builtin = "DressingSelect",
+			nui = "DressingSelect",
+		}
+		local selectorFiletype = backendMap[dressingBackend]
+		if not selectorFiletype then return end -- others not supported yet
+
+		vim.api.nvim_create_autocmd("FileType", {
+			once = true, -- to not affect other selectors
+			pattern = selectorFiletype,
+			callback = function()
+				local ns = vim.api.nvim_create_namespace("tinygit.selector")
+				vim.api.nvim_win_set_hl_ns(0, ns)
+
+				vim.fn.matchadd("tinygit_selector_issueNumber", [[#\d\+]])
+				vim.api.nvim_set_hl(ns, "tinygit_selector_issueNumber", { link = "Number" })
+
+				vim.fn.matchadd("tinygit_selector_date", [[\t.*$]])
+				vim.api.nvim_set_hl(ns, "tinygit_selector_date", { link = "Comment" })
+
+				vim.fn.matchadd("tinygit_selector_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
+				vim.api.nvim_set_hl(ns, "tinygit_selector_mdInlineCode", { link = "@text.literal" })
+
+				vim.fn.matchadd(
+					"tinygit_selector_conventionalCommit",
+					[[\v^ *(feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
+				)
+				vim.api.nvim_set_hl(ns, "tinygit_selector_conventionalCommit", { link = "Title" })
+			end,
+		})
+	end,
+}
 
 --------------------------------------------------------------------------------
 return M
