@@ -51,6 +51,23 @@ end
 ---@nodiscard
 function M.getRepo() return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2) end
 
+-- get effective backend for the selector
+-- @see https://github.com/stevearc/dressing.nvim/blob/master/lua/dressing/config.lua#L164-L179
+---@return string filetype of selector, nil if not supported
+function M.dressingBackendFt()
+		local dressingTinygitConfig = require("dressing.config").select.get_config { kind = "tinygit" }
+		local dressingBackend = dressingTinygitConfig.backend
+			or require("dressing.config").select.backend[1]
+
+		local backendMap = {
+			telescope = "TelescopeResults",
+			builtin = "DressingSelect",
+			nui = "DressingSelect",
+		}
+		local selectorFiletype = backendMap[dressingBackend]
+		return selectorFiletype
+end
+
 ---Since the various elements of this object must be changed together, since
 ---they depend on the configuration of the other
 ---@type { selectorFormatter: fun(commitLine: string): string; gitlogFormat: string; setupAppearance: fun() }
@@ -70,23 +87,12 @@ M.commitList = {
 
 	-- highlights for the items in the selector
 	setupAppearance = function()
-		-- get effective backend for the selector
-		-- https://github.com/stevearc/dressing.nvim/blob/master/lua/dressing/config.lua#L164-L179
-		local dressingTinygitConfig = require("dressing.config").select.get_config { kind = "tinygit" }
-		local dressingBackend = dressingTinygitConfig.backend
-			or require("dressing.config").select.backend[1]
-
-		local backendMap = {
-			telescope = "TelescopeResults",
-			builtin = "DressingSelect",
-			nui = "DressingSelect",
-		}
-		local selectorFiletype = backendMap[dressingBackend]
-		if not selectorFiletype then return end -- others not supported yet
+		local backendFiletype = M.dressingBackendFt()
+		if not backendFiletype then return end 
 
 		vim.api.nvim_create_autocmd("FileType", {
 			once = true, -- to not affect other selectors
-			pattern = selectorFiletype,
+			pattern = backendFiletype,
 			callback = function()
 				local ns = vim.api.nvim_create_namespace("tinygit.selector")
 				vim.api.nvim_win_set_hl_ns(0, ns)

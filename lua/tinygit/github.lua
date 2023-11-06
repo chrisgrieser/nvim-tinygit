@@ -68,6 +68,26 @@ local function issueListFormatter(issue)
 	return icon .. " #" .. issue.number .. " " .. issue.title
 end
 
+local function issueListAppearance()
+		local backendFiletype = u.dressingBackendFt()
+		if not backendFiletype then return end 
+
+		vim.api.nvim_create_autocmd("FileType", {
+			once = true, -- to not affect other selectors
+			pattern = backendFiletype,
+			callback = function()
+				local ns = vim.api.nvim_create_namespace("tinygit.issueList")
+				vim.api.nvim_win_set_hl_ns(0, ns)
+
+				vim.fn.matchadd("tinygit_issueList_issueNumber", [[#\d\+]])
+				vim.api.nvim_set_hl(ns, "tinygit_issueList_issueNumber", { link = "Number" })
+
+				vim.fn.matchadd("tinygit_issueList_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
+				vim.api.nvim_set_hl(ns, "tinygit_issueList_mdInlineCode", { link = "@text.literal" })
+			end,
+		})
+end
+
 ---Choose a GitHub issue/PR from the current repo to open in the browser.
 ---CAVEAT Due to GitHub API limitations, only the last 100 issues are shown.
 ---@param userOpts { state?: string, type?: string }
@@ -105,6 +125,7 @@ function M.issuesAndPrs(userOpts)
 	end
 
 	local type = opts.type == "all" and "Issue/PR" or opts.type
+	issueListAppearance()
 	vim.ui.select(issues, {
 		prompt = (" Select %s (%s)"):format(type, opts.state),
 		kind = "tinygit.githubIssue",
