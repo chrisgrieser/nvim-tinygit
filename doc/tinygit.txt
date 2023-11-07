@@ -297,10 +297,15 @@ The `setup` call is optional. These are the default settings:
             mergedPR = "🟪",
             closedPR = "🟥",
         },
-        searchFileHistory = {
-            diffPopupWidth = 0.8, -- float, 0 to 1
-            diffPopupHeight = 0.8, -- float, 0 to 1
-            diffPopupBorder = "single",
+        historySearch = {
+            diffPopup = {
+                width = 0.8, -- float, 0 to 1
+                height = 0.8,
+                border = "single",
+            },
+            -- if trying to call `git log` on a shallow repository, automatically
+            -- unshallow the repo by running `git fetch --unshallow`
+            autoUnshallowIfNeeded = false,
         },
     }
 <
