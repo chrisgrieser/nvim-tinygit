@@ -252,13 +252,19 @@ function M.functionHistory()
 		-- 3. prompt to select a commit that changed that function
 		vim.lsp.buf.document_symbol {
 			on_list = function(response)
-				local funcsObjs = vim.tbl_filter(function(item) return item.kind == "Function" end, response.items)
+				local funcsObjs = vim.tbl_filter(
+					function(item) return item.kind == "Function" end,
+					response.items
+				)
 				if #funcsObjs == 0 then
 					local client = response.context.client_id
 					u.notify(("LSP (client #%s) could not find any functions."):format(client), "warn")
 				end
 
-				local funcNames = vim.tbl_map(function(item) return item.text:gsub("^%[Function%] ", "") end, funcsObjs)
+				local funcNames = vim.tbl_map(
+					function(item) return item.text:gsub("^%[Function%] ", "") end,
+					funcsObjs
+				)
 				vim.ui.select(
 					funcNames,
 					{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
@@ -270,13 +276,10 @@ function M.functionHistory()
 			end,
 		}
 	else
-		vim.ui.input(
-			{ prompt = "󰊢 Search History of Function named:" },
-			function(funcname)
-				currentRun.query = funcname
-				selectFromFunctionHistory(funcname)
-			end
-		)
+		vim.ui.input({ prompt = "󰊢 Search History of Function named:" }, function(funcname)
+			currentRun.query = funcname
+			selectFromFunctionHistory(funcname)
+		end)
 	end
 end
 

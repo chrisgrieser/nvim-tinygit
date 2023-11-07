@@ -42,7 +42,7 @@ end
 ---@nodiscard
 ---@return boolean
 function M.notInGitRepo()
-	fn.system("git rev-parse --is-inside-work-tree")
+	fn.system { "git", "rev-parse", "--is-inside-work-tree" }
 	local notInRepo = M.nonZeroExit("Not in Git Repo.")
 	return notInRepo
 end
@@ -55,17 +55,16 @@ function M.getRepo() return fn.system("git remote -v | head -n1"):match(":.*%.")
 -- @see https://github.com/stevearc/dressing.nvim/blob/master/lua/dressing/config.lua#L164-L179
 ---@return string filetype of selector, nil if not supported
 function M.dressingBackendFt()
-		local dressingTinygitConfig = require("dressing.config").select.get_config { kind = "tinygit" }
-		local dressingBackend = dressingTinygitConfig.backend
-			or require("dressing.config").select.backend[1]
+	local dressingTinygitConfig = require("dressing.config").select.get_config { kind = "tinygit" }
+	local dressingBackend = dressingTinygitConfig.backend or require("dressing.config").select.backend[1]
 
-		local backendMap = {
-			telescope = "TelescopeResults",
-			builtin = "DressingSelect",
-			nui = "DressingSelect",
-		}
-		local selectorFiletype = backendMap[dressingBackend]
-		return selectorFiletype
+	local backendMap = {
+		telescope = "TelescopeResults",
+		builtin = "DressingSelect",
+		nui = "DressingSelect",
+	}
+	local selectorFiletype = backendMap[dressingBackend]
+	return selectorFiletype
 end
 
 ---Since the various elements of this object must be changed together, since
@@ -88,7 +87,7 @@ M.commitList = {
 	-- highlights for the items in the selector
 	setupAppearance = function()
 		local backendFiletype = M.dressingBackendFt()
-		if not backendFiletype then return end 
+		if not backendFiletype then return end
 
 		vim.api.nvim_create_autocmd("FileType", {
 			once = true, -- to not affect other selectors
