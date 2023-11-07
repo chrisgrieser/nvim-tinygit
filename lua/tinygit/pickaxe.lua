@@ -5,13 +5,35 @@ local a = vim.api
 local config = require("tinygit.config").config.historySearch
 --------------------------------------------------------------------------------
 
----@class currentRun saves metadata for the current pickaxe operation
+---@class currentRun
 ---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field filename string
 ---@field query string search query pickaxed for
 
+---saves metadata for the current operation
 ---@type currentRun
 local currentRun = { hashList = {}, filename = "", query = "" }
+
+---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
+---@return boolean -- whether the repo is shallow
+local function repoIsShallow()
+	local isShallow = fn.system { "git", "rev-parse", "--is-shallow-repository" } == "true\n"
+	if not isShallow then return false end
+
+	if config.autoUnshallowIfNeeded then
+		u.notify("Auto-Unshallowing repo…", "info", "History Search")
+		-- delayed, so notification shows up before fn.system blocks execution
+		vim.defer_fn(function() fn.system { "git", "fetch", "--unshallow" } end, 300)
+		return false
+	else
+		u.notify(
+			"Aborting: Repository is shallow.\nRun `git fetch --unshallow`.",
+			"warn",
+			"History Search"
+		)
+		return true
+	end
+end
 
 --------------------------------------------------------------------------------
 
@@ -185,7 +207,7 @@ end
 --------------------------------------------------------------------------------
 
 function M.searchFileHistory()
-	if u.notInGitRepo() then return end
+	if u.notInGitRepo() or repoIsShallow() then return end
 	currentRun.filename = fn.expand("%")
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
@@ -232,7 +254,12 @@ local function selectFromFunctionHistory(funcname)
 end
 
 function M.functionHistory()
-	if u.notInGitRepo() then return end
+	-- GUARD
+	if u.notInGitRepo() or repoIsShallow() then return end
+	if vim.tbl_contains({ "json", "yaml", "toml", "css" }, vim.bo.ft) then
+		u.notify(vim.bo.ft .. " does not have any functions.", "warn")
+		return
+	end
 
 	-- TODO figure out how to query treesitter for function names, and use
 	-- treesitter instead?

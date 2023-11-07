@@ -4,6 +4,7 @@ local M = {}
 ---@class pluginConfig
 ---@field commitMsg commitConfig
 ---@field issueIcons issueIconConfig
+---@field historySearch historySearchConfig
 ---@field push pushConfig
 
 ---@class issueIconConfig
