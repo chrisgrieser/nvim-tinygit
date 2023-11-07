@@ -21,12 +21,11 @@ local M = {}
 ---@field spellcheck boolean
 ---@field openReferencedIssue boolean
 
----@class searchFileHistoryConfig 
----@field diffPopupWidth number
----@field diffPopupHeight number
----@field diffPopupBorder "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]
+---@class historySearchConfig
+---@field diffPopup { width: number, height: number, border: "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]}
+---@field autoUnshallowIfNeeded boolean
 
----@class pushConfig 
+---@class pushConfig
 ---@field preventPushingFixupOrSquashCommits boolean
 ---@field confirmationSound boolean
 
@@ -55,7 +54,7 @@ local defaultConfig = {
 
 		-- enable vim's builtin spellcheck for the commit message input field.
 		-- (configured to ignore capitalization and correctly consider camelCase)
-		spellcheck = false, 
+		spellcheck = false,
 
 		-- if commit message references issue/PR, open it in the browser
 		openReferencedIssue = false,
@@ -71,11 +70,16 @@ local defaultConfig = {
 		mergedPR = "🟪",
 		closedPR = "🟥",
 	},
-	searchFileHistory = {
-		diffPopupWidth = 0.8,
-		diffPopupHeight = 0.8,
-		diffPopupBorder = "single",
-	} 
+	historySearch = {
+		diffPopup = {
+			width = 0.8, -- float, 0 to 1
+			height = 0.8,
+			border = "single",
+		},
+		-- if trying to call `git log` on a shallow repository, automatically
+		-- unshallow the repo by running `git fetch --unshallow`
+		autoUnshallowIfNeeded = false,
+	},
 }
 
 --------------------------------------------------------------------------------

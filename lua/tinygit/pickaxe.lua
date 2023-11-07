@@ -2,7 +2,7 @@ local M = {}
 local fn = vim.fn
 local u = require("tinygit.utils")
 local a = vim.api
-local config = require("tinygit.config").config.searchFileHistory
+local config = require("tinygit.config").config.historySearch
 --------------------------------------------------------------------------------
 
 ---@class currentRun saves metadata for the current pickaxe operation
@@ -62,8 +62,8 @@ local function showDiff(commitIdx, type)
 	a.nvim_buf_set_option(bufnr, "modifiable", false)
 
 	-- open new win for the buff
-	local width = math.min(config.diffPopupWidth, 0.99)
-	local height = math.min(config.diffPopupHeight, 0.99)
+	local width = math.min(config.diffPopup.width, 0.99)
+	local height = math.min(config.diffPopup.height, 0.99)
 
 	local winnr = a.nvim_open_win(bufnr, true, {
 		relative = "win",
@@ -74,7 +74,7 @@ local function showDiff(commitIdx, type)
 		col = math.floor((1 - width) * a.nvim_win_get_width(0) / 2),
 		title = (" %s (%s) "):format(shortMsg, date),
 		title_pos = "center",
-		border = config.diffPopupBorder,
+		border = config.diffPopup.border,
 		style = "minimal",
 		zindex = 1, -- below nvim-notify floats
 	})
@@ -235,7 +235,7 @@ function M.functionHistory()
 	if u.notInGitRepo() then return end
 
 	-- TODO figure out how to query treesitter for function names, and use
-	-- treesitter instead
+	-- treesitter instead?
 	currentRun.filename = fn.expand("%")
 	local lspWithSymbolSupport = false
 	local clients = vim.lsp.get_active_clients { bufnr = 0 }
