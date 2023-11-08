@@ -51,25 +51,9 @@ end
 ---@nodiscard
 function M.getRepo() return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2) end
 
--- get effective backend for the selector
--- @see https://github.com/stevearc/dressing.nvim/blob/master/lua/dressing/config.lua#L164-L179
----@return string filetype of selector, nil if not supported
-function M.dressingBackendFt()
-	local dressingTinygitConfig = require("dressing.config").select.get_config { kind = "tinygit" }
-	local dressingBackend = dressingTinygitConfig.backend or require("dressing.config").select.backend[1]
-
-	local backendMap = {
-		telescope = "TelescopeResults",
-		builtin = "DressingSelect",
-		nui = "DressingSelect",
-	}
-	local selectorFiletype = backendMap[dressingBackend]
-	return selectorFiletype
-end
-
 ---Since the various elements of this object must be changed together, since
 ---they depend on the configuration of the other
----@type { selectorFormatter: fun(commitLine: string): string; gitlogFormat: string; setupAppearance: fun() }
+---@type { selectorFormatter: fun(commitLine: string): string; gitlogFormat: string; setupAppearance: fun(): number }
 M.commitList = {
 	-- what is passed to `git log --format`. hash/`%h` follows by a tab is required
 	-- at the beginning, the rest is decorative, though \t as delimiter as
@@ -86,12 +70,9 @@ M.commitList = {
 
 	-- highlights for the items in the selector
 	setupAppearance = function()
-		local backendFiletype = M.dressingBackendFt()
-		if not backendFiletype then return end
-
-		vim.api.nvim_create_autocmd("FileType", {
+		local autocmdId = vim.api.nvim_create_autocmd("FileType", {
 			once = true, -- to not affect other selectors
-			pattern = backendFiletype,
+			pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
 			callback = function()
 				local ns = vim.api.nvim_create_namespace("tinygit.selector")
 				vim.api.nvim_win_set_hl_ns(0, ns)
@@ -112,6 +93,7 @@ M.commitList = {
 				vim.api.nvim_set_hl(ns, "tinygit_selector_conventionalCommit", { link = "Title" })
 			end,
 		})
+		return autocmdId
 	end,
 }
 

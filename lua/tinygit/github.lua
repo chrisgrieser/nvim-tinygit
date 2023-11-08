@@ -68,24 +68,23 @@ local function issueListFormatter(issue)
 	return icon .. " #" .. issue.number .. " " .. issue.title
 end
 
+---@return number autocmdId
 local function issueListAppearance()
-		local backendFiletype = u.dressingBackendFt()
-		if not backendFiletype then return end 
+	local autocmdId = vim.api.nvim_create_autocmd("FileType", {
+		once = true, -- to not affect other selectors
+		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
+		callback = function()
+			local ns = vim.api.nvim_create_namespace("tinygit.issueList")
+			vim.api.nvim_win_set_hl_ns(0, ns)
 
-		vim.api.nvim_create_autocmd("FileType", {
-			once = true, -- to not affect other selectors
-			pattern = backendFiletype,
-			callback = function()
-				local ns = vim.api.nvim_create_namespace("tinygit.issueList")
-				vim.api.nvim_win_set_hl_ns(0, ns)
+			vim.fn.matchadd("tinygit_issueList_issueNumber", [[#\d\+]])
+			vim.api.nvim_set_hl(ns, "tinygit_issueList_issueNumber", { link = "Number" })
 
-				vim.fn.matchadd("tinygit_issueList_issueNumber", [[#\d\+]])
-				vim.api.nvim_set_hl(ns, "tinygit_issueList_issueNumber", { link = "Number" })
-
-				vim.fn.matchadd("tinygit_issueList_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-				vim.api.nvim_set_hl(ns, "tinygit_issueList_mdInlineCode", { link = "@text.literal" })
-			end,
-		})
+			vim.fn.matchadd("tinygit_issueList_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
+			vim.api.nvim_set_hl(ns, "tinygit_issueList_mdInlineCode", { link = "@text.literal" })
+		end,
+	})
+	return autocmdId
 end
 
 ---Choose a GitHub issue/PR from the current repo to open in the browser.
@@ -125,12 +124,13 @@ function M.issuesAndPrs(userOpts)
 	end
 
 	local type = opts.type == "all" and "Issue/PR" or opts.type
-	issueListAppearance()
+	local autocmdId = issueListAppearance()
 	vim.ui.select(issues, {
 		prompt = (" Select %s (%s)"):format(type, opts.state),
 		kind = "tinygit.githubIssue",
 		format_item = function(issue) return issueListFormatter(issue) end,
 	}, function(choice)
+		vim.api.nvim_del_autocmd(autocmdId)
 		if not choice then return end
 		u.openUrl(choice.html_url)
 	end)

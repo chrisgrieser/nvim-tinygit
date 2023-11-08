@@ -302,14 +302,14 @@ function M.fixupCommit(userOpts)
 	if u.nonZeroExit(response) then return end
 	local commits = vim.split(vim.trim(response), "\n")
 
-
-	u.commitList.setupAppearance()
+	local autocmdId = u.commitList.setupAppearance()
 	local title = opts.squashInstead and "Squash" or "Fixup"
 	vim.ui.select(commits, {
 		prompt = ("󰊢 Select Commit to %s"):format(title),
 		format_item = u.commitList.selectorFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)
+		vim.api.nvim_del_autocmd(autocmdId)
 		if not commit then return end
 		local hash = commit:match("^%w+")
 		local fixupOrSquash = opts.squashInstead and "--squash" or "--fixup"
