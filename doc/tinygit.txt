@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 07
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 08
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
