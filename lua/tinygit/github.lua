@@ -45,9 +45,10 @@ function M.githubUrl(justRepo)
 end
 
 --------------------------------------------------------------------------------
----formats the list of issues/PRs for vim.ui.select
+
+---formatter for vim.ui.select
 ---@param issue table
----@return table
+---@return string
 local function issueListFormatter(issue)
 	local isPR = issue.pull_request ~= nil
 	local merged = isPR and issue.pull_request.merged_at ~= nil
@@ -68,6 +69,7 @@ local function issueListFormatter(issue)
 	return icon .. " #" .. issue.number .. " " .. issue.title
 end
 
+---sets the appearance for TelescopeResults or DressingSelect
 ---@return number autocmdId
 local function issueListAppearance()
 	local autocmdId = vim.api.nvim_create_autocmd("FileType", {
@@ -106,7 +108,11 @@ end
 ---@param userOpts { state?: string, type?: string }
 function M.issuesAndPrs(userOpts)
 	if u.notInGitRepo() then return end
-	local defaultOpts = { state = "all", type = "all" }
+
+	local defaultOpts = {
+		state = "all",
+		type = "all",
+	}
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
 	local repo = u.getRepo()
