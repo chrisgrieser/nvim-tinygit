@@ -77,11 +77,25 @@ local function issueListAppearance()
 			local ns = vim.api.nvim_create_namespace("tinygit.issueList")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
+			vim.fn.matchadd("tinygit_issueList_bugs", [[\v[Bb]ug]])
+			vim.api.nvim_set_hl(ns, "tinygit_issueList_bugs", { link = "DiagnosticError" })
+
+			vim.fn.matchadd("tinygit_issueList_featureRequests", [[\v[Ff]eature [Rr]equest|FR]]) -- codespell-ignore
+			vim.api.nvim_set_hl(ns, "tinygit_issueList_featureRequests", { link = "DiagnosticInfo" })
+
 			vim.fn.matchadd("tinygit_issueList_issueNumber", [[#\d\+]])
 			vim.api.nvim_set_hl(ns, "tinygit_issueList_issueNumber", { link = "Number" })
 
 			vim.fn.matchadd("tinygit_issueList_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
 			vim.api.nvim_set_hl(ns, "tinygit_issueList_mdInlineCode", { link = "@text.literal" })
+
+			-- conventional commit keywords for PRs
+			vim.fn.matchadd(
+				"tinygit_issueList_conventionalCommit",
+				[[\v (feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
+			)
+			vim.api.nvim_set_hl(ns, "tinygit_issueList_conventionalCommit", { link = "Title" })
+
 		end,
 	})
 	return autocmdId
