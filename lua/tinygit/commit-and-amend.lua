@@ -283,11 +283,12 @@ function M.amendOnlyMsg(opts, prefillMsg)
 	end)
 end
 
----@param userOpts { selectFromLastXCommits?: number, squashInstead: boolean }
+---@param userOpts { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
 function M.fixupCommit(userOpts)
 	local defaultOpts = {
 		selectFromLastXCommits = 15,
 		squashInstead = false,
+		autoRebase = false,
 	}
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
@@ -316,8 +317,22 @@ function M.fixupCommit(userOpts)
 
 		local stdout = fn.system { "git", "commit", fixupOrSquash, hash }
 		if u.nonZeroExit(stdout) then return end
-
 		u.notify(stdout, "info", title .. " Commit")
+
+		if opts.autoRebase then
+			stdout = fn.system {
+				"git",
+				"-c",
+				"sequence.editor=:", -- HACK ":" is a "no-op-"editor https://www.reddit.com/r/git/comments/uzh2no/what_is_the_utility_of_noninteractive_rebase/
+				"rebase",
+				"--interactive",
+				"--autostash",
+				"--autosquash",
+				hash .. "^", -- rebase up until the selected commit
+			}
+			if u.nonZeroExit(stdout) then return end
+			u.notify(stdout, "info", "Auto Rebase applied")
+		end
 	end)
 end
 

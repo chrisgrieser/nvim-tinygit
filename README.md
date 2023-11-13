@@ -145,15 +145,18 @@ require("tinygit").amendNoEdit { forcePush = false }
 
 ### Fixup & Squash Commits
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
-  commit --fixup` on the selected commit (that is, marking the commit for a
-  future `git rebase --autosquash`).
-- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`)
+  commit --fixup` on the selected commit
+- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`). 
+- `autoRebase = true` automatically runs rebase with `--autosquash` and 
+`--autostash` afterward, confirming all fixups and squashes **without opening a
+rebase view**. (Note that this can potentially result in multiple conflicts.)
 
 ```lua
 -- options show default values
 require("tinygit").fixupCommit { 
 	selectFromLastXCommits = 15
 	squashInstead = false, 
+	autoRebase = false,
 }
 ```
 
