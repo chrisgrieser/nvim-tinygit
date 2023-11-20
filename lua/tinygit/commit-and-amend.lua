@@ -57,9 +57,39 @@ local function processCommitMsg(commitMsg)
 	return true, commitMsg
 end
 
--- Uses ColorColumn to indicate max length of commit messages, and
--- additionally colors commit messages that are too long in red.
-local function setGitCommitAppearance()
+local function cycleConventionalCommitKeywords()
+	local keywords = config.conventionalCommits.keywords
+	local msg = vim.api.nvim_get_current_line()
+	local firstWord = msg:match("^%w+")
+	local col = vim.api.nvim_win_get_cursor(0)[2]
+
+	if not firstWord then
+		vim.api.nvim_set_current_line(keywords[1] .. ": ")
+		vim.api.nvim_win_set_cursor(0, { 1, #keywords[1] + 2 })
+		return
+	end
+
+	local newWord, cursorPosDiff
+	for idx, word in pairs(keywords) do
+		if word == firstWord then
+			newWord = keywords[(idx % #keywords) + 1]
+			cursorPosDiff = #newWord - #keywords[idx]
+			break
+		end
+	end
+	if not newWord then
+		vim.api.nvim_set_current_line(keywords[1] .. ": " .. msg)
+		vim.api.nvim_win_set_cursor(0, { 1, col + #keywords[1] + 2 })
+		return
+	end
+
+	local newMsg = msg:gsub(firstWord, newWord, 1)
+	vim.api.nvim_set_current_line(newMsg)
+	local cursorMovedDueToChange = vim.api.nvim_win_get_cursor(0)[2] < col
+	if not cursorMovedDueToChange then vim.api.nvim_win_set_cursor(0, { 1, col + cursorPosDiff }) end
+end
+
+local function setupInputField()
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = "DressingInput",
 		once = true, -- do not affect other DressingInputs
@@ -103,6 +133,9 @@ local function setGitCommitAppearance()
 				vim.opt_local.spelloptions = "camel"
 				vim.opt_local.spellcapcheck = ""
 			end
+
+			-- keymaps
+			vim.keymap.set({ "n", "i" }, "<Tab>", cycleConventionalCommitKeywords, { buffer = true })
 		end,
 	})
 end
@@ -183,7 +216,7 @@ function M.smartCommit(opts, prefillMsg)
 	if doStageAllChanges then title = "Stage All · " .. title end
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
 
-	setGitCommitAppearance()
+	setupInputField()
 
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
@@ -258,7 +291,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
 		prefillMsg = lastCommitMsg
 	end
-	setGitCommitAppearance()
+	setupInputField()
 
 	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal

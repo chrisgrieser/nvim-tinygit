@@ -18,7 +18,7 @@ local M = {}
 ---@field maxLen number
 ---@field mediumLen number
 ---@field emptyFillIn string
----@field enforceConvCommits {enabled: boolean, keywords: string[]}
+---@field conventionalCommits {enforce: boolean, keywords: string[]}
 ---@field spellcheck boolean
 ---@field openReferencedIssue boolean
 

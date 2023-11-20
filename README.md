@@ -99,6 +99,7 @@ gitcommit`
 - The title of the input field displays what actions are going to be performed.
   You can see at glance, whether all changes are going to be committed or whether
   there a `git push` is triggered afterward, so there are no surprises.
+- Use `<Tab>` in the input field to quickly cycle conventional commits keywords.
 
 ```lua
 require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
@@ -146,7 +147,7 @@ require("tinygit").amendNoEdit { forcePush = false }
 ### Fixup & Squash Commits
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
   commit --fixup` on the selected commit
-- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`). 
+- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`).
 - `autoRebase = true` automatically runs rebase with `--autosquash` and 
 `--autostash` afterward, confirming all fixups and squashes **without opening a
 rebase view**. (Note that this can potentially result in multiple conflicts.)
