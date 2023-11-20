@@ -45,9 +45,9 @@ local function processCommitMsg(commitMsg)
 		end
 	end
 
-	if config.enforceConvCommits.enabled then
+	if config.conventionalCommits.enforce then
 		local firstWord = commitMsg:match("^%w+")
-		if not vim.tbl_contains(config.enforceConvCommits.keywords, firstWord) then
+		if not vim.tbl_contains(config.conventionalCommits.keywords, firstWord) then
 			u.notify("Not using a Conventional Commits keyword.", "warn")
 			return false, commitMsg
 		end
