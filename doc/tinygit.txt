@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 13
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 20
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -110,6 +110,7 @@ SMART-COMMIT ~
 - The title of the input field displays what actions are going to be performed.
     You can see at glance, whether all changes are going to be committed or whether
     there a `git push` is triggered afterward, so there are no surprises.
+- Use `<Tab>` in the input field to quickly cycle conventional commits keywords.
 
 >lua
     require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
@@ -271,13 +272,12 @@ The `setup` call is optional. These are the default settings:
             -- in this message. `false` to disallow empty commit messages.
             emptyFillIn = "chore", ---@type string|false
     
-            -- disallow commit messages without a conventional commit keyword
-            enforceConvCommits = {
-                enabled = false,
+            conventionalCommits = {
+                enforce = false, -- disallow commit messages without a keyword
                 -- stylua: ignore
-                keywords = {
-                    "chore", "build", "test", "fix", "feat", "refactor", "perf",
-                    "style", "revert", "ci", "docs", "break", "improv",
+                keywords = { -- also used for the cycle-keywords via <Tab>
+                    "fix", "feat", "chore", "docs", "refactor", "build", "test",
+                    "perf", "style", "revert", "ci", "break", "improv",
                 },
             },
     
