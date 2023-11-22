@@ -38,7 +38,7 @@ function M.openIssueUnderCursor() require("tinygit.github").openIssueUnderCursor
 --------------------------------------------------------------------------------
 
 ---@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
-function M.push(userOpts) require("tinygit.push-and-pr").push(userOpts or {}) end
+function M.push(userOpts) require("tinygit.push-and-pr").push(userOpts or {}, true) end
 
 function M.createGitHubPr() require("tinygit.push-and-pr").createGitHubPr() end
 

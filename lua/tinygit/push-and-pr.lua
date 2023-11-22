@@ -21,7 +21,8 @@ end
 
 -- pull before to avoid conflicts
 ---@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
-function M.push(userOpts)
+---@param calledByUser? boolean
+function M.push(userOpts, calledByUser)
 	-- GUARD
 	if u.notInGitRepo() then return end
 
@@ -36,11 +37,13 @@ function M.push(userOpts)
 	if config.preventPushingFixupOrSquashCommits then
 		local fixupOrSquashCommits = getFixupOrSquashCommits()
 		if fixupOrSquashCommits ~= "" then
-			---- stylua: ignore
+			-- stylua: ignore
 			u.notify("Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits, "warn", "Push")
 			return
 		end
 	end
+
+	if calledByUser then u.notify(title .. "…", "info", "tinygit") end
 
 	fn.jobstart(shellCmd, {
 		stdout_buffered = true,
