@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 20
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 22
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -42,7 +42,7 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
     - |tinygit-amend|
     - |tinygit-fixup-&-squash-commits|
     - |tinygit-github-interaction|
-    - |tinygit-push|
+    - |tinygit-push-&-pr|
     - |tinygit-search-file/function-history-("git-pickaxe")|
     - |tinygit-stash|
 - |tinygit-improved-interactive-rebasing|
@@ -135,9 +135,9 @@ pushing into a single step, when it is the last commit you intend to make.
 >lua
     -- to enable normal mode in the commit message input field, configure
     -- dressing.nvim like this:
-    require("dressing").setup({ 
-        input = { insert_only = false }
-    })
+    require("dressing").setup {
+        input = { insert_only = false },
+    }
 <
 
 
@@ -200,11 +200,20 @@ GITHUB INTERACTION ~
 <
 
 
-PUSH ~
+PUSH & PR ~
+
+- `createGitHubPr` opens the PR from the current branch browser.
+    - This requires the repo to be a fork with sufficient information on the remote.
+    - This does not require the `gh` cli, as it uses a GitHub web feature.
 
 >lua
     -- options default to `false`
-    require("tinygit").push { pullBefore = false, force = false }
+    require("tinygit").push {
+        pullBefore = false,
+        force = false,
+        createGitHubPr = false,
+    }
+    require("tinygit.push-and-pr").createGitHubPr()
 <
 
 
@@ -283,7 +292,7 @@ The `setup` call is optional. These are the default settings:
     
             -- enable vim's builtin spellcheck for the commit message input field
             -- (configured to ignore capitalization and correctly consider camelCase)
-            spellcheck = false, 
+            spellcheck = false,
     
             -- if commit message references issue/PR, open it in the browser
             openReferencedIssue = false,
@@ -317,12 +326,12 @@ APPEARANCE OF INPUT FIELD ~
 
 >lua
     -- see: https://github.com/stevearc/dressing.nvim#configuration
-    require("dressing").setup({ 
-        input = { 
+    require("dressing").setup {
+        input = {
             insert_only = false, -- enable normal mode in the input field
             -- other appearance settings
-        }
-    })
+        },
+    }
 <
 
 
@@ -330,12 +339,12 @@ USE TELESCOPE FOR SELECTIONS ~
 
 >lua
     -- see: https://github.com/stevearc/dressing.nvim#configuration
-    require("dressing").setup({ 
-        select = { 
+    require("dressing").setup {
+        select = {
             backend = { "telescope" },
             -- other appearance settings
-        }
-    })
+        },
+    }
 <
 
 
