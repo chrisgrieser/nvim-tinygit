@@ -2,7 +2,7 @@ local M = {}
 local fn = vim.fn
 local u = require("tinygit.utils")
 local config = require("tinygit.config").config.commitMsg
-local push = require("tinygit.push").push
+local push = require("tinygit.push-and-pr").push
 --------------------------------------------------------------------------------
 
 ---@nodiscard
