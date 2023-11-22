@@ -34,7 +34,7 @@ Lightweight and nimble git client for nvim.
 	* [Amend](#amend)
 	* [Fixup & Squash Commits](#fixup--squash-commits)
 	* [GitHub Interaction](#github-interaction)
-	* [Push](#push)
+	* [Push & PR](#push--pr)
 	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
 - [Improved Interactive Rebasing](#improved-interactive-rebasing)
@@ -125,9 +125,9 @@ pushing into a single step, when it is the last commit you intend to make.
 ```lua
 -- to enable normal mode in the commit message input field, configure
 -- dressing.nvim like this:
-require("dressing").setup({ 
-	input = { insert_only = false }
-})
+require("dressing").setup {
+	input = { insert_only = false },
+}
 ```
 
 ### Amend
@@ -148,7 +148,7 @@ require("tinygit").amendNoEdit { forcePush = false }
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
   commit --fixup` on the selected commit
 - Use `squashInstead = true` to squash instead of fixup (`git commit --squash`).
-- `autoRebase = true` automatically runs rebase with `--autosquash` and 
+- `autoRebase = true` automatically runs rebase with `--autosquash` and
 `--autostash` afterward, confirming all fixups and squashes **without opening a
 rebase view**. (Note that this can potentially result in multiple conflicts.)
 
@@ -185,11 +185,19 @@ require("tinygit").openIssueUnderCursor()
 require("tinygit").githubUrl("file")
 ```
 
-### Push
+### Push & PR
+- `createGitHubPr` opens the PR from the current branch browser.
+	* This requires the repo to be a fork with sufficient information on the remote.
+	* This does not require the `gh` cli, as it uses a GitHub web feature.
 
 ```lua
 -- options default to `false`
-require("tinygit").push { pullBefore = false, force = false }
+require("tinygit").push {
+	pullBefore = false,
+	force = false,
+	createGitHubPr = false,
+}
+require("tinygit.push-and-pr").createGitHubPr()
 ```
 
 ### Search File/Function History ("git pickaxe")
@@ -264,7 +272,7 @@ local defaultConfig = {
 
 		-- enable vim's builtin spellcheck for the commit message input field
 		-- (configured to ignore capitalization and correctly consider camelCase)
-		spellcheck = false, 
+		spellcheck = false,
 
 		-- if commit message references issue/PR, open it in the browser
 		openReferencedIssue = false,
@@ -297,24 +305,24 @@ local defaultConfig = {
 
 ```lua
 -- see: https://github.com/stevearc/dressing.nvim#configuration
-require("dressing").setup({ 
-	input = { 
+require("dressing").setup {
+	input = {
 		insert_only = false, -- enable normal mode in the input field
 		-- other appearance settings
-	}
-})
+	},
+}
 ```
 
 ### Use Telescope for selections
 
 ```lua
 -- see: https://github.com/stevearc/dressing.nvim#configuration
-require("dressing").setup({ 
-	select = { 
+require("dressing").setup {
+	select = {
 		backend = { "telescope" },
 		-- other appearance settings
-	}
-})
+	},
+}
 ```
 
 ## Non-Goals

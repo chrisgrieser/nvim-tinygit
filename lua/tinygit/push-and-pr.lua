@@ -20,7 +20,7 @@ end
 --------------------------------------------------------------------------------
 
 -- pull before to avoid conflicts
----@param userOpts { pullBefore?: boolean|nil, force?: boolean|nil }
+---@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
 function M.push(userOpts)
 	-- GUARD
 	if u.notInGitRepo() then return end
@@ -59,7 +59,8 @@ function M.push(userOpts)
 			confirmationSound(
 				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 			)
-			vim.cmd.checktime() -- in case a `git pull` has updated a file
+			if userOpts.pullBefore then vim.cmd.checktime() end
+			if userOpts.createGitHubPr then M.createGitHubPr() end
 		end,
 		on_stderr = function(_, data)
 			if data[1] == "" and #data == 1 then return end
@@ -80,9 +81,18 @@ function M.push(userOpts)
 
 			u.notify(output, logLevel, title)
 			confirmationSound(sound)
-			vim.cmd.checktime() -- in case a `git pull` has updated a file
+			if userOpts.pullBefore then vim.cmd.checktime() end
+			if userOpts.createGitHubPr then M.createGitHubPr() end
 		end,
 	})
+end
+
+--------------------------------------------------------------------------------
+
+function M.createGitHubPr()
+	local branchName = vim.trim(fn.system("git --no-optional-locks branch --show-current"))
+	local prUrl = ("https://github.com/%s/pull/new/%s"):format(u.getRepo(), branchName)
+	u.openUrl(prUrl)
 end
 
 --------------------------------------------------------------------------------
