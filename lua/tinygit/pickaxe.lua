@@ -281,7 +281,7 @@ function M.functionHistory()
 		vim.lsp.buf.document_symbol {
 			on_list = function(response)
 				local funcsObjs = vim.tbl_filter(
-					function(item) return item.kind == "Function" end,
+					function(item) return item.kind == "Function" or item.kind == "Method" end,
 					response.items
 				)
 				if #funcsObjs == 0 then
@@ -290,7 +290,13 @@ function M.functionHistory()
 				end
 
 				local funcNames = vim.tbl_map(
-					function(item) return item.text:gsub("^%[Function%] ", "") end,
+					function(item) 
+						if item.kind == "Function" then
+							return item.text:gsub("^%[Function%] ", "") 
+						elseif item.kind == "Method" then
+							return item.text:match("%[Method%]%s+([^%(]+)")
+						end
+					end,
 					funcsObjs
 				)
 				vim.ui.select(
