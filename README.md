@@ -18,7 +18,7 @@ Lightweight and nimble git client for nvim.
 *Informative notifications with highlighting (using `nvim-notify`)*
 
 <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb"
-	alt="Pasted image 2023-10-11 at 18 49 40"
+	alt="showcase searching file history"
 	width=60%>
 
 *Search File history ("git pickaxe") and inspect the commit diffs.*
@@ -186,7 +186,7 @@ require("tinygit").githubUrl("file")
 ```
 
 ### Push & PR
-- `createGitHubPr` opens the PR from the current branch browser.
+- `createGitHubPr` opens a PR from the current branch browser.
 	* This requires the repo to be a fork with sufficient information on the remote.
 	* This does not require the `gh` cli, as it uses a GitHub web feature.
 
@@ -197,7 +197,7 @@ require("tinygit").push {
 	force = false,
 	createGitHubPr = false,
 }
-require("tinygit.push-and-pr").createGitHubPr()
+require("tinygit").createGitHubPr()
 ```
 
 ### Search File/Function History ("git pickaxe")
@@ -239,9 +239,9 @@ rebase -i`) with nvim:
 
 > [!NOTE]
 > This requires that your git editor (or sequence editor) is set to use `nvim`.
-> You can do so with `git config --global core.editor "nvim"`.
+> You can do so by running `git config --global core.editor "nvim"`.
 
-If you want to disable those modifications, set:
+If you want to disable those modifications, add this to your config:
 
 ```lua
 vim.g.tinygit_no_rebase_ftplugin = true
