@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 26
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 28
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -202,7 +202,7 @@ GITHUB INTERACTION ~
 
 PUSH & PR ~
 
-- `createGitHubPr` opens the PR from the current branch browser.
+- `createGitHubPr` opens a PR from the current branch browser.
     - This requires the repo to be a fork with sufficient information on the remote.
     - This does not require the `gh` cli, as it uses a GitHub web feature.
 
@@ -213,7 +213,7 @@ PUSH & PR ~
         force = false,
         createGitHubPr = false,
     }
-    require("tinygit.push-and-pr").createGitHubPr()
+    require("tinygit").createGitHubPr()
 <
 
 
@@ -258,8 +258,8 @@ rebase -i`) with nvim: - Improved syntax highlighting of commit messages. -
 
 
   [!NOTE] This requires that your git editor (or sequence editor) is set to use
-  `nvim`. You can do so with `git config --global core.editor "nvim"`.
-If you want to disable those modifications, set:
+  `nvim`. You can do so by running `git config --global core.editor "nvim"`.
+If you want to disable those modifications, add this to your config:
 
 >lua
     vim.g.tinygit_no_rebase_ftplugin = true
