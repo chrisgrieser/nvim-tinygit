@@ -61,7 +61,7 @@ Lightweight and nimble git client for nvim.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
   with filetype syntax highlighting.
-- Improvements for interactive rebasing with nvim as sequence editor.
+- Improvements for interactive rebasing when using nvim as sequence editor.
 
 ## Installation
 

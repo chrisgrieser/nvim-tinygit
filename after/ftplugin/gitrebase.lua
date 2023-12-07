@@ -22,20 +22,23 @@ vim.api.nvim_set_hl(ns, "tinygit_rebase_conventionalCommit", { link = "Title" })
 vim.fn.matchadd("tinygit_rebase_fixupSquash", [[\v (fixup|squash)!]])
 vim.api.nvim_set_hl(ns, "tinygit_rebase_fixupSquash", { link = "WarningMsg" })
 
+vim.fn.matchadd("tinygit_rebase_drop", [[^drop .*]])
+vim.api.nvim_set_hl(ns, "tinygit_rebase_drop", { strikethrough = true, fg = "#808080" })
+
 --------------------------------------------------------------------------------
 -- KEYMAPS
 
 -- rebase action toggle
 vim.keymap.set("n", "<Tab>", function()
 	local modes = {
-		"squash",
-		"fixup",
 		"pick",
+		"squash",
+		"\tfixup", -- indented to indicate it's a fixup
 		"reword",
 		"drop",
 	}
 	local curLine = vim.api.nvim_get_current_line()
-	local firstWord = curLine:match("^%s*(%a+)")
+	local firstWord = curLine:match("^\t?%a+")
 
 	for i = 1, #modes do
 		if firstWord == modes[i] then
