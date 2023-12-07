@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 November 28
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 07
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -69,7 +69,7 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
     with filetype syntax highlighting.
-- Improvements for interactive rebasing with nvim as sequence editor.
+- Improvements for interactive rebasing when using nvim as sequence editor.
 
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
