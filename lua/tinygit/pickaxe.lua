@@ -221,6 +221,7 @@ function M.searchFileHistory()
 				"git",
 				"log",
 				"--format=" .. u.commitList.gitlogFormat,
+				"--follow", -- follow file renamings
 				"--",
 				currentRun.filename,
 			}
@@ -231,6 +232,7 @@ function M.searchFileHistory()
 				"--format=" .. u.commitList.gitlogFormat,
 				"--regexp-ignore-case",
 				"-G" .. query,
+				"--follow", -- follow file renamings
 				"--",
 				currentRun.filename,
 			}
@@ -247,6 +249,7 @@ local function selectFromFunctionHistory(funcname)
 		"git",
 		"log",
 		"--format=" .. u.commitList.gitlogFormat,
+		"--follow", -- follow file renamings
 		("-L:%s:%s"):format(funcname, currentRun.filename),
 		"--no-patch",
 	}
