@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 07
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 11
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -219,7 +219,7 @@ PUSH & PR ~
 
 SEARCH FILE/FUNCTION HISTORY (“GIT PICKAXE”) ~
 
-- Search the git **history of the current file for a term** (`git log -S`).
+- Search the git **history of the current file for a term** (`git log -G`).
     - The search is case-insensitive and supports regex.
     - Select from the matching commits to open a diff popup.
 - Explore the **history of a function in the current file** (`git log -L`).
