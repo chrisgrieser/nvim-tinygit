@@ -229,9 +229,8 @@ function M.searchFileHistory()
 				"git",
 				"log",
 				"--format=" .. u.commitList.gitlogFormat,
-				"--pickaxe-regex",
 				"--regexp-ignore-case",
-				("-S%s"):format(query),
+				"-G" .. query,
 				"--",
 				currentRun.filename,
 			}
