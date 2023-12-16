@@ -3,7 +3,8 @@
 <!-- LTeX: enabled=true -->
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield"/></a>
 
-Lightweight and nimble git client for nvim.
+A lightweight bundle of commands focussed on swift and streamlined git
+operations.
 
 <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a"
 	alt="showcase commit message input field"
@@ -41,27 +42,22 @@ Lightweight and nimble git client for nvim.
 - [Configuration](#configuration)
 	* [Appearance of Input Field](#appearance-of-input-field)
 	* [Use Telescope for selections](#use-telescope-for-selections)
-- [Non-Goals](#non-goals)
+- [Comparison to existing git plugins](#comparison-to-existing-git-plugins)
 - [Credits](#credits)
 
 <!-- tocstop -->
 
 ## Features
-- **Smart-Commit**: Open a popup to enter a commit message with syntax
-  highlighting and indicators for [commit message
-  overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting).
-  If there are no staged changed, stages all changes before doing so (`git add -A`).
-- Commit messages have syntax highlighting, indicators for [commit message
-  overlength](https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting),
-  and options to automatically open references GitHub issues in the browser
-  after committing, `git push` if the repo is clean, spellcheck, enforce
-  conventional commits, …
+- **Smart-Commit:** Open a popup to enter a commit message with syntax highlighting
+  and indicators for commit message overlength. If there are no staged changed,
+  stages all changes before doing so (`git add -A`). Optionally trigger a `git
+  push` afterward.
 - Quick commands for amend, stash, fixup, and squash commits.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
   with filetype syntax highlighting.
-- Improvements for interactive rebasing when using nvim as sequence editor.
+- Various improvements for interactive rebasing when using nvim as sequence editor.
 
 ## Installation
 
@@ -325,15 +321,20 @@ require("dressing").setup {
 }
 ```
 
-## Non-Goals
-- Become a full-fledged git client. Use
-  [neogit](https://github.com/NeogitOrg/neogit) for that.
-- Add features available in
-  [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim). `tinygit` is
-  intended to complement `gitsigns.nvim` with some simple commands, not replace
-  it.
-- UI Customization. Configure
-  [dressing.nvim](https://github.com/stevearc/dressing.nvim) for that.
+## Comparison to existing git plugins
+- `gitsigns.nvim`: No feature overlap. `tinygit` rather complements `gitsigns`
+  as the latter is used to stage changes (`:GitSigns stage_hunk`) quickly, and
+  the former allows you to commit (and push) those changes quickly.
+- `Neogit` / `Fugitive`: These two probably cover every feature `tinygit` has,
+  but with much more configuration options. The benefit of `tinygit` is that it
+  is aims to streamline common actions as much as possible by smartly combining
+  git operations. For instance, smart-commit combines staging, committing, and
+  pushing.
+- `diffview.nvim`: No overlap, except for the command to search the file history.
+  `tinygit`'s version of file history search had a few more quality-of-life
+  features, such as automatically jumping to occurrences of the search term. As
+  opposed to `diffview`, the diff is not presented in a side-by-side-diff, but
+  in a unified view.
 
 <!-- vale Google.FirstPerson = NO -->
 ## Credits
