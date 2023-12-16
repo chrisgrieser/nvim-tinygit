@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 11
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 16
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -10,7 +10,7 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Usage                                         |tinygit-nvim-tinygit-usage|
   - Improved Interactive Rebasing|tinygit-nvim-tinygit-improved-interactive-rebasing|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
-  - Non-Goals                                 |tinygit-nvim-tinygit-non-goals|
+  - Comparison to existing git plugins|tinygit-nvim-tinygit-comparison-to-existing-git-plugins|
   - Credits                                     |tinygit-nvim-tinygit-credits|
 
 ==============================================================================
@@ -18,7 +18,8 @@ Table of Contents                                  *tinygit-table-of-contents*
 
 
 
-Lightweight and nimble git client for nvim.
+A lightweight bundle of commands focussed on swift and streamlined git
+operations.
 
 
 
@@ -49,27 +50,21 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
 - |tinygit-configuration|
     - |tinygit-appearance-of-input-field|
     - |tinygit-use-telescope-for-selections|
-- |tinygit-non-goals|
+- |tinygit-comparison-to-existing-git-plugins|
 - |tinygit-credits|
 
 
 FEATURES                                       *tinygit-nvim-tinygit-features*
 
-- **Smart-Commit**Open a popup to enter a commit message with syntax
-    highlighting and indicators for commit message
-    overlength <https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting>.
-    If there are no staged changed, stages all changes before doing so (`git add -A`).
-- Commit messages have syntax highlighting, indicators for commit message
-    overlength <https://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting>,
-    and options to automatically open references GitHub issues in the browser
-    after committing, `git push` if the repo is clean, spellcheck, enforce
-    conventional commits, …
+- **Smart-Commit:** Open a popup to enter a commit message with syntax highlighting
+    and indicators for commit message overlength. If there are no staged changed,
+    stages all changes before doing so (`git add -A`). Optionally trigger a `git   push` afterward.
 - Quick commands for amend, stash, fixup, and squash commits.
 - Search issues & PRs. Open the selected issue or PR in the browser.
 - Open the GitHub URL of the current file or selection.
 - Search the file history for a string ("git pickaxe"), show results in a diff
     with filetype syntax highlighting.
-- Improvements for interactive rebasing when using nvim as sequence editor.
+- Various improvements for interactive rebasing when using nvim as sequence editor.
 
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
@@ -348,16 +343,21 @@ USE TELESCOPE FOR SELECTIONS ~
 <
 
 
-NON-GOALS                                     *tinygit-nvim-tinygit-non-goals*
+COMPARISON TO EXISTING GIT PLUGINS*tinygit-nvim-tinygit-comparison-to-existing-git-plugins*
 
-- Become a full-fledged git client. Use
-    neogit <https://github.com/NeogitOrg/neogit> for that.
-- Add features available in
-    gitsigns.nvim <https://github.com/lewis6991/gitsigns.nvim>. `tinygit` is
-    intended to complement `gitsigns.nvim` with some simple commands, not replace
-    it.
-- UI Customization. Configure
-    dressing.nvim <https://github.com/stevearc/dressing.nvim> for that.
+- `gitsigns.nvim`No feature overlap. `tinygit` rather complements `gitsigns`
+    as the latter is used to stage changes (`:GitSigns stage_hunk`) quickly, and
+    the former allows you to commit (and push) those changes quickly.
+- `Neogit` / `Fugitive`These two probably cover every feature `tinygit` has,
+    but with much more configuration options. The benefit of `tinygit` is that it
+    is aims to streamline common actions as much as possible by smartly combining
+    git operations. For instance, smart-commit combines staging, committing, and
+    pushing.
+- `diffview.nvim`No overlap, except for the command to search the file history.
+    `tinygit`’s version of file history search had a few more quality-of-life
+    features, such as automatically jumping to occurrences of the search term. As
+    opposed to `diffview`, the diff is not presented in a side-by-side-diff, but
+    in a unified view.
 
 
 CREDITS                                         *tinygit-nvim-tinygit-credits*
