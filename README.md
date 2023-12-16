@@ -328,10 +328,10 @@ require("dressing").setup {
   git operations. For instance, smart-commit combines staging, committing, and
   pushing.
 - `diffview.nvim`: No overlap, except for the command to search the file history.
-  `tinygit`'s version of file history search had a few more quality-of-life
-  features, such as automatically jumping to occurrences of the search term. As
-  opposed to `diffview`, the diff is not presented in a side-by-side-diff, but
-  in a unified view.
+  `tinygit`'s version of file history search should be easier to use and has a few
+  more quality-of-life features, such as automatically jumping to occurrences of
+  the search term. As opposed to `diffview`, the diff is not presented in a
+  side-by-side-diff, but in a unified view.
 
 <!-- vale Google.FirstPerson = NO -->
 ## Credits
