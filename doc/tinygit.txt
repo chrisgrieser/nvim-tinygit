@@ -8,7 +8,7 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Features                                   |tinygit-nvim-tinygit-features|
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Usage                                         |tinygit-nvim-tinygit-usage|
-  - Improved Interactive Rebasing|tinygit-nvim-tinygit-improved-interactive-rebasing|
+  - Improved Highlighting of Interactive Rebase|tinygit-nvim-tinygit-improved-highlighting-of-interactive-rebase|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
   - Comparison to existing git plugins|tinygit-nvim-tinygit-comparison-to-existing-git-plugins|
   - Credits                                     |tinygit-nvim-tinygit-credits|
@@ -244,12 +244,10 @@ STASH ~
 <
 
 
-IMPROVED INTERACTIVE REBASING*tinygit-nvim-tinygit-improved-interactive-rebasing*
+IMPROVED HIGHLIGHTING OF INTERACTIVE REBASE*tinygit-nvim-tinygit-improved-highlighting-of-interactive-rebase*
 
 `tinygit` also comes with some improvements for interactive rebasing (`git
-rebase -i`) with nvim: - Improved syntax highlighting of commit messages. -
-`<Tab>` (normal mode): Cycle through the common rebase actions: `pick`,
-`reword`, `fixup`, `squash`, `drop`. Also supports their short forms.
+rebase -i`) with nvim improved syntax highlighting of commit messages.
 
 
   [!NOTE] This requires that your git editor (or sequence editor) is set to use
