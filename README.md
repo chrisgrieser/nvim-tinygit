@@ -226,12 +226,9 @@ require("tinygit").stashPush()
 require("tinygit").stashPop()
 ```
 
-## Improved Interactive Rebasing
+## Improved Highlighting of Interactive Rebase
 `tinygit` also comes with some improvements for interactive rebasing (`git
-rebase -i`) with nvim:
-- Improved syntax highlighting of commit messages.
-- `<Tab>` (normal mode): Cycle through the common rebase actions: `pick`,
-  `reword`, `fixup`, `squash`, `drop`. Also supports their short forms.
+rebase -i`) with nvim improved syntax highlighting of commit messages.
 
 > [!NOTE]
 > This requires that your git editor (or sequence editor) is set to use `nvim`.
