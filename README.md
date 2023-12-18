@@ -227,14 +227,14 @@ require("tinygit").stashPop()
 ```
 
 ## Improved Highlighting of Interactive Rebase
-`tinygit` also comes with some improvements for interactive rebasing (`git
-rebase -i`) with nvim improved syntax highlighting of commit messages.
+`tinygit` also comes with some highlighting improvements for interactive rebasing (`git
+rebase -i`).
 
 > [!NOTE]
-> This requires that your git editor (or sequence editor) is set to use `nvim`.
+> This requires `nvim` as your git editor (or sequence editor).
 > You can do so by running `git config --global core.editor "nvim"`.
 
-If you want to disable those modifications, add this to your config:
+If you want to disable the modifications by `tinygit`, add this to your config:
 
 ```lua
 vim.g.tinygit_no_rebase_ftplugin = true
