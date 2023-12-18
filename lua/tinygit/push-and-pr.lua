@@ -43,7 +43,7 @@ function M.push(userOpts, calledByUser)
 		end
 	end
 
-	if calledByUser then u.notify(title .. "…", "info", "tinygit") end
+	if calledByUser then u.notify(title .. "…", "info") end
 
 	fn.jobstart(shellCmd, {
 		stdout_buffered = true,
