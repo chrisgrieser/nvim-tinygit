@@ -4,7 +4,7 @@ if vim.g.tinygit_no_rebase_ftplugin then return end
 --------------------------------------------------------------------------------
 
 -- BETTER HIGHLIGHTING
-local ns = vim.api.nvim_create_namespace("tinygit.selector")
+local ns = vim.api.nvim_create_namespace("tinygit.gitrebase-hls")
 vim.api.nvim_win_set_hl_ns(0, ns)
 
 vim.fn.matchadd("tinygit_rebase_issueNumber", [[#\d\+]])
