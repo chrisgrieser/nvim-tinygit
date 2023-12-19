@@ -251,6 +251,20 @@ local function selectFromCommits(commitList, type)
 	end)
 end
 
+---@param funcname? string -- nil: aborted
+local function selectFromFunctionHistory(funcname)
+	if not funcname or funcname == "" then return end
+	local response = fn.system {
+		"git",
+		"log",
+		"--format=" .. u.commitList.gitlogFormat,
+		"--follow", -- follow file renamings
+		("-L:%s:%s"):format(funcname, currentRun.filename),
+		"--no-patch",
+	}
+	selectFromCommits(response, "function")
+end
+
 --------------------------------------------------------------------------------
 
 function M.searchFileHistory()
@@ -286,21 +300,6 @@ function M.searchFileHistory()
 		end
 		selectFromCommits(response, "file")
 	end)
-end
-
----@param funcname? string -- nil: aborted
-local function selectFromFunctionHistory(funcname)
-	if not funcname or funcname == "" then return end
-
-	local response = fn.system {
-		"git",
-		"log",
-		"--format=" .. u.commitList.gitlogFormat,
-		"--follow", -- follow file renamings
-		("-L:%s:%s"):format(funcname, currentRun.filename),
-		"--no-patch",
-	}
-	selectFromCommits(response, "function")
 end
 
 function M.functionHistory()

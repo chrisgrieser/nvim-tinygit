@@ -1,26 +1,32 @@
 local M = {}
 local fn = vim.fn
+
 local u = require("tinygit.utils")
 local config = require("tinygit.config").config.push
+local createGitHubPr = require("tinygit.github").createGitHubPr
 --------------------------------------------------------------------------------
-
----CAVEAT currently only on macOS
----@param soundFilepath string
-local function confirmationSound(soundFilepath)
-	local onMacOs = fn.has("macunix") == 1
-	if not (onMacOs and config.confirmationSound) then return end
-	fn.system(("afplay %q &"):format(soundFilepath))
-end
 
 ---@return string
 local function getFixupOrSquashCommits()
 	return vim.trim(fn.system { "git", "log", "--oneline", "--grep=^fixup!", "--grep=^squash!" })
 end
 
+---@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
+---@param soundFilepath string
+local function postPushActions(userOpts, soundFilepath)
+	-- CAVEAT currently only on macOS
+	local onMacOs = fn.has("macunix") == 1
+	if not (onMacOs and config.confirmationSound) then return end
+	fn.system(("afplay %q &"):format(soundFilepath))
+
+	if userOpts.pullBefore then vim.cmd.checktime() end
+	if userOpts.createGitHubPr then createGitHubPr() end
+end
+
 --------------------------------------------------------------------------------
 
 -- pull before to avoid conflicts
----@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
+---@param userOpts { pullBefore: boolean, force: boolean, createGitHubPr?: boolean }
 ---@param calledByUser? boolean
 function M.push(userOpts, calledByUser)
 	-- GUARD
@@ -59,11 +65,9 @@ function M.push(userOpts, calledByUser)
 			end
 
 			u.notify(output, "info", title)
-			confirmationSound(
+			local sound =
 				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
-			)
-			if userOpts.pullBefore then vim.cmd.checktime() end
-			if userOpts.createGitHubPr then M.createGitHubPr() end
+			postPushActions(userOpts, sound)
 		end,
 		on_stderr = function(_, data)
 			if data[1] == "" and #data == 1 then return end
@@ -83,19 +87,9 @@ function M.push(userOpts, calledByUser)
 			end
 
 			u.notify(output, logLevel, title)
-			confirmationSound(sound)
-			if userOpts.pullBefore then vim.cmd.checktime() end
-			if userOpts.createGitHubPr then M.createGitHubPr() end
+			postPushActions(userOpts, sound)
 		end,
 	})
-end
-
---------------------------------------------------------------------------------
-
-function M.createGitHubPr()
-	local branchName = vim.trim(fn.system("git --no-optional-locks branch --show-current"))
-	local prUrl = ("https://github.com/%s/pull/new/%s"):format(u.getRepo(), branchName)
-	u.openUrl(prUrl)
 end
 
 --------------------------------------------------------------------------------

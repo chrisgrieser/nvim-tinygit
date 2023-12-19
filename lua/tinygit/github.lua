@@ -97,7 +97,6 @@ local function issueListAppearance()
 				[[\v (feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
 			)
 			vim.api.nvim_set_hl(ns, "tinygit_issueList_conventionalCommit", { link = "Title" })
-
 		end,
 	})
 	return autocmdId
@@ -172,6 +171,12 @@ function M.openIssueUnderCursor()
 	u.openUrl(url)
 
 	vim.opt_local.iskeyword = prevKeywordSetting
+end
+
+function M.createGitHubPr()
+	local branchName = vim.trim(fn.system("git --no-optional-locks branch --show-current"))
+	local prUrl = ("https://github.com/%s/pull/new/%s"):format(u.getRepo(), branchName)
+	u.openUrl(prUrl)
 end
 
 --------------------------------------------------------------------------------
