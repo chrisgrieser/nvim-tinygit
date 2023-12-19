@@ -9,6 +9,7 @@ local config = require("tinygit.config").config.historySearch
 ---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field filename string
 ---@field query string search query pickaxed for
+---@field originalCwd? string cwd before running history search
 
 ---saves metadata for the current operation
 ---@type currentRun
@@ -17,7 +18,7 @@ local currentRun = { hashList = {}, filename = "", query = "" }
 ---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
 ---@return boolean -- whether the repo is shallow
 local function repoIsShallow()
-	local isShallow = fn.system { "git", "rev-parse", "--is-shallow-repository" } == "true\n"
+	local isShallow = vim.trim(fn.system { "git", "rev-parse", "--is-shallow-repository" }) == "true"
 	if not isShallow then return false end
 
 	if config.autoUnshallowIfNeeded then
@@ -35,18 +36,43 @@ local function repoIsShallow()
 	end
 end
 
+-- assuming the current cwd is a git repo
+local function cdToGitRoot()
+	local gitroot = vim.trim(fn.system { "git", "rev-parse", "--show-toplevel" })
+	if gitroot ~= vim.loop.cwd() then vim.cmd.cd(gitroot) end
+end
+
 --------------------------------------------------------------------------------
 
 ---@param commitIdx number index of the selected commit in the list of commits
 ---@param type "file"|"function"
 local function showDiff(commitIdx, type)
+	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 	local hashList = currentRun.hashList
 	local hash = hashList[commitIdx]
-	local filename = currentRun.filename
 	local query = currentRun.query
 	local date = vim.trim(fn.system { "git", "log", "-n1", "--format=%cr", hash })
 	local shortMsg = vim.trim(fn.system({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50))
-	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
+
+	-- determine filename in case of renaming
+	local filenameInPresent = currentRun.filename
+	cdToGitRoot() -- in case cwd is not the git root
+	local nameHistory = vim.trim(fn.system {
+		"git",
+		"log",
+		hash .. "^..",
+		"--follow",
+		"--name-status", -- show filename changes, format: [M|Rxx] <nameAtCommit> [<newFilename>]
+		"--format=", -- suppress commit info
+		"--",
+		filenameInPresent,
+	})
+	local lastLine = table.remove(vim.split(nameHistory, "\n"))
+	local filenameAtCommit = lastLine:match("^M%s+(.+)") -- M <nameAtCommit>
+		or lastLine:match("^R%d+%s+.+   (.+)") -- Rxxx <nameAtCommit> <newFilename>
+		or lastLine:match("^R%d+%s+.+\t(.+)") -- SIC sometimes outputs spaces, sometimes tabs
+	assert(filenameAtCommit, "filenameAtCommit not matched via pattern.")
+	vim.notify("🪚 filenameAtCommit: " .. tostring(filenameAtCommit))
 
 	-- get diff
 	local diff
@@ -54,21 +80,19 @@ local function showDiff(commitIdx, type)
 		diff = fn.system {
 			"git",
 			"show",
+			hash,
 			"--format=",
-			-- BUG does not work when filename has changed. Figure out how to get previous filename?
-			("%s:%s"):format(hash, filename),
+			"--",
+			filenameAtCommit,
 		}
-		local exitCode = vim.v.shell_error
-		if exitCode ~= 0 then u.notify("diff cannot be retrieved due to file rename", "warn") end
-	else
+	elseif type == "function" then
 		diff = fn.system {
 			"git",
 			"log",
 			hash,
-			"--follow",
 			"--format=",
 			"-n1",
-			("-L:%s:%s"):format(query, filename),
+			("-L:%s:%s"):format(query, filenameAtCommit),
 		}
 	end
 
@@ -100,7 +124,7 @@ local function showDiff(commitIdx, type)
 	-- create new buf with diff
 	local bufnr = a.nvim_create_buf(false, true)
 	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
-	a.nvim_buf_set_name(bufnr, hash .. " " .. filename)
+	a.nvim_buf_set_name(bufnr, hash .. " " .. filenameAtCommit)
 	a.nvim_buf_set_option(bufnr, "modifiable", false)
 
 	-- open new win for the buff
@@ -125,7 +149,7 @@ local function showDiff(commitIdx, type)
 
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
-	local ft = vim.filetype.match { filename = vim.fs.basename(filename) }
+	local ft = vim.filetype.match { filename = vim.fs.basename(filenameAtCommit) }
 	a.nvim_buf_set_option(bufnr, "filetype", ft)
 
 	for _, ln in pairs(diffAddLines) do
@@ -164,6 +188,8 @@ local function showDiff(commitIdx, type)
 	local function close()
 		a.nvim_win_close(winnr, true)
 		a.nvim_buf_delete(bufnr, { force = true })
+		-- restore the original cwd
+		if currentRun.originalCwd ~= vim.loop.cwd() then vim.cmd.cd(currentRun.originalCwd) end
 	end
 	keymap("n", "q", close, opts)
 	keymap("n", "<Esc>", close, opts)
@@ -229,7 +255,8 @@ end
 
 function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
-	currentRun.filename = fn.expand("%")
+	currentRun.filename = a.nvim_buf_get_name(0)
+	currentRun.originalCwd = vim.loop.cwd()
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
@@ -284,9 +311,11 @@ function M.functionHistory()
 		return
 	end
 
+	currentRun.filename = a.nvim_buf_get_name(0)
+	currentRun.originalCwd = vim.loop.cwd()
+
 	-- TODO figure out how to query treesitter for function names, and use
 	-- treesitter instead?
-	currentRun.filename = fn.expand("%")
 	local lspWithSymbolSupport = false
 	local clients = vim.lsp.get_active_clients { bufnr = 0 }
 	for _, client in pairs(clients) do
@@ -298,8 +327,8 @@ function M.functionHistory()
 
 	if lspWithSymbolSupport then
 		-- 1. query LSP for symbols,
-		-- 2. filter by kind function, prompt to select a function name,
-		-- 3. prompt to select a commit that changed that function
+		-- 2. filter by kind "function"/"method", prompt to select a name,
+		-- 3. prompt to select a commit that changed that function/method
 		vim.lsp.buf.document_symbol {
 			on_list = function(response)
 				local funcsObjs = vim.tbl_filter(
@@ -307,8 +336,8 @@ function M.functionHistory()
 					response.items
 				)
 				if #funcsObjs == 0 then
-					local client = response.context.client_id
-					u.notify(("LSP (client #%s) could not find any functions."):format(client), "warn")
+					local client = vim.lsp.get_client_by_id(response.context.client_id)
+					u.notify(("LSP (%s) could not find any functions."):format(client), "warn")
 				end
 
 				local funcNames = vim.tbl_map(function(item)
