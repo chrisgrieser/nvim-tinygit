@@ -1,7 +1,8 @@
 <!-- LTeX: enabled=false -->
 # nvim-tinygit
 <!-- LTeX: enabled=true -->
-<a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit"><img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield"/></a>
+<a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
+<img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield"/></a>
 
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
@@ -38,7 +39,7 @@ operations.
 	* [Push & PR](#push--pr)
 	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
-- [Improved Interactive Rebasing](#improved-interactive-rebasing)
+- [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
 - [Configuration](#configuration)
 	* [Appearance of Input Field](#appearance-of-input-field)
 	* [Use Telescope for selections](#use-telescope-for-selections)
@@ -53,11 +54,12 @@ operations.
   stages all changes before doing so (`git add -A`). Optionally trigger a `git
   push` afterward.
 - Quick commands for amend, stash, fixup, and squash commits.
-- Search issues & PRs. Open the selected issue or PR in the browser.
-- Open the GitHub URL of the current file or selection.
-- Search the file history for a string ("git pickaxe"), show results in a diff
-  with filetype syntax highlighting.
-- Various improvements for interactive rebasing when using nvim as sequence editor.
+- Search **issues & PRs**. Open the selected issue or PR in the browser.
+- Open the **GitHub URL** of the current file or selection.
+- **Search the file history** for a string ("git pickaxe"), show results in a diff
+  with filetype syntax highlighting, correctly following file renamings.
+- Highlighting improvements for interactive **rebasing** when using nvim as sequence
+  editor.
 
 ## Installation
 
@@ -197,19 +199,21 @@ require("tinygit").createGitHubPr()
 ```
 
 ### Search File/Function History ("git pickaxe")
+Search the git history, correctly following file renamings. Select from the
+matching commits to open a popup with a diff of the changes.
+
 - Search the git **history of the current file for a term** (`git log -G`).
 	* The search is case-insensitive and supports regex.
-	* Select from the matching commits to open a diff popup.
 - Explore the **history of a function in the current file** (`git log -L`).
+	* The search is literal.
 	* If the current buffer has an LSP with support for document symbols
-	  attached, you select can select a function. (Otherwise, you are prompted to
+	  attached, you can select a function. (Otherwise, you are prompted to
 	  enter a function name.)
-	* Select from the matching commits to open a diff popup.
 	* Note that [`git` uses heuristics to determine the enclosing function of a
 	  change](https://news.ycombinator.com/item?id=38153309), so this is not
-	  100% perfect, and has varying reliability across languages.
+	  100% perfect and has varying reliability across languages.
 
-Keymaps in the diff popup:
+**Keymaps in the diff popup**
 - `<Tab>`/`<S-Tab>`: cycle through the commits.
 - `yh`: yank the commit hash to the system clipboard.
 - `n`/`N` (file history): go to the next/previous occurrence of the query.
@@ -227,8 +231,8 @@ require("tinygit").stashPop()
 ```
 
 ## Improved Highlighting of Interactive Rebase
-`tinygit` also comes with some highlighting improvements for interactive rebasing (`git
-rebase -i`).
+`tinygit` also comes with some highlighting improvements for interactive
+rebasing (`git rebase -i`).
 
 > [!NOTE]
 > This requires `nvim` as your git editor (or sequence editor).
