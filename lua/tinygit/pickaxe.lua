@@ -49,8 +49,28 @@ local function showDiff(commitIdx, type)
 	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
 
 	-- get diff
-	local diff = type == "file" and fn.system { "git", "show", hash, "--format=", "--", filename }
-		or fn.system { "git", "log", hash, "--format=", "-n1", ("-L:%s:%s"):format(query, filename) }
+	local diff
+	if type == "file" then
+		diff = fn.system {
+			"git",
+			"show",
+			"--format=",
+			-- BUG does not work when filename has changed. Figure out how to get previous filename?
+			("%s:%s"):format(hash, filename),
+		}
+		local exitCode = vim.v.shell_error
+		if exitCode ~= 0 then u.notify("diff cannot be retrieved due to file rename", "warn") end
+	else
+		diff = fn.system {
+			"git",
+			"log",
+			hash,
+			"--follow",
+			"--format=",
+			"-n1",
+			("-L:%s:%s"):format(query, filename),
+		}
+	end
 
 	if u.nonZeroExit(diff) then return end
 	local diffLines = vim.split(vim.trim(diff), "\n")
@@ -291,16 +311,13 @@ function M.functionHistory()
 					u.notify(("LSP (client #%s) could not find any functions."):format(client), "warn")
 				end
 
-				local funcNames = vim.tbl_map(
-					function(item) 
-						if item.kind == "Function" then
-							return item.text:gsub("^%[Function%] ", "") 
-						elseif item.kind == "Method" then
-							return item.text:match("%[Method%]%s+([^%(]+)")
-						end
-					end,
-					funcsObjs
-				)
+				local funcNames = vim.tbl_map(function(item)
+					if item.kind == "Function" then
+						return item.text:gsub("^%[Function%] ", "")
+					elseif item.kind == "Method" then
+						return item.text:match("%[Method%]%s+([^%(]+)")
+					end
+				end, funcsObjs)
 				vim.ui.select(
 					funcNames,
 					{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
