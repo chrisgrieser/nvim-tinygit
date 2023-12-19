@@ -46,7 +46,7 @@ TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
     - |tinygit-push-&-pr|
     - |tinygit-search-file/function-history-("git-pickaxe")|
     - |tinygit-stash|
-- |tinygit-improved-interactive-rebasing|
+- |tinygit-improved-highlighting-of-interactive-rebase|
 - |tinygit-configuration|
     - |tinygit-appearance-of-input-field|
     - |tinygit-use-telescope-for-selections|
@@ -60,11 +60,12 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
     and indicators for commit message overlength. If there are no staged changed,
     stages all changes before doing so (`git add -A`). Optionally trigger a `git   push` afterward.
 - Quick commands for amend, stash, fixup, and squash commits.
-- Search issues & PRs. Open the selected issue or PR in the browser.
-- Open the GitHub URL of the current file or selection.
-- Search the file history for a string ("git pickaxe"), show results in a diff
-    with filetype syntax highlighting.
-- Various improvements for interactive rebasing when using nvim as sequence editor.
+- Search **issues & PRs**. Open the selected issue or PR in the browser.
+- Open the **GitHub URL** of the current file or selection.
+- **Search the file history** for a string ("git pickaxe"), show results in a diff
+    with filetype syntax highlighting, correctly following file renamings.
+- Highlighting improvements for interactive **rebasing** when using nvim as sequence
+    editor.
 
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
@@ -214,19 +215,21 @@ PUSH & PR ~
 
 SEARCH FILE/FUNCTION HISTORY (“GIT PICKAXE”) ~
 
+Search the git history, correctly following file renamings. Select from the
+matching commits to open a popup with a diff of the changes.
+
 - Search the git **history of the current file for a term** (`git log -G`).
     - The search is case-insensitive and supports regex.
-    - Select from the matching commits to open a diff popup.
 - Explore the **history of a function in the current file** (`git log -L`).
+    - The search is literal.
     - If the current buffer has an LSP with support for document symbols
-        attached, you select can select a function. (Otherwise, you are prompted to
+        attached, you can select a function. (Otherwise, you are prompted to
         enter a function name.)
-    - Select from the matching commits to open a diff popup.
     - Note that `git` uses heuristics to determine the enclosing function of a
         change <https://news.ycombinator.com/item?id=38153309>, so this is not
-        100% perfect, and has varying reliability across languages.
+        100% perfect and has varying reliability across languages.
 
-Keymaps in the diff popup: - `<Tab>`/`<S-Tab>`cycle through the commits. -
+**Keymaps in the diff popup** - `<Tab>`/`<S-Tab>`cycle through the commits. -
 `yh`yank the commit hash to the system clipboard. - `n`/`N` (file history): go
 to the next/previous occurrence of the query.
 
