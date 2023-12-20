@@ -72,7 +72,6 @@ local function showDiff(commitIdx, type)
 		or lastLine:match("^R%d+%s+.+   (.+)") -- Rxxx <nameAtCommit> <newFilename>
 		or lastLine:match("^R%d+%s+.+\t(.+)") -- SIC sometimes outputs spaces, sometimes tabs
 	assert(filenameAtCommit, "filenameAtCommit not matched via pattern.")
-	vim.notify("🪚 filenameAtCommit: " .. tostring(filenameAtCommit))
 
 	-- get diff
 	local diff
