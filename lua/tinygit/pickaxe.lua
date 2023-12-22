@@ -251,17 +251,24 @@ local function selectFromCommits(commitList, type)
 	-- CAVEAT This only compares basenames, file movements are not accounted
 	-- for, however this is for display purposes only, so this caveat is not
 	-- a big issue.
-	local oneCommitPer3Lines = vim.split(commitList, "\n")
 	local commits = {}
-	for i = 1, #oneCommitPer3Lines, 3 do
-		local commitLine = oneCommitPer3Lines[i]
-		local nameAtCommit = basename(oneCommitPer3Lines[i + 2])
-		-- append name at commit only when it is not the same name as in the present
-		if basename(currentRun.absPath) ~= nameAtCommit then
-			-- tab-separated for consistently with `--format` output
-			commitLine = commitLine .. "\t" .. nameAtCommit
+	if type == "file" then
+		local oneCommitPer3Lines = vim.split(commitList, "\n")
+		for i = 1, #oneCommitPer3Lines, 3 do
+			local commitLine = oneCommitPer3Lines[i]
+			local nameAtCommit = basename(oneCommitPer3Lines[i + 2])
+			-- append name at commit only when it is not the same name as in the present
+			if basename(currentRun.absPath) ~= nameAtCommit then
+				-- tab-separated for consistently with `--format` output
+				commitLine = commitLine .. "\t" .. nameAtCommit
+			end
+			table.insert(commits, commitLine)
 		end
-		table.insert(commits, commitLine)
+
+	-- CAVEAT `git log -L` does not support `--follow` and `--name-only`, so we
+	-- cannot add the name here
+	elseif type == "function" then
+		commits = vim.split(commitList, "\n")
 	end
 
 	-- save data
@@ -330,12 +337,12 @@ end
 ---@param funcname? string -- nil: aborted
 local function selectFromFunctionHistory(funcname)
 	if not funcname or funcname == "" then return end
+
 	local response = fn.system {
+		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 		"git",
 		"log",
 		"--format=" .. u.commitList.gitlogFormat,
-		"--follow", -- follow file renamings
-		"--name-only", -- add filenames to display renamed files
 		("-L:%s:%s"):format(funcname, currentRun.absPath),
 		"--no-patch",
 	}

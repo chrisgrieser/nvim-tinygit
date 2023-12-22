@@ -198,11 +198,13 @@ require("tinygit").createGitHubPr()
 ```
 
 ### Search File/Function History ("git pickaxe")
-Search the git history, correctly following file renamings. Select from the
-matching commits to open a popup with a diff of the changes.
+Search the git history. Select from the matching commits to open a popup with a
+diff of the changes.
 
 - Search the git **history of the current file for a term** (`git log -G`).
 	* The search is case-insensitive and supports regex.
+	* Correctly follows file renamings, display past file names in the commit
+	  selection.
 - Explore the **history of a function in the current file** (`git log -L`).
 	* The search is literal.
 	* If the current buffer has an LSP with support for document symbols
