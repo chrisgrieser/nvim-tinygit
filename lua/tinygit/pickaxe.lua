@@ -55,7 +55,7 @@ local function showDiff(commitIdx, type)
 	local shortMsg = vim.trim(fn.system({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50))
 
 	-- determine filename in case of renaming
-	local filenameInPresent = currentRun.filename
+	local filenameInPresent = currentRun.absPath
 	cdToGitRoot() -- in case cwd is not the git root
 	local nameHistory = vim.trim(fn.system {
 		"git",
@@ -67,8 +67,7 @@ local function showDiff(commitIdx, type)
 		"--",
 		filenameInPresent,
 	})
-	local filenameAtCommit = table.remove(vim.split(nameHistory, "\n"))
-	assert(filenameAtCommit, "filenameAtCommit not matched via pattern.")
+	local nameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 
 	-- get diff
 	local diff
@@ -79,7 +78,7 @@ local function showDiff(commitIdx, type)
 			hash,
 			"--format=",
 			"--",
-			filenameAtCommit,
+			nameAtCommit,
 		}
 	elseif type == "function" then
 		diff = fn.system {
@@ -88,11 +87,13 @@ local function showDiff(commitIdx, type)
 			hash,
 			"--format=",
 			"-n1",
-			("-L:%s:%s"):format(query, filenameAtCommit),
+			("-L:%s:%s"):format(query, nameAtCommit),
 		}
 	end
 
+	-- GUARD
 	if u.nonZeroExit(diff) then return end
+
 	local diffLines = vim.split(vim.trim(diff), "\n")
 	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
 		table.remove(diffLines, 1)
@@ -120,7 +121,7 @@ local function showDiff(commitIdx, type)
 	-- create new buf with diff
 	local bufnr = a.nvim_create_buf(false, true)
 	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
-	a.nvim_buf_set_name(bufnr, hash .. " " .. filenameAtCommit)
+	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	a.nvim_buf_set_option(bufnr, "modifiable", false)
 
 	-- open new win for the buff
@@ -145,7 +146,7 @@ local function showDiff(commitIdx, type)
 
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
-	local ft = vim.filetype.match { filename = vim.fs.basename(filenameAtCommit) }
+	local ft = vim.filetype.match { filename = basename(nameAtCommit) }
 	a.nvim_buf_set_option(bufnr, "filetype", ft)
 
 	for _, ln in pairs(diffAddLines) do
@@ -217,7 +218,8 @@ end
 
 --------------------------------------------------------------------------------
 
----Formats line for `vim.ui.select`
+---Formats line for `vim.ui.select`. This function should be consistent with
+---`M.commitList.selectorFormat` in -`utils.lua`.
 ---@param commitLine string, formatted as gitlogFormat
 ---@return string formatted text
 local function selectorFormatter(commitLine)
@@ -246,7 +248,7 @@ local function selectFromCommits(commitList, type)
 
 	-- select
 	local autocmdId = u.commitList.setupAppearance()
-	local searchMode = currentRun.query == "" and vim.fs.basename(currentRun.filename) or currentRun.query
+	local searchMode = currentRun.query == "" and basename(currentRun.absPath) or currentRun.query
 	vim.ui.select(commits, {
 		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
 		format_item = selectorFormatter,
@@ -262,25 +264,25 @@ end
 -- user-facing function to search file history
 function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
-	currentRun.filename = a.nvim_buf_get_name(0)
+	currentRun.absPath = a.nvim_buf_get_name(0)
 	currentRun.originalCwd = vim.loop.cwd()
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
 		currentRun.query = query
-		local response
+		local commitList
 		if query == "" then
 			-- without argument, search all commits that touched the current file
-			response = fn.system {
+			commitList = fn.system {
 				"git",
 				"log",
 				"--format=" .. u.commitList.gitlogFormat,
 				"--follow", -- follow file renamings
 				"--",
-				currentRun.filename,
+				currentRun.absPath,
 			}
 		else
-			response = fn.system {
+			commitList = fn.system {
 				"git",
 				"log",
 				"--format=" .. u.commitList.gitlogFormat,
@@ -288,10 +290,11 @@ function M.searchFileHistory()
 				"-G" .. query,
 				"--follow", -- follow file renamings
 				"--",
-				currentRun.filename,
+				currentRun.absPath,
 			}
 		end
-		selectFromCommits(response, "file")
+
+		selectFromCommits(commitList, "file")
 	end)
 end
 
@@ -307,6 +310,7 @@ local function selectFromFunctionHistory(funcname)
 		"--format=" .. u.commitList.gitlogFormat,
 		"--follow", -- follow file renamings
 		("-L:%s:%s"):format(funcname, currentRun.filename),
+		("-L:%s:%s"):format(funcname, currentRun.absPath),
 		"--no-patch",
 	}
 	selectFromCommits(response, "function")
@@ -321,7 +325,7 @@ function M.functionHistory()
 		return
 	end
 
-	currentRun.filename = a.nvim_buf_get_name(0)
+	currentRun.absPath = a.nvim_buf_get_name(0)
 	currentRun.originalCwd = vim.loop.cwd()
 
 	-- TODO figure out how to query treesitter for function names, and use
