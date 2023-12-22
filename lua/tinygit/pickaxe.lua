@@ -62,15 +62,12 @@ local function showDiff(commitIdx, type)
 		"log",
 		hash .. "^..",
 		"--follow",
-		"--name-status", -- show filename changes, format: [M|Rxx] <nameAtCommit> [<newFilename>]
+		"--name-only",
 		"--format=", -- suppress commit info
 		"--",
 		filenameInPresent,
 	})
-	local lastLine = table.remove(vim.split(nameHistory, "\n"))
-	local filenameAtCommit = lastLine:match("^M%s+(.+)") -- M <nameAtCommit>
-		or lastLine:match("^R%d+%s+.+   (.+)") -- Rxxx <nameAtCommit> <newFilename>
-		or lastLine:match("^R%d+%s+.+\t(.+)") -- SIC sometimes outputs spaces, sometimes tabs
+	local filenameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 	assert(filenameAtCommit, "filenameAtCommit not matched via pattern.")
 
 	-- get diff
