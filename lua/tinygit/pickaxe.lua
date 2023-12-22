@@ -230,7 +230,6 @@ local function selectorFormatter(commitLine)
 
 	-- append name at commit, if it exists
 	if nameAtCommit then displayLine = displayLine .. ("\t(%s)"):format(nameAtCommit) end
-
 	return displayLine
 end
 
@@ -292,7 +291,7 @@ local function selectFromCommits(commitList, type)
 end
 
 --------------------------------------------------------------------------------
--- user-facing function to search file history
+
 function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
 	currentRun.absPath = a.nvim_buf_get_name(0)
@@ -331,26 +330,22 @@ function M.searchFileHistory()
 	end)
 end
 
---------------------------------------------------------------------------------
-
----Helper function that queries `git log` for the history of a function
----@param funcname? string -- nil: aborted
-local function selectFromFunctionHistory(funcname)
-	if not funcname or funcname == "" then return end
-
-	local response = fn.system {
-		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
-		"git",
-		"log",
-		"--format=" .. u.commitList.gitlogFormat,
-		("-L:%s:%s"):format(funcname, currentRun.absPath),
-		"--no-patch",
-	}
-	selectFromCommits(response, "function")
-end
-
--- user-facing function to search function history
 function M.functionHistory()
+	---@param funcname? string -- nil: aborted
+	local function selectFromFunctionHistory(funcname)
+		if not funcname or funcname == "" then return end
+
+		local response = fn.system {
+			-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
+			"git",
+			"log",
+			"--format=" .. u.commitList.gitlogFormat,
+			("-L:%s:%s"):format(funcname, currentRun.absPath),
+			"--no-patch",
+		}
+		selectFromCommits(response, "function")
+	end
+
 	-- GUARD
 	if u.notInGitRepo() or repoIsShallow() then return end
 	if vim.tbl_contains({ "json", "yaml", "toml", "css" }, vim.bo.ft) then
