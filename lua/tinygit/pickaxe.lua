@@ -240,7 +240,7 @@ local function selectFromCommits(commitList, type)
 	local autocmdId = u.commitList.setupAppearance()
 	local searchMode = currentRun.query == "" and vim.fs.basename(currentRun.filename) or currentRun.query
 	vim.ui.select(commits, {
-		prompt = ("󰊢 Commits that changed '%s'"):format(searchMode),
+		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
 		format_item = u.commitList.selectorFormatter,
 		kind = "tinygit.pickaxeDiff",
 	}, function(_, commitIdx)
