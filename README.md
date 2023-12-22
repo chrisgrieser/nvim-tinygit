@@ -97,7 +97,6 @@ gitcommit`
 - The title of the input field displays what actions are going to be performed.
   You can see at glance, whether all changes are going to be committed or whether
   there a `git push` is triggered afterward, so there are no surprises.
-- Use `<Tab>` in the input field to quickly cycle conventional commits keywords.
 
 ```lua
 require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
