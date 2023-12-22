@@ -215,7 +215,18 @@ local function showDiff(commitIdx, type)
 	end, opts)
 end
 
----@param commitList string raw response from `git log`, will be validated
+--------------------------------------------------------------------------------
+
+---Formats line for `vim.ui.select`
+---@param commitLine string, formatted as gitlogFormat
+---@return string formatted text
+local function selectorFormatter(commitLine)
+	local _, subject, date = unpack(vim.split(commitLine, "\t"))
+	return ("%s\t%s"):format(subject, date)
+end
+
+---Given a list of commits, prompt user to select one
+---@param commitList string raw response from `git log`
 ---@param type "file"|"function"
 local function selectFromCommits(commitList, type)
 	-- GUARD
@@ -238,7 +249,7 @@ local function selectFromCommits(commitList, type)
 	local searchMode = currentRun.query == "" and vim.fs.basename(currentRun.filename) or currentRun.query
 	vim.ui.select(commits, {
 		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
-		format_item = u.commitList.selectorFormatter,
+		format_item = selectorFormatter,
 		kind = "tinygit.pickaxeDiff",
 	}, function(_, commitIdx)
 		a.nvim_del_autocmd(autocmdId)
@@ -247,22 +258,8 @@ local function selectFromCommits(commitList, type)
 	end)
 end
 
----@param funcname? string -- nil: aborted
-local function selectFromFunctionHistory(funcname)
-	if not funcname or funcname == "" then return end
-	local response = fn.system {
-		"git",
-		"log",
-		"--format=" .. u.commitList.gitlogFormat,
-		"--follow", -- follow file renamings
-		("-L:%s:%s"):format(funcname, currentRun.filename),
-		"--no-patch",
-	}
-	selectFromCommits(response, "function")
-end
-
 --------------------------------------------------------------------------------
-
+-- user-facing function to search file history
 function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
 	currentRun.filename = a.nvim_buf_get_name(0)
@@ -298,6 +295,24 @@ function M.searchFileHistory()
 	end)
 end
 
+--------------------------------------------------------------------------------
+
+---Helper function that queries `git log` for the history of a function
+---@param funcname? string -- nil: aborted
+local function selectFromFunctionHistory(funcname)
+	if not funcname or funcname == "" then return end
+	local response = fn.system {
+		"git",
+		"log",
+		"--format=" .. u.commitList.gitlogFormat,
+		"--follow", -- follow file renamings
+		("-L:%s:%s"):format(funcname, currentRun.filename),
+		"--no-patch",
+	}
+	selectFromCommits(response, "function")
+end
+
+-- user-facing function to search function history
 function M.functionHistory()
 	-- GUARD
 	if u.notInGitRepo() or repoIsShallow() then return end

@@ -60,7 +60,7 @@ M.commitList = {
 	-- assumed by the others parts here.
 	gitlogFormat = "%h\t%s\t%cr", -- hash, subject, date
 
-	-- how the commits are displayed in the selector
+	-- How the commit line is displayed in the selector
 	---@param commitLine string, formatted as gitlogFormat
 	---@return string formatted text
 	selectorFormatter = function(commitLine)
