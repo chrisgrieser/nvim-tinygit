@@ -49,7 +49,11 @@ end
 
 ---@return string "user/name" of repo
 ---@nodiscard
-function M.getRepo() return fn.system("git remote -v | head -n1"):match(":.*%."):sub(2, -2) end
+function M.getRepo()
+	local allRemotes = fn.system { "git", "remote", "-v" }
+	local firstRemote = vim.split(allRemotes, "\n")[1]:match(":.*%."):sub(2, -2)
+	return firstRemote
+end
 
 ---Since the various elements of this object must be changed together, since
 ---they depend on the configuration of the other
