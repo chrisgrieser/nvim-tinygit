@@ -1,19 +1,21 @@
 local M = {}
 local fn = vim.fn
-local u = require("tinygit.utils")
 local a = vim.api
+local basename = vim.fs.basename
+
+local u = require("tinygit.utils")
 local config = require("tinygit.config").config.historySearch
 --------------------------------------------------------------------------------
 
 ---@class currentRun
 ---@field hashList string[] ordered list of all hashes where the string/function was found
----@field filename string
+---@field absPath string
 ---@field query string search query pickaxed for
 ---@field originalCwd? string cwd before running history search
 
 ---saves metadata for the current operation
 ---@type currentRun
-local currentRun = { hashList = {}, filename = "", query = "" }
+local currentRun = { hashList = {}, absPath = "", query = "" }
 
 ---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
 ---@return boolean -- whether the repo is shallow
@@ -223,8 +225,13 @@ end
 ---@param commitLine string, formatted as gitlogFormat
 ---@return string formatted text
 local function selectorFormatter(commitLine)
-	local _, subject, date = unpack(vim.split(commitLine, "\t"))
-	return ("%s\t%s"):format(subject, date)
+	local _, subject, date, nameAtCommit = unpack(vim.split(commitLine, "\t"))
+	local displayLine = ("%s\t%s"):format(subject, date)
+
+	-- append name at commit, if it exists
+	if nameAtCommit then displayLine = displayLine .. ("\t(%s)"):format(nameAtCommit) end
+
+	return displayLine
 end
 
 ---Given a list of commits, prompt user to select one
@@ -239,8 +246,25 @@ local function selectFromCommits(commitList, type)
 		return
 	end
 
+	-- INFO due to `git log --name-only`, information on one commit is split across
+	-- three lines (1: info, 2: blank, 3: filename). This loop merges them into one.
+	-- CAVEAT This only compares basenames, file movements are not accounted
+	-- for, however this is for display purposes only, so this caveat is not
+	-- a big issue.
+	local oneCommitPer3Lines = vim.split(commitList, "\n")
+	local commits = {}
+	for i = 1, #oneCommitPer3Lines, 3 do
+		local commitLine = oneCommitPer3Lines[i]
+		local nameAtCommit = basename(oneCommitPer3Lines[i + 2])
+		-- append name at commit only when it is not the same name as in the present
+		if basename(currentRun.absPath) ~= nameAtCommit then
+			-- tab-separated for consistently with `--format` output
+			commitLine = commitLine .. "\t" .. nameAtCommit
+		end
+		table.insert(commits, commitLine)
+	end
+
 	-- save data
-	local commits = vim.split(commitList, "\n")
 	currentRun.hashList = vim.tbl_map(function(commitLine)
 		local hash = vim.split(commitLine, "\t")[1]
 		return hash
@@ -278,6 +302,7 @@ function M.searchFileHistory()
 				"log",
 				"--format=" .. u.commitList.gitlogFormat,
 				"--follow", -- follow file renamings
+				"--name-only", -- add filenames to display renamed files
 				"--",
 				currentRun.absPath,
 			}
@@ -289,6 +314,7 @@ function M.searchFileHistory()
 				"--regexp-ignore-case",
 				"-G" .. query,
 				"--follow", -- follow file renamings
+				"--name-only", -- add filenames to display renamed files
 				"--",
 				currentRun.absPath,
 			}
@@ -309,7 +335,7 @@ local function selectFromFunctionHistory(funcname)
 		"log",
 		"--format=" .. u.commitList.gitlogFormat,
 		"--follow", -- follow file renamings
-		("-L:%s:%s"):format(funcname, currentRun.filename),
+		"--name-only", -- add filenames to display renamed files
 		("-L:%s:%s"):format(funcname, currentRun.absPath),
 		"--no-patch",
 	}
