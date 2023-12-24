@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 22
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 24
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -21,18 +21,18 @@ Table of Contents                                  *tinygit-table-of-contents*
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
+  -----------------------------------------------------------------------
+  Commit Input                         Commit Notification
+  ------------------------------------ ----------------------------------
+                                       
 
+  -----------------------------------------------------------------------
+  -----------------------------------------------------------------------
+  Select From Commit History           File History Diff Popup
+  ------------------------------------ ----------------------------------
+                                       
 
-_Commit Message Input with highlighting_
-
-
-
-_Informative notifications with highlighting (using nvim-notify)_
-
-
-
-_Search File history (“git pickaxe”) and inspect the commit diffs._
-
+  -----------------------------------------------------------------------
 
 TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
 
@@ -70,6 +70,9 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
 
+Install the Treesitter parser for git filetypes: `TSInstall gitcommit
+gitrebase`
+
 >lua
     -- lazy.nvim
     {
@@ -90,10 +93,6 @@ INSTALLATION                               *tinygit-nvim-tinygit-installation*
         },
     }
 <
-
-Install the Treesitter parser for git commits for some syntax highlighting of
-your commit messages like emphasized conventional commit keywords: `TSInstall
-gitcommit`
 
 
 USAGE                                             *tinygit-nvim-tinygit-usage*
@@ -197,6 +196,7 @@ GITHUB INTERACTION ~
 
 PUSH & PR ~
 
+- `push` can be combined with other actions, depending on the options.
 - `createGitHubPr` opens a PR from the current branch browser.
     - This requires the repo to be a fork with sufficient information on the remote.
     - This does not require the `gh` cli, as it uses a GitHub web feature.
