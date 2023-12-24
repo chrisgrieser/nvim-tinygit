@@ -9,11 +9,12 @@ operations.
 
 | Commit Input   | Commit Notification   |
 |--------------- | -------------- |
-| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase 1">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/123fcfd9-f989-4c10-bd98-32f62ea683c3" alt="showcase 2">   |
+| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase 1">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/de3049b4-68fc-4362-99ff-e8a6e09e1af7" alt="showcase 2">   |
+
 
 | Select From Commit History   | File History Diff Popup   |
 |--------------- | -------------- |
-| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb" alt="showcase 3">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/123fcfd9-f989-4c10-bd98-32f62ea683c3" alt="showcase 4">   |
+| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/a8a775bf-f7ce-4730-83e3-a91563481d35" alt="showcase 3">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb" alt="showcase 4">   |
 
 ## Table of Contents
 
