@@ -7,23 +7,13 @@
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
-<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a"
-	alt="showcase commit message input field"
-	width=65%>
+| Commit Input   | Commit Notification   |
+|--------------- | -------------- |
+| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase 1">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/123fcfd9-f989-4c10-bd98-32f62ea683c3" alt="showcase 2">   |
 
-*Commit Message Input with highlighting*
-
-<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/123fcfd9-f989-4c10-bd98-32f62ea683c3"
-	alt="showcase commit message notification"
-	width=50%>
-
-*Informative notifications with highlighting (using `nvim-notify`)*
-
-<img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb"
-	alt="showcase searching file history"
-	width=60%>
-
-*Search File history ("git pickaxe") and inspect the commit diffs.*
+| Select From Commit History   | File History Diff Popup   |
+|--------------- | -------------- |
+| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb" alt="showcase 3">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/123fcfd9-f989-4c10-bd98-32f62ea683c3" alt="showcase 4">   |
 
 ## Table of Contents
 
@@ -63,6 +53,9 @@ operations.
 
 ## Installation
 
+Install the Treesitter parser for git filetypes: `TSInstall
+gitcommit gitrebase`
+
 ```lua
 -- lazy.nvim
 {
@@ -83,10 +76,6 @@ use {
 	},
 }
 ```
-
-Install the Treesitter parser for git commits for some syntax highlighting of
-your commit messages like emphasized conventional commit keywords: `TSInstall
-gitcommit`
 
 ## Usage
 
@@ -183,6 +172,7 @@ require("tinygit").githubUrl("file")
 ```
 
 ### Push & PR
+- `push` can be combined with other actions, depending on the options.
 - `createGitHubPr` opens a PR from the current branch browser.
 	* This requires the repo to be a fork with sufficient information on the remote.
 	* This does not require the `gh` cli, as it uses a GitHub web feature.
