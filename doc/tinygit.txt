@@ -4,7 +4,6 @@
 Table of Contents                                  *tinygit-table-of-contents*
 
 1. nvim-tinygit                                         |tinygit-nvim-tinygit|
-  - Table of Contents                 |tinygit-nvim-tinygit-table-of-contents|
   - Features                                   |tinygit-nvim-tinygit-features|
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Usage                                         |tinygit-nvim-tinygit-usage|
@@ -20,21 +19,6 @@ Table of Contents                                  *tinygit-table-of-contents*
 
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
-
-  -----------------------------------------------------------------------
-  Commit Input                         Commit Notification
-  ------------------------------------ ----------------------------------
-                                       
-
-  -----------------------------------------------------------------------
-  -----------------------------------------------------------------------
-  Select From Commit History           File History Diff Popup
-  ------------------------------------ ----------------------------------
-                                       
-
-  -----------------------------------------------------------------------
-
-TABLE OF CONTENTS                     *tinygit-nvim-tinygit-table-of-contents*
 
 - |tinygit-features|
 - |tinygit-installation|
@@ -67,6 +51,19 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
 - Highlighting improvements for interactive **rebasing** when using nvim as sequence
     editor.
 
+  -----------------------------------------------------------------------
+  Commit Message Input                 Commit Notification
+  ------------------------------------ ----------------------------------
+                                       
+
+  -----------------------------------------------------------------------
+  -----------------------------------------------------------------------
+  Select From Commit History (“git     File History Diff Popup
+  pickaxe”)                            
+  ------------------------------------ ----------------------------------
+                                       
+
+  -----------------------------------------------------------------------
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
 
