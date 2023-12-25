@@ -3,8 +3,9 @@ local fn = vim.fn
 local a = vim.api
 local basename = vim.fs.basename
 
-local u = require("tinygit.utils")
+local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.historySearch
+local selectCommit = require("tinygit.shared.select-commit")
 --------------------------------------------------------------------------------
 
 ---@class currentRun
@@ -220,19 +221,6 @@ end
 
 --------------------------------------------------------------------------------
 
----Formats line for `vim.ui.select`. This function should be consistent with
----`M.commitList.selectorFormat` in -`utils.lua`.
----@param commitLine string, formatted as gitlogFormat
----@return string formatted text
-local function selectorFormatter(commitLine)
-	local _, subject, date, nameAtCommit = unpack(vim.split(commitLine, "\t"))
-	local displayLine = ("%s\t%s"):format(subject, date)
-
-	-- append name at commit, if it exists
-	if nameAtCommit then displayLine = displayLine .. ("\t(%s)"):format(nameAtCommit) end
-	return displayLine
-end
-
 ---Given a list of commits, prompt user to select one
 ---@param commitList string raw response from `git log`
 ---@param type "file"|"function"
@@ -277,11 +265,11 @@ local function selectFromCommits(commitList, type)
 	end, commits)
 
 	-- select
-	local autocmdId = u.commitList.setupAppearance()
+	local autocmdId = selectCommit.setupAppearance()
 	local searchMode = currentRun.query == "" and basename(currentRun.absPath) or currentRun.query
 	vim.ui.select(commits, {
 		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
-		format_item = selectorFormatter,
+		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.pickaxeDiff",
 	}, function(_, commitIdx)
 		a.nvim_del_autocmd(autocmdId)
@@ -306,7 +294,7 @@ function M.searchFileHistory()
 			commitList = fn.system {
 				"git",
 				"log",
-				"--format=" .. u.commitList.gitlogFormat,
+				"--format=" .. selectCommit.gitlogFormat,
 				"--follow", -- follow file renamings
 				"--name-only", -- add filenames to display renamed files
 				"--",
@@ -316,7 +304,7 @@ function M.searchFileHistory()
 			commitList = fn.system {
 				"git",
 				"log",
-				"--format=" .. u.commitList.gitlogFormat,
+				"--format=" .. selectCommit.gitlogFormat,
 				"--regexp-ignore-case",
 				"-G" .. query,
 				"--follow", -- follow file renamings
@@ -339,7 +327,7 @@ function M.functionHistory()
 			-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 			"git",
 			"log",
-			"--format=" .. u.commitList.gitlogFormat,
+			"--format=" .. selectCommit.gitlogFormat,
 			("-L:%s:%s"):format(funcname, currentRun.absPath),
 			"--no-patch",
 		}

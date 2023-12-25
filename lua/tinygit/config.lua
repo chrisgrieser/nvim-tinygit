@@ -17,7 +17,7 @@ local M = {}
 ---@class commitConfig
 ---@field maxLen number
 ---@field mediumLen number
----@field emptyFillIn string
+---@field emptyFillIn string|false
 ---@field conventionalCommits {enforce: boolean, keywords: string[]}
 ---@field spellcheck boolean
 ---@field openReferencedIssue boolean
@@ -87,8 +87,10 @@ local defaultConfig = {
 -- in case user does not call `setup`
 M.config = defaultConfig
 
----@param userConfig pluginConfig
-function M.setupPlugin(userConfig) M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig) end
+---@param userConfig? pluginConfig
+function M.setupPlugin(userConfig)
+	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig or {})
+end
 
 --------------------------------------------------------------------------------
 return M

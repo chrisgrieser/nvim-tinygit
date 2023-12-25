@@ -1,9 +1,9 @@
 local M = {}
 local fn = vim.fn
 
-local u = require("tinygit.utils")
+local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.push
-local createGitHubPr = require("tinygit.github").createGitHubPr
+local createGitHubPr = require("tinygit.commands.github").createGitHubPr
 --------------------------------------------------------------------------------
 
 ---@return string

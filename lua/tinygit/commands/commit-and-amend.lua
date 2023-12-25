@@ -1,8 +1,9 @@
 local M = {}
 local fn = vim.fn
-local u = require("tinygit.utils")
+local u = require("tinygit.shared.utils")
+local selectCommit = require("tinygit.shared.select-commit")
 local config = require("tinygit.config").config.commitMsg
-local push = require("tinygit.push").push
+local push = require("tinygit.commands.push").push
 --------------------------------------------------------------------------------
 
 ---@nodiscard
@@ -294,18 +295,18 @@ function M.fixupCommit(userOpts)
 		"git",
 		"log",
 		"-n" .. tostring(opts.selectFromLastXCommits),
-		"--format=" .. u.commitList.gitlogFormat,
+		"--format=" .. selectCommit.gitlogFormat,
 	}
 
 	-- GUARD
 	if u.nonZeroExit(response) then return end
 	local commits = vim.split(vim.trim(response), "\n")
 
-	local autocmdId = u.commitList.setupAppearance()
+	local autocmdId = selectCommit.setupAppearance()
 	local title = opts.squashInstead and "Squash" or "Fixup"
 	vim.ui.select(commits, {
 		prompt = ("󰊢 Select Commit to %s"):format(title),
-		format_item = u.commitList.selectorFormatter,
+		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)
 		vim.api.nvim_del_autocmd(autocmdId)

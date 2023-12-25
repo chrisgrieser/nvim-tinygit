@@ -1,6 +1,6 @@
 local M = {}
 local fn = vim.fn
-local u = require("tinygit.utils")
+local u = require("tinygit.shared.utils")
 
 --------------------------------------------------------------------------------
 
