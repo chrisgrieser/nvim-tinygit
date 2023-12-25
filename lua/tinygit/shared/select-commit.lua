@@ -7,7 +7,6 @@ local M = {}
 -- assumed by the others parts here.
 M.gitlogFormat = "%h\t%s\t%cr" -- hash, subject, date
 
-
 ---Formats line for `vim.ui.select`
 ---@param commitLine string, formatted as M.gitlogFormat
 ---@return string formatted text

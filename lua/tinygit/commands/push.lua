@@ -60,7 +60,9 @@ function M.push(userOpts, calledByUser)
 			local output = vim.trim(table.concat(data, "\n"))
 
 			-- no need to notify that the pull in `git pull ; git push` yielded no update
-			if output:find("Current branch .* is up to date") or output:find("Already up to date.") then
+			if
+				output:find("Current branch .* is up to date") or output:find("Already up to date.")
+			then
 				return
 			end
 

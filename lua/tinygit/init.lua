@@ -7,16 +7,24 @@ function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig) e
 --------------------------------------------------------------------------------
 -- COMMIT
 ---@param userOpts? { forcePush?: boolean }
-function M.amendNoEdit(userOpts) require("tinygit.commands.commit-and-amend").amendNoEdit(userOpts or {}) end
+function M.amendNoEdit(userOpts)
+	require("tinygit.commands.commit-and-amend").amendNoEdit(userOpts or {})
+end
 
 ---@param userOpts? { forcePush?: boolean }
-function M.amendOnlyMsg(userOpts) require("tinygit.commands.commit-and-amend").amendOnlyMsg(userOpts or {}) end
+function M.amendOnlyMsg(userOpts)
+	require("tinygit.commands.commit-and-amend").amendOnlyMsg(userOpts or {})
+end
 
 ---@param userOpts? table
-function M.smartCommit(userOpts) require("tinygit.commands.commit-and-amend").smartCommit(userOpts or {}) end
+function M.smartCommit(userOpts)
+	require("tinygit.commands.commit-and-amend").smartCommit(userOpts or {})
+end
 
 ---@param userOpts? { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
-function M.fixupCommit(userOpts) require("tinygit.commands.commit-and-amend").fixupCommit(userOpts or {}) end
+function M.fixupCommit(userOpts)
+	require("tinygit.commands.commit-and-amend").fixupCommit(userOpts or {})
+end
 
 --------------------------------------------------------------------------------
 -- GITHUB

@@ -1,7 +1,7 @@
 local M = {}
 local fn = vim.fn
-local u = require("tinygit.shared.utils")
 local selectCommit = require("tinygit.shared.select-commit")
+local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.commitMsg
 local push = require("tinygit.commands.push").push
 --------------------------------------------------------------------------------
@@ -135,7 +135,9 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 				-- has cc keyword, but not scope
 				ccKeywordStart, _, ccKeywordEnd = commitMsg:find("^%a+():")
 			end
-			if ccKeywordStart then hl(buf, ns, "@keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd) end
+			if ccKeywordStart then
+				hl(buf, ns, "@keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd)
+			end
 			if ccScopeEnd then
 				local ccScopeStart = ccKeywordEnd
 				hl(buf, ns, "@parameter", commitMsgLine, ccScopeStart + 1, ccScopeEnd - 1)
