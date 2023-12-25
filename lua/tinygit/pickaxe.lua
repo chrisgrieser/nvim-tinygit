@@ -41,7 +41,7 @@ end
 -- assuming the current cwd is a git repo
 local function cdToGitRoot()
 	local gitroot = vim.trim(fn.system { "git", "rev-parse", "--show-toplevel" })
-	if gitroot ~= vim.loop.cwd() then vim.cmd.cd(gitroot) end
+	if gitroot ~= vim.loop.cwd() then vim.loop.chdir(gitroot) end
 end
 
 --------------------------------------------------------------------------------
