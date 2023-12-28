@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 25
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2023 December 28
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -32,8 +32,6 @@ operations.
     - |tinygit-stash|
 - |tinygit-improved-highlighting-of-interactive-rebase|
 - |tinygit-configuration|
-    - |tinygit-appearance-of-input-field|
-    - |tinygit-use-telescope-for-selections|
 - |tinygit-comparison-to-existing-git-plugins|
 - |tinygit-credits|
 
@@ -77,6 +75,8 @@ gitrebase`
         ft = { "gitrebase", "gitcommit" }, -- so ftplugins are loaded
         dependencies = {
             "stevearc/dressing.nvim",
+            "nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
+            -- "ibhagwan/fzf-lua",
             "rcarriga/nvim-notify", -- optional, but recommended
         },
     },
@@ -86,6 +86,8 @@ gitrebase`
         "chrisgrieser/nvim-tinygit",
         requires = {
             "stevearc/dressing.nvim",
+            "nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
+            -- "ibhagwan/fzf-lua",
             "rcarriga/nvim-notify", -- optional, but recommended
         },
     }
@@ -122,14 +124,6 @@ SMART-COMMIT ~
 
 Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
-
->lua
-    -- to enable normal mode in the commit message input field, configure
-    -- dressing.nvim like this:
-    require("dressing").setup {
-        input = { insert_only = false },
-    }
-<
 
 
 AMEND ~
@@ -168,8 +162,6 @@ FIXUP & SQUASH COMMITS ~
 GITHUB INTERACTION ~
 
 - Search issues & PRs. (Requires `curl`.)
-- The appearance of the selector is controlled by `dressing.nvim`. (You can
-    |tinygit-configure-`dressing`-to-use-`telescope`|.)
 
 >lua
     -- state: all|closed|open (default: all)
@@ -315,29 +307,13 @@ The `setup` call is optional. These are the default settings:
     }
 <
 
-
-APPEARANCE OF INPUT FIELD ~
-
->lua
-    -- see: https://github.com/stevearc/dressing.nvim#configuration
-    require("dressing").setup {
-        input = {
-            insert_only = false, -- enable normal mode in the input field
-            -- other appearance settings
-        },
-    }
-<
-
-
-USE TELESCOPE FOR SELECTIONS ~
+The appearance of the commit message input field and of the selectors is
+configured via dressing.nvim <https://github.com/stevearc/dressing.nvim>. To
+enable normal mode in the input field, use:
 
 >lua
-    -- see: https://github.com/stevearc/dressing.nvim#configuration
     require("dressing").setup {
-        select = {
-            backend = { "telescope" },
-            -- other appearance settings
-        },
+        input = { insert_only = false },
     }
 <
 
