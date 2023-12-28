@@ -144,8 +144,6 @@ local function showDiff(commitIdx, type)
 		style = "minimal",
 		zindex = 1, -- below nvim-notify floats
 	})
-	a.nvim_win_set_option(winnr, "list", false)
-	a.nvim_win_set_option(winnr, "signcolumn", "no")
 
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
@@ -179,7 +177,7 @@ local function showDiff(commitIdx, type)
 	if type == "file" then infotext = infotext .. "   n/N: next/prev occurrence" end
 	a.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
 		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
-		virt_text_pos = "overlay",
+		virt_text_win_col = 0,
 	})
 
 	-- keymaps: closing
