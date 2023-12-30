@@ -157,6 +157,39 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 	})
 end
 
+---The notification makes it more transparent to the user what is going to be
+---committed. (This is similar to the commented out lines at the bottom of a git
+---message in the terminal.)
+function M.notifyWhatChanged()
+	local width = 50
+	local diffStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. tostring(width) }
+	local willStageAllChanges = hasNoStagedChanges()
+	local title
+	if willStageAllChanges then
+		title = "To be staged & committed"
+		-- so new files show up in the diff stats
+		fn.system("git ls-files --others --exclude-standard | xargs git add --intent-to-add")
+	else
+		title = "Staged Changes"
+		table.insert(diffStatsCmd, "--staged")
+	end
+
+	local changes = vim.trim(vim.fn.system(diffStatsCmd))
+	local changesWithoutSummary = changes:gsub("\n[^\n]*$", "")
+
+	vim.notify(changesWithoutSummary, vim.log.levels.INFO, {
+		title = "tinygit: " .. title,
+		-- color the plus/minus like in the terminal
+		on_open = function(win)
+			local bufnr = vim.api.nvim_win_get_buf(win)
+			vim.api.nvim_buf_call(bufnr, function()
+				vim.fn.matchadd("diffAdded", [[ +\+]])
+				vim.fn.matchadd("diffRemoved", [[-\+\s*$]])
+			end)
+		end,
+	})
+end
+
 --------------------------------------------------------------------------------
 
 ---If there are staged changes, commit them.
@@ -180,6 +213,8 @@ function M.smartCommit(opts, prefillMsg)
 	local title = "Commit"
 	if doStageAllChanges then title = "Stage All · " .. title end
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
+
+	M.notifyWhatChanged()
 
 	setupInputField()
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
