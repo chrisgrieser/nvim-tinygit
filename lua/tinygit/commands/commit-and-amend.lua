@@ -8,19 +8,16 @@ local push = require("tinygit.commands.push").push
 
 ---@nodiscard
 ---@return boolean
-local function hasStagedChanges()
+local function hasNoStagedChanges()
 	fn.system { "git", "diff", "--staged", "--quiet" }
-	local hasStaged = vim.v.shell_error == 0
-	return hasStaged
+	local hasNoStaged = vim.v.shell_error == 0
+	return hasNoStaged
 end
 
 ---@nodiscard
 ---@return boolean
 local function hasNoUnstagedChanges()
 	fn.system { "git", "diff", "--quiet" }
-	-- SIC yes, in this case the meaning of the exit codes 1 and 0 is indeed
-	-- switched as compared to `--staged`, for whatever reason. Thus, the exit
-	-- code 0 means *no* changes here.
 	local hasNoUnstaged = vim.v.shell_error == 0
 	return hasNoUnstaged
 end
@@ -28,8 +25,8 @@ end
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
----@return boolean is the commit message valid?
----@return string the (modified) commit message
+---@return boolean -- is the commit message valid?
+---@return string -- the (modified) commit message
 local function processCommitMsg(commitMsg)
 	commitMsg = vim.trim(commitMsg)
 
@@ -38,11 +35,11 @@ local function processCommitMsg(commitMsg)
 		local shortenedMsg = commitMsg:sub(1, config.maxLen)
 		return false, shortenedMsg
 	elseif commitMsg == "" then
-		if not config.emptyFillIn then
+		if type(config.emptyFillIn) == "string" then
+			return true, config.emptyFillIn ---@diagnostic disable-line: return-type-mismatch
+		else
 			u.notify("Commit Message empty.", "warn")
 			return false, ""
-		else
-			return true, config.emptyFillIn
 		end
 	end
 
@@ -173,7 +170,7 @@ function M.smartCommit(opts, prefillMsg)
 	if not opts then opts = {} end
 	if not prefillMsg then prefillMsg = "" end
 
-	local doStageAllChanges = hasStagedChanges()
+	local doStageAllChanges = hasNoStagedChanges()
 	-- When committing with no staged changes, all changes are staged, resulting
 	-- in a clean repo afterwards. Alternatively, if there are no unstaged
 	-- changes, the repo will also be clean after committing. If one of the two
@@ -185,7 +182,6 @@ function M.smartCommit(opts, prefillMsg)
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
 
 	setupInputField()
-
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
@@ -222,13 +218,14 @@ end
 
 ---@param opts? { forcePush?: boolean }
 function M.amendNoEdit(opts)
-	if not opts then opts = {} end
-	vim.cmd("silent update")
 	if u.notInGitRepo() then return end
 
-	local stageAllChanges = hasStagedChanges()
+	if not opts then opts = {} end
+	vim.cmd("silent update")
+
+	local stageAllChanges = hasNoStagedChanges()
 	if stageAllChanges then
-		local stderr = fn.system { "git", "add", "-A" }
+		local stderr = fn.system { "git", "add", "--all" }
 		if u.nonZeroExit(stderr) then return end
 	end
 
@@ -245,22 +242,22 @@ end
 ---@param opts? { forcePush?: boolean }
 ---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
 function M.amendOnlyMsg(opts, prefillMsg)
-	if not opts then opts = {} end
-	vim.cmd("silent update")
-
 	-- GUARD
 	if u.notInGitRepo() then return end
-	if hasStagedChanges() then
+	if not hasNoStagedChanges() then
 		u.notify("Aborting: There are staged changes.", "warn", "Amend Only Msg")
 		return
 	end
+
+	if not opts then opts = {} end
+	vim.cmd("silent update")
 
 	if not prefillMsg then
 		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
 		prefillMsg = lastCommitMsg
 	end
-	setupInputField()
 
+	setupInputField()
 	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
