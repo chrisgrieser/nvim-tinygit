@@ -2,7 +2,7 @@ local M = {}
 --------------------------------------------------------------------------------
 -- CONFIG
 ---@param userConfig? pluginConfig
-function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig) end
+function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig or {}) end
 
 --------------------------------------------------------------------------------
 -- COMMIT
