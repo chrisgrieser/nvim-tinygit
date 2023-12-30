@@ -1,51 +1,57 @@
 local M = {}
 
-local commitAndAmend = require("tinygit.commands.commit-and-amend")
-local config = require("tinygit.config")
-local github = require("tinygit.commands.github")
-local pickaxe = require("tinygit.commands.pickaxe")
-local push = require("tinygit.commands.push")
-local stash = require("tinygit.commands.stash")
+-- PERF do not require the plugin's modules here, since it loads the complete
+-- code base on the plugin's initialization.
 
 --------------------------------------------------------------------------------
-
+-- CONFIG
 ---@param userConfig? pluginConfig
-function M.setup(userConfig) config.setupPlugin(userConfig or {}) end
+function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig or {}) end
 
 --------------------------------------------------------------------------------
+-- COMMIT
+---@param userOpts? { forcePush?: boolean }
+function M.amendNoEdit(userOpts)
+	require("tinygit.commands.commit-and-amend").amendNoEdit(userOpts or {})
+end
 
 ---@param userOpts? { forcePush?: boolean }
-function M.amendNoEdit(userOpts) commitAndAmend.amendNoEdit(userOpts or {}) end
-
----@param userOpts? { forcePush?: boolean }
-function M.amendOnlyMsg(userOpts) commitAndAmend.amendOnlyMsg(userOpts or {}) end
+function M.amendOnlyMsg(userOpts)
+	require("tinygit.commands.commit-and-amend").amendOnlyMsg(userOpts or {})
+end
 
 ---@param userOpts? table
-function M.smartCommit(userOpts) commitAndAmend.smartCommit(userOpts or {}) end
+function M.smartCommit(userOpts)
+	require("tinygit.commands.commit-and-amend").smartCommit(userOpts or {})
+end
 
 ---@param userOpts? { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
-function M.fixupCommit(userOpts) commitAndAmend.fixupCommit(userOpts or {}) end
+function M.fixupCommit(userOpts)
+	require("tinygit.commands.commit-and-amend").fixupCommit(userOpts or {})
+end
 
 --------------------------------------------------------------------------------
-
+-- GITHUB
 ---@param justRepo any -- don't link to file with a specific commit, just link to repo
-function M.githubUrl(justRepo) github.githubUrl(justRepo) end
+function M.githubUrl(justRepo) require("tinygit.commands.github").githubUrl(justRepo) end
 
 ---@param userOpts? table
-function M.issuesAndPrs(userOpts) github.issuesAndPrs(userOpts or {}) end
-function M.openIssueUnderCursor() github.openIssueUnderCursor() end
-function M.createGitHubPr() github.createGitHubPr() end
+function M.issuesAndPrs(userOpts) require("tinygit.commands.github").issuesAndPrs(userOpts or {}) end
+
+function M.openIssueUnderCursor() require("tinygit.commands.github").openIssueUnderCursor() end
+
+function M.createGitHubPr() require("tinygit.commands.github").createGitHubPr() end
 
 --------------------------------------------------------------------------------
-
+-- OTHER
 ---@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
-function M.push(userOpts) push.push(userOpts or {}, true) end
+function M.push(userOpts) require("tinygit.commands.push").push(userOpts or {}, true) end
 
-function M.searchFileHistory() pickaxe.searchFileHistory() end
-function M.functionHistory() pickaxe.functionHistory() end
+function M.searchFileHistory() require("tinygit.commands.pickaxe").searchFileHistory() end
+function M.functionHistory() require("tinygit.commands.pickaxe").functionHistory() end
 
-function M.stashPop() stash.stashPop() end
-function M.stashPush() stash.stashPush() end
+function M.stashPop() require("tinygit.commands.stash").stashPop() end
+function M.stashPush() require("tinygit.commands.stash").stashPush() end
 
 --------------------------------------------------------------------------------
 return M
