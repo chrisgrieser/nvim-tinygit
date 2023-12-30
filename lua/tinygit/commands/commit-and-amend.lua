@@ -1,9 +1,10 @@
-local M = {}
-local fn = vim.fn
 local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.commitMsg
 local push = require("tinygit.commands.push").push
+
+local M = {}
+local fn = vim.fn
 --------------------------------------------------------------------------------
 
 ---@nodiscard
@@ -59,8 +60,8 @@ local function setupInputField()
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = "DressingInput",
 		once = true, -- do not affect other DressingInputs
-		callback = function()
-			local ns = vim.api.nvim_create_namespace("tinygit.commit_input")
+		callback = function(ctx)
+			local ns = vim.api.nvim_create_namespace("tinygit.inputField")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
 			-- custom highlighting
@@ -91,7 +92,7 @@ local function setupInputField()
 			vim.opt_local.formatoptions:remove("t")
 
 			-- activates styling for statusline plugins (e.g., filename icons)
-			vim.api.nvim_buf_set_name(0, "COMMIT_EDITMSG")
+			vim.api.nvim_buf_set_name(ctx.buf, "COMMIT_EDITMSG")
 
 			-- spellcheck
 			if config.spellcheck then
@@ -108,51 +109,36 @@ end
 ---@param commitMsg string
 ---@param extra? string extra lines to display
 local function commitNotification(title, stagedAllChanges, commitMsg, extra)
-	local titlePrefix = "tinygit"
 	local lines = { commitMsg }
 	if stagedAllChanges then table.insert(lines, 1, "Staged all changes.") end
 	if extra then table.insert(lines, extra) end
 	local text = table.concat(lines, "\n")
 
 	vim.notify(text, vim.log.levels.INFO, {
-		title = titlePrefix .. ": " .. title,
+		title = "tinygit: " .. title,
 		on_open = function(win)
-			-- HACK manually creating gitcommit highlighting, since fn.matchadd does
-			-- not work in a non-focussed window and since setting the filetype to
-			-- "gitcommit" does not work well with nvim-notify
-			local buf = vim.api.nvim_win_get_buf(win)
-			local ns = vim.api.nvim_create_namespace("tinygit.commit_notify")
-			vim.api.nvim_win_set_hl_ns(win, ns)
-			local lastLine = vim.api.nvim_buf_line_count(buf) - 1
-			local hl = vim.api.nvim_buf_add_highlight
+			local ns = vim.api.nvim_create_namespace("tinygit.commitNotification")
+			local bufnr = vim.api.nvim_win_get_buf(win)
 
-			local commitMsgLine = extra and lastLine - 1 or lastLine
-			local ccKeywordStart, _, ccKeywordEnd, ccScopeEnd = commitMsg:find("^%a+()%b()():")
-			if not ccKeywordStart then
-				-- has cc keyword, but not scope
-				ccKeywordStart, _, ccKeywordEnd = commitMsg:find("^%a+():")
-			end
-			if ccKeywordStart then
-				hl(buf, ns, "@keyword", commitMsgLine, ccKeywordStart, ccKeywordEnd)
-			end
-			if ccScopeEnd then
-				local ccScopeStart = ccKeywordEnd
-				hl(buf, ns, "@parameter", commitMsgLine, ccScopeStart + 1, ccScopeEnd - 1)
-			end
+			-- commented info lines
+			local lastLine = vim.api.nvim_buf_line_count(bufnr) - 1
+			if stagedAllChanges then vim.api.nvim_buf_add_highlight(bufnr, ns, "Comment", 1, 0, -1) end
+			if extra then vim.api.nvim_buf_add_highlight(bufnr, ns, "Comment", lastLine, 0, -1) end
 
-			local mdInlineCodeStart, mdInlineCodeEnd = commitMsg:find("`(.-)`")
-			if mdInlineCodeStart and mdInlineCodeEnd then
-				hl(buf, ns, "@text.literal", commitMsgLine, mdInlineCodeStart + 1, mdInlineCodeEnd)
-			end
-
-			local issueNumberStart, issueNumberEnd = commitMsg:find("#%d+")
-			if issueNumberStart then
-				-- stylua: ignore
-				hl(buf, ns, "@number", commitMsgLine, issueNumberStart, issueNumberEnd + 1)
-			end
-
-			if stagedAllChanges then hl(buf, ns, "Comment", 1, 0, -1) end
-			if extra then hl(buf, ns, "Comment", lastLine, 0, -1) end
+			-- commit msg custom highlights
+			vim.api.nvim_buf_call(bufnr, function()
+				-- INFO using namespace in here does not work, therefore simply
+				-- using `matchadd`, since it is restricted to the current window anyway
+				-- INFO the order the highlights are added matters, later has priority
+				fn.matchadd("Number", [[#\d\+]]) -- issues number
+				fn.matchadd("@text.literal", [[`.\{-}`]]) -- inline code (.\{-} = non-greedy quantifier)
+				-- setting the filetype to "gitcommit" does not work well with
+				-- nvim-notify, therefore manually highlighting conventional commits
+				fn.matchadd(
+					"Title",
+					[[\v(feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
+				)
+			end)
 		end,
 	})
 end
@@ -179,12 +165,14 @@ function M.notifyWhatChanged()
 
 	vim.notify(changesWithoutSummary, vim.log.levels.INFO, {
 		title = "tinygit: " .. title,
-		-- color the plus/minus like in the terminal
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(bufnr, function()
-				vim.fn.matchadd("diffAdded", [[ +\+]])
-				vim.fn.matchadd("diffRemoved", [[-\+\s*$]])
+				-- INFO using namespace in here does not work, therefore simply
+				-- using `matchadd`, since it is restricted to the current window anyway
+				fn.matchadd("diffAdded", [[ +\+]]) -- color the plus/minus like in the terminal
+				fn.matchadd("diffRemoved", [[-\+\s*$]])
+				fn.matchadd("Keyword", [[(new.*)]])
 			end)
 		end,
 	})
@@ -237,7 +225,7 @@ function M.smartCommit(opts, prefillMsg)
 		if opts.pushIfClean and cleanAfterCommit then
 			extra = "Pushing…"
 		elseif opts.pushIfClean and not cleanAfterCommit then
-			extra = "(not pushing since repo still dirty)"
+			extra = "Not pushing since repo still dirty."
 		end
 		commitNotification("Smart Commit", doStageAllChanges, processedMsg, extra)
 
