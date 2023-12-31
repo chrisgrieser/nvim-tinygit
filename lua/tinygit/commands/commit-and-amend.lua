@@ -147,24 +147,35 @@ end
 ---committed. (This is similar to the commented out lines at the bottom of a git
 ---message in the terminal.)
 function M.notifyWhatChanged()
-	local width = 50
+	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
+	local ok, notifyNvim = pcall(require, "notify")
+	local width
+	if ok and notifyNvim then
+		local _, notifyConfig = require("notify").instance()
+		width = notifyConfig.max_width - 2
+	else
+		width = 50
+	end
+
+	-- get changes
 	local diffStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. tostring(width) }
 	local willStageAllChanges = hasNoStagedChanges()
 	local title
 	if willStageAllChanges then
-		title = "To be staged & committed"
+		title = "Will Stage & Commit:"
 		-- so new files show up in the diff stats
 		fn.system("git ls-files --others --exclude-standard | xargs git add --intent-to-add")
 	else
 		title = "Staged Changes"
 		table.insert(diffStatsCmd, "--staged")
 	end
-
 	local changes = vim.trim(vim.fn.system(diffStatsCmd))
-	local changesWithoutSummary = changes:gsub("\n[^\n]*$", "")
+		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
+		:gsub(" | ", " │ ") -- pipes to full bars
 
-	vim.notify(changesWithoutSummary, vim.log.levels.INFO, {
-		title = "tinygit: " .. title,
+	-- send notification
+	vim.notify(changes, vim.log.levels.INFO, {
+		title = title,
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(bufnr, function()
@@ -173,6 +184,7 @@ function M.notifyWhatChanged()
 				fn.matchadd("diffAdded", [[ +\+]]) -- color the plus/minus like in the terminal
 				fn.matchadd("diffRemoved", [[-\+\s*$]])
 				fn.matchadd("Keyword", [[(new.*)]])
+				fn.matchadd("Comment", "│")
 			end)
 		end,
 	})
