@@ -33,6 +33,8 @@ local function hasNoChanges()
 	return noChanges
 end
 
+--------------------------------------------------------------------------------
+
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
@@ -270,7 +272,7 @@ function M.smartCommit(opts, prefillMsg)
 	end)
 end
 
----@param opts? { forcePush?: boolean }
+---@param opts? { forcePushIfDiverged?: boolean }
 function M.amendNoEdit(opts)
 	if u.notInGitRepo() or hasNoChanges() then return end
 
@@ -287,13 +289,17 @@ function M.amendNoEdit(opts)
 	if u.nonZeroExit(stderr) then return end
 
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --format=%s"))
-	local extra = opts.forcePush and "Force Pushing…" or nil
-	commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, extra)
-
-	if opts.forcePush then push { force = true } end
+	local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
+	local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
+	if opts.forcePushIfDiverged and prevCommitWasPushed then
+		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, "Force Pushing…")
+		push { force = true }
+	else
+		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, nil)
+	end
 end
 
----@param opts? { forcePush?: boolean }
+---@param opts? { forcePushIfDiverged?: boolean }
 ---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
 function M.amendOnlyMsg(opts, prefillMsg)
 	-- GUARD
@@ -312,7 +318,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 	end
 
 	setupInputField()
-	vim.ui.input({ prompt = "󰊢 Amend Message", default = prefillMsg }, function(commitMsg)
+	vim.ui.input({ prompt = "󰊢 Amend Only Message", default = prefillMsg }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
@@ -323,7 +329,11 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
-		commitNotification("Amend Message", false, processedMsg)
+		local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
+		local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
+
+		local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…" or nil
+		commitNotification("Amend-No-Edit", false, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if config.openReferencedIssue and issueReferenced then
@@ -331,7 +341,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 			u.openUrl(url)
 		end
 
-		if opts.forcePush then push { force = true } end
+		if opts.forcePushIfDiverged and prevCommitWasPushed then push { force = true } end
 	end)
 end
 

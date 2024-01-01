@@ -10,12 +10,12 @@ function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig or
 
 --------------------------------------------------------------------------------
 -- COMMIT
----@param userOpts? { forcePush?: boolean }
+---@param userOpts? { forcePushIfDiverged?: boolean }
 function M.amendNoEdit(userOpts)
 	require("tinygit.commands.commit-and-amend").amendNoEdit(userOpts or {})
 end
 
----@param userOpts? { forcePush?: boolean }
+---@param userOpts? { forcePushIfDiverged?: boolean }
 function M.amendOnlyMsg(userOpts)
 	require("tinygit.commands.commit-and-amend").amendOnlyMsg(userOpts or {})
 end

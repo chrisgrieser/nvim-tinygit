@@ -60,7 +60,7 @@ Install the Treesitter parser for git filetypes: `TSInstall gitcommit gitrebase`
 		"stevearc/dressing.nvim",
 		"nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
 		-- "ibhagwan/fzf-lua",
-		"rcarriga/nvim-notify", -- optional, but some features missing without it
+		"rcarriga/nvim-notify", -- optional, but will lack some features without it
 	},
 },
 
@@ -71,7 +71,7 @@ use {
 		"stevearc/dressing.nvim",
 		"nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
 		-- "ibhagwan/fzf-lua",
-		"rcarriga/nvim-notify", -- optional, but some features missing without it
+		"rcarriga/nvim-notify", -- optional, but will lack some features without it
 	},
 }
 ```
@@ -80,7 +80,7 @@ use {
 
 ### Smart-Commit
 - Open a commit popup. If there are no staged changes, stage all changes (`git
-  add -A`) before the commit. Only supports the commit subject line.
+  add --all`) before the commit. Only supports the commit subject line.
 - Optionally run `git push` if the repo is clean after committing.
 - The title of the input field displays what actions are going to be performed.
   You can see at glance, whether all changes are going to be committed or whether
@@ -111,14 +111,14 @@ pushing into a single step, when it is the last commit you intend to make.
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
-  it stages all changes (`git add -A`), like `smartCommit`.
-- Optionally runs `git push --force` afterward. (Remember to only do this when
-  you work alone on the branch though.)
+  it stages all changes (`git add --all`), like `smartCommit`.
+- Optionally runs `git push --force` afterward, if the branch has diverged (the
+  amended commit was already pushed).
 
 ```lua
 -- options default to `false`
-require("tinygit").amendOnlyMsg { forcePush = false }
-require("tinygit").amendNoEdit { forcePush = false }
+require("tinygit").amendOnlyMsg { forcePushIfDiverged = false }
+require("tinygit").amendNoEdit { forcePushIfDiverged = false }
 ```
 
 ### Fixup & Squash Commits
@@ -127,7 +127,7 @@ require("tinygit").amendNoEdit { forcePush = false }
 - Use `squashInstead = true` to squash instead of fixup (`git commit --squash`).
 - `autoRebase = true` automatically runs rebase with `--autosquash` and
 `--autostash` afterward, confirming all fixups and squashes **without opening a
-rebase view**. (Note that this can potentially result in multiple conflicts.)
+rebase view**. (Note that this can potentially result in conflicts.)
 
 ```lua
 -- options show default values
