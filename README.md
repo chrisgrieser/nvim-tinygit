@@ -11,7 +11,7 @@ operations.
 
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Commands](#commands)
 	* [Smart-Commit](#smart-commit)
 	* [Amend](#amend)
 	* [Fixup & Squash Commits](#fixup--squash-commits)
@@ -19,7 +19,9 @@ operations.
 	* [Push & PR](#push--pr)
 	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
-- [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
+- [Other Features](#other-features)
+	* [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
+	* [Git Blame Status Line Component](#git-blame-status-line-component)
 - [Configuration](#configuration)
 - [Comparison to existing git plugins](#comparison-to-existing-git-plugins)
 - [Credits](#credits)
@@ -76,11 +78,12 @@ use {
 }
 ```
 
-## Usage
+## Commands
 
 ### Smart-Commit
-- Open a commit popup. If there are no staged changes, stage all changes (`git
-  add --all`) before the commit. Only supports the commit subject line.
+- Open a commit popup, alongside a preview of what is going to be committed. If
+  there are no staged changes, stage all changes (`git add --all`) before the
+  commit. Currently, only supports the commit subject line (no commit body).
 - Optionally run `git push` if the repo is clean after committing.
 - The title of the input field displays what actions are going to be performed.
   You can see at glance, whether all changes are going to be committed or whether
@@ -210,7 +213,9 @@ require("tinygit").stashPush()
 require("tinygit").stashPop()
 ```
 
-## Improved Highlighting of Interactive Rebase
+## Other Features
+
+### Improved Highlighting of Interactive Rebase
 `tinygit` also comes with some highlighting improvements for interactive
 rebasing (`git rebase -i`).
 
@@ -223,6 +228,17 @@ If you want to disable the modifications by `tinygit`, add this to your config:
 ```lua
 vim.g.tinygit_no_rebase_ftplugin = true
 ```
+
+### Git Blame Status Line Component
+Shows the message and date (`git blame`) of the last commit that changed the
+current *file* (not line).
+
+```lua
+require("tinygit.gitblame").statusLine()
+```
+
+The component can be configured with the `blameStatusLine` options in the [plugin
+configuration](#configuration).
 
 ## Configuration
 The `setup` call is optional. These are the default settings:
@@ -278,6 +294,11 @@ local defaultConfig = {
 		-- if trying to call `git log` on a shallow repository, automatically
 		-- unshallow the repo by running `git fetch --unshallow`
 		autoUnshallowIfNeeded = false,
+	},
+	blameStatusLine = {
+		ignoreAuthors = {}, -- any of these authors and the blame will be hidden
+		maxMsgLen = 30,
+		icon = " ",
 	},
 }
 ```

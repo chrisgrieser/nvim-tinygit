@@ -6,6 +6,7 @@ local M = {}
 ---@field issueIcons issueIconConfig
 ---@field historySearch historySearchConfig
 ---@field push pushConfig
+---@field blameStatusLine blameConfig
 
 ---@class issueIconConfig
 ---@field closedIssue string
@@ -31,6 +32,11 @@ local M = {}
 ---@field preventPushingFixupOrSquashCommits boolean
 ---@field confirmationSound boolean
 
+---@class blameConfig
+---@field ignoreAuthors string[]
+---@field maxMsgLen number
+---@field icon string
+
 --------------------------------------------------------------------------------
 
 ---@type pluginConfig
@@ -44,7 +50,7 @@ local defaultConfig = {
 		-- this message. Set to `false` to disallow empty commit messages.
 		emptyFillIn = "chore", ---@type string|false
 
-		-- Shows diffstats of the changes that are going to be committed. 
+		-- Shows diffstats of the changes that are going to be committed.
 		-- (requires nvim-notify)
 		commitPreview = true,
 
@@ -84,6 +90,11 @@ local defaultConfig = {
 		-- if trying to call `git log` on a shallow repository, automatically
 		-- unshallow the repo by running `git fetch --unshallow`
 		autoUnshallowIfNeeded = false,
+	},
+	blameStatusLine = {
+		ignoreAuthors = {}, -- any of these authors and the blame will be hidden
+		maxMsgLen = 30,
+		icon = " ",
 	},
 }
 
