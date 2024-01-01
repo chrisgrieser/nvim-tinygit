@@ -60,7 +60,7 @@ Install the Treesitter parser for git filetypes: `TSInstall gitcommit gitrebase`
 		"stevearc/dressing.nvim",
 		"nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
 		-- "ibhagwan/fzf-lua",
-		"rcarriga/nvim-notify", -- optional, but recommended
+		"rcarriga/nvim-notify", -- optional, but some features missing without it
 	},
 },
 
@@ -71,7 +71,7 @@ use {
 		"stevearc/dressing.nvim",
 		"nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
 		-- "ibhagwan/fzf-lua",
-		"rcarriga/nvim-notify", -- optional, but recommended
+		"rcarriga/nvim-notify", -- optional, but some features missing without it
 	},
 }
 ```
@@ -234,20 +234,24 @@ local defaultConfig = {
 		mediumLen = 50,
 		maxLen = 72,
 
-		-- When conforming the commit message popup with an empty message, fill
-		-- in this message. `false` to disallow empty commit messages.
+		-- When conforming the commit message popup with an empty message, fill in
+		-- this message. Set to `false` to disallow empty commit messages.
 		emptyFillIn = "chore", ---@type string|false
+
+		-- Shows diffstats of the changes that are going to be committed. 
+		-- (requires nvim-notify)
+		commitPreview = true,
 
 		conventionalCommits = {
 			enforce = false, -- disallow commit messages without a keyword
 			-- stylua: ignore
-			keywords = { -- also used for the cycle-keywords via <Tab>
+			keywords = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",
 				"perf", "style", "revert", "ci", "break", "improv",
 			},
 		},
 
-		-- enable vim's builtin spellcheck for the commit message input field
+		-- enable vim's builtin spellcheck for the commit message input field.
 		-- (configured to ignore capitalization and correctly consider camelCase)
 		spellcheck = false,
 

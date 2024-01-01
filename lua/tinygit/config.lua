@@ -21,6 +21,7 @@ local M = {}
 ---@field conventionalCommits {enforce: boolean, keywords: string[]}
 ---@field spellcheck boolean
 ---@field openReferencedIssue boolean
+---@field commitPreview boolean
 
 ---@class historySearchConfig
 ---@field diffPopup { width: number, height: number, border: "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]}
@@ -43,10 +44,14 @@ local defaultConfig = {
 		-- this message. Set to `false` to disallow empty commit messages.
 		emptyFillIn = "chore", ---@type string|false
 
+		-- Shows diffstats of the changes that are going to be committed. 
+		-- (requires nvim-notify)
+		commitPreview = true,
+
 		conventionalCommits = {
 			enforce = false, -- disallow commit messages without a keyword
 			-- stylua: ignore
-			keywords = { -- also used for the cycle-keywords via <Tab>
+			keywords = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",
 				"perf", "style", "revert", "ci", "break", "improv",
 			},

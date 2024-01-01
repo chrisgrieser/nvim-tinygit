@@ -156,15 +156,14 @@ end
 ---The notification makes it more transparent to the user what is going to be
 ---committed. (This is similar to the commented out lines at the bottom of a git
 ---message in the terminal.)
-function M.diffStatsPreview()
+---@return number|nil -- nil if no notification is shown
+local function diffStatsPreview()
 	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
-	local ok, notifyNvim = pcall(require, "notify")
-	local width
-	if ok and notifyNvim then
-		local _, notifyConfig = require("notify").instance()
+	local notifyInstalled, notifyNvim = pcall(require, "notify")
+	local width = 50
+	if notifyInstalled then
+		local _, notifyConfig = notifyNvim.instance()
 		width = notifyConfig.max_width - 2
-	else
-		width = 50
 	end
 
 	-- get changes
@@ -184,9 +183,12 @@ function M.diffStatsPreview()
 		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
 		:gsub(" | ", " │ ") -- pipes to full vertical bars
 
-	-- send notification
-	vim.notify(changes, vim.log.levels.INFO, {
+	-- Preview as notification
+	if not notifyInstalled or not config.commitPreview then return end
+
+	local notification = vim.notify(changes, vim.log.levels.INFO, {
 		title = title,
+		timeout = false, -- keep shown, remove when input window closed
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(bufnr, function()
@@ -198,7 +200,8 @@ function M.diffStatsPreview()
 				fn.matchadd("Comment", "│")
 			end)
 		end,
-	})
+	}) ---@cast notification { id: number }
+	return notification.id
 end
 
 --------------------------------------------------------------------------------
@@ -225,11 +228,16 @@ function M.smartCommit(opts, prefillMsg)
 	if doStageAllChanges then title = "Stage All · " .. title end
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
 
-	M.diffStatsPreview()
-
+	local notificationId = diffStatsPreview()
 	setupInputField()
+
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
-		if not commitMsg then return end -- aborted input modal
+		-- close preview
+		if notificationId then require("notify").dismiss { id = notificationId } end
+
+		-- aborted input modal
+		if not commitMsg then return end
+
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
 			M.smartCommit(opts, processedMsg)
