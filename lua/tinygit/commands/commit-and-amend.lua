@@ -35,6 +35,11 @@ end
 
 --------------------------------------------------------------------------------
 
+local function postCommitHook()
+	local statuslineInUse = package.loaded["tinygit.gitblame"] ~= nil
+	if statuslineInUse then require("tinygit.gitblame").refreshBlame() end
+end
+
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
@@ -269,6 +274,7 @@ function M.smartCommit(opts, prefillMsg)
 		end
 
 		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
+		postCommitHook()
 	end)
 end
 
@@ -297,6 +303,7 @@ function M.amendNoEdit(opts)
 	else
 		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, nil)
 	end
+	postCommitHook()
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
@@ -342,6 +349,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 		end
 
 		if opts.forcePushIfDiverged and prevCommitWasPushed then push { force = true } end
+		postCommitHook()
 	end)
 end
 
@@ -397,6 +405,7 @@ function M.fixupCommit(userOpts)
 			if u.nonZeroExit(stdout) then return end
 			u.notify(stdout, "info", "Auto Rebase applied")
 		end
+		postCommitHook()
 	end)
 end
 
