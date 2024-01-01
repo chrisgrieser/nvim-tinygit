@@ -40,14 +40,16 @@ operations.
 
 FEATURES                                       *tinygit-nvim-tinygit-features*
 
-- **Smart-Commit:** Open a popup to enter a commit message with syntax highlighting
-    and indicators for commit message overlength. If there are no staged changed,
-    stages all changes before doing so (`git add -A`). Optionally trigger a `git   push` afterward.
+- **Smart-Commit**Open a popup to enter a commit message with syntax highlighting,
+    commit preview, and indicators for message overlength. If there are no staged
+    changed, stages all changes before doing so (`git add -A`). Optionally trigger
+    a `git push` afterward.
 - Quick commands for amend, stash, fixup, and squash commits.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current file or selection.
 - **Search the file history** for a string ("git pickaxe"), show results in a diff
     with filetype syntax highlighting, correctly following file renamings.
+- A simple `git blame` status line component for the current file.
 - Highlighting improvements for interactive **rebasing** when using nvim as sequence
     editor.
 
@@ -74,6 +76,7 @@ gitrebase`
     -- lazy.nvim
     {
         "chrisgrieser/nvim-tinygit",
+        -- event = "VeryLazy", -- if you want to use the status line component
         ft = { "gitrebase", "gitcommit" }, -- so ftplugins are loaded
         dependencies = {
             "stevearc/dressing.nvim",
@@ -268,6 +271,10 @@ current _file_ (not line).
     require("tinygit.gitblame").statusLine()
 <
 
+
+  [!TIP] Some status line plugin also allow you to put components into the
+  tabline or winbar. If your status line is too crowded, you can add the
+  blame-component to the one of those bars instead.
 The component can be configured with the `blameStatusLine` options in the
 |tinygit-plugin-configuration|.
 
