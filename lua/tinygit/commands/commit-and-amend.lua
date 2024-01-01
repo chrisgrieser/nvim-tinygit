@@ -299,7 +299,7 @@ function M.amendNoEdit(opts)
 	local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 	if opts.forcePushIfDiverged and prevCommitWasPushed then
 		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, "Force Pushing…")
-		push { force = true }
+		push { forceWithLease = true }
 	else
 		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, nil)
 	end
@@ -348,7 +348,7 @@ function M.amendOnlyMsg(opts, prefillMsg)
 			u.openUrl(url)
 		end
 
-		if opts.forcePushIfDiverged and prevCommitWasPushed then push { force = true } end
+		if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
 		postCommitHook()
 	end)
 end

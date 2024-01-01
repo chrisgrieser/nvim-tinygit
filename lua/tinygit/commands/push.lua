@@ -11,7 +11,7 @@ local function getFixupOrSquashCommits()
 	return vim.trim(fn.system { "git", "log", "--oneline", "--grep=^fixup!", "--grep=^squash!" })
 end
 
----@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
+---@param userOpts { pullBefore?: boolean, forceWithLease?: boolean, createGitHubPr?: boolean }
 ---@param soundFilepath string
 local function postPushActions(userOpts, soundFilepath)
 	-- CAVEAT currently only on macOS
@@ -26,16 +26,16 @@ end
 --------------------------------------------------------------------------------
 
 -- pull before to avoid conflicts
----@param userOpts { pullBefore: boolean, force: boolean, createGitHubPr?: boolean }
+---@param userOpts { pullBefore: boolean, forceWithLease: boolean, createGitHubPr?: boolean }
 ---@param calledByUser? boolean
 function M.push(userOpts, calledByUser)
 	-- GUARD
 	if u.notInGitRepo() then return end
 
-	local title = userOpts.force and "Force Push" or "Push"
-	local shellCmd = userOpts.force and "git push --force" or "git push"
+	local title = userOpts.forceWithLease and "Force Push" or "Push"
+	local shellCmd = userOpts.forceWithLease and "git push --force-with-lease" or "git push"
 	if userOpts.pullBefore then
-		shellCmd = "git pull && " .. shellCmd
+		shellCmd = "git pull && " .. shellCmd -- && prevents force-push on failed pull
 		title = "Pull & " .. title
 	end
 

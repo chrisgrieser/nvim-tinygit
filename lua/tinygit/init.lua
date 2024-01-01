@@ -44,7 +44,7 @@ function M.createGitHubPr() require("tinygit.commands.github").createGitHubPr() 
 
 --------------------------------------------------------------------------------
 -- OTHER
----@param userOpts { pullBefore?: boolean, force?: boolean, createGitHubPr?: boolean }
+---@param userOpts { pullBefore?: boolean, forceWithLease?: boolean, createGitHubPr?: boolean }
 function M.push(userOpts) require("tinygit.commands.push").push(userOpts or {}, true) end
 
 function M.searchFileHistory() require("tinygit.commands.pickaxe").searchFileHistory() end

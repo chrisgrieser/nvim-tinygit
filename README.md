@@ -116,8 +116,8 @@ pushing into a single step, when it is the last commit you intend to make.
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
   it stages all changes (`git add --all`), like `smartCommit`.
-- Optionally runs `git push --force` afterward, if the branch has diverged (the
-  amended commit was already pushed).
+- Optionally runs `git push --force-with-lease` afterward, if the branch has
+  diverged (i.e., the amended commit was already pushed).
 
 ```lua
 -- options default to `false`
@@ -174,7 +174,7 @@ require("tinygit").githubUrl("file")
 -- options default to `false`
 require("tinygit").push {
 	pullBefore = false,
-	force = false,
+	forceWithLease = false,
 	createGitHubPr = false,
 }
 require("tinygit").createGitHubPr()
