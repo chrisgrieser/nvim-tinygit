@@ -23,6 +23,14 @@ local function hasNoUnstagedChanges()
 	return hasNoUnstaged
 end
 
+---@nodiscard
+---@return boolean
+local function hasNoChanges()
+	local noChanges = vim.fn.system { "git", "status", "--porcelain" } == ""
+	if noChanges then u.notify("There are no changes to be committed", "warn") end
+	return noChanges
+end
+
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
@@ -197,7 +205,7 @@ end
 ---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
 ---@param opts? { pushIfClean?: boolean }
 function M.smartCommit(opts, prefillMsg)
-	if u.notInGitRepo() then return end
+	if u.notInGitRepo() or hasNoChanges() then return end
 
 	vim.cmd("silent update")
 	if not opts then opts = {} end
@@ -318,6 +326,8 @@ end
 
 ---@param userOpts { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
 function M.fixupCommit(userOpts)
+	if u.notInGitRepo() or hasNoChanges() then return end
+
 	local defaultOpts = {
 		selectFromLastXCommits = 15,
 		squashInstead = false,
