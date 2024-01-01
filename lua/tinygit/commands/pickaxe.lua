@@ -39,12 +39,6 @@ local function repoIsShallow()
 	end
 end
 
--- assuming the current cwd is a git repo
-local function cdToGitRoot()
-	local gitroot = vim.trim(fn.system { "git", "rev-parse", "--show-toplevel" })
-	if gitroot ~= vim.loop.cwd() then vim.loop.chdir(gitroot) end
-end
-
 --------------------------------------------------------------------------------
 
 ---@param commitIdx number index of the selected commit in the list of commits
@@ -59,9 +53,11 @@ local function showDiff(commitIdx, type)
 
 	-- determine filename in case of renaming
 	local filenameInPresent = currentRun.absPath
-	cdToGitRoot() -- in case cwd is not the git root
+	local gitroot = vim.trim(fn.system { "git", "rev-parse", "--show-toplevel" })
 	local nameHistory = vim.trim(fn.system {
 		"git",
+		"-C",
+		gitroot, -- in case cwd is not the git root
 		"log",
 		hash .. "^..",
 		"--follow",
@@ -73,29 +69,14 @@ local function showDiff(commitIdx, type)
 	local nameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 
 	-- get diff
-	local diff
+	local diffCmd = { "git", "-C", gitroot, "show", "--format=" }
 	if type == "file" then
-		diff = fn.system {
-			"git",
-			"show",
-			hash,
-			"--format=",
-			"--",
-			nameAtCommit,
-		}
+		diffCmd = vim.list_extend(diffCmd, { hash, "--", nameAtCommit })
 	elseif type == "function" then
-		diff = fn.system {
-			"git",
-			"log",
-			hash,
-			"--format=",
-			"-n1",
-			("-L:%s:%s"):format(query, nameAtCommit),
-		}
+		diffCmd = vim.list_extend(diffCmd, { "log", "-n1", ("-L:%s:%s"):format(query, nameAtCommit) })
 	end
-
-	-- GUARD
-	if u.nonZeroExit(diff) then return end
+	local diff = fn.system(diffCmd)
+	if u.nonZeroExit(diff) then return end -- GUARD
 
 	local diffLines = vim.split(vim.trim(diff), "\n")
 	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
