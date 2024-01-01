@@ -58,7 +58,6 @@ Install the Treesitter parser for git filetypes: `TSInstall gitcommit gitrebase`
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	-- event = "VeryLazy", -- if you want to use the status line component
 	ft = { "gitrebase", "gitcommit" }, -- so ftplugins are loaded
 	dependencies = {
 		"stevearc/dressing.nvim",
