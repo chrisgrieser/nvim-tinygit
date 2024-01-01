@@ -27,7 +27,9 @@ end
 ---@return boolean
 local function hasNoChanges()
 	local noChanges = vim.fn.system { "git", "status", "--porcelain" } == ""
-	if noChanges then u.notify("There are no changes to be committed", "warn") end
+	if noChanges then
+		u.notify("There are no staged or unstaged changes to be committed.", "warn")
+	end
 	return noChanges
 end
 
@@ -154,7 +156,7 @@ end
 ---The notification makes it more transparent to the user what is going to be
 ---committed. (This is similar to the commented out lines at the bottom of a git
 ---message in the terminal.)
-function M.notifyWhatChanged()
+function M.diffStatsPreview()
 	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
 	local ok, notifyNvim = pcall(require, "notify")
 	local width
@@ -170,16 +172,17 @@ function M.notifyWhatChanged()
 	local willStageAllChanges = hasNoStagedChanges()
 	local title
 	if willStageAllChanges then
-		title = "Will Stage & Commit:"
+		title = "Stage & Commit Preview"
 		-- so new files show up in the diff stats
 		fn.system("git ls-files --others --exclude-standard | xargs git add --intent-to-add")
 	else
-		title = "Staged Changes"
+		title = "Commit Preview"
 		table.insert(diffStatsCmd, "--staged")
 	end
-	local changes = vim.trim(vim.fn.system(diffStatsCmd))
+	local changes = vim
+		.trim(vim.fn.system(diffStatsCmd))
 		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
-		:gsub(" | ", " │ ") -- pipes to full bars
+		:gsub(" | ", " │ ") -- pipes to full vertical bars
 
 	-- send notification
 	vim.notify(changes, vim.log.levels.INFO, {
@@ -222,7 +225,7 @@ function M.smartCommit(opts, prefillMsg)
 	if doStageAllChanges then title = "Stage All · " .. title end
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
 
-	M.notifyWhatChanged()
+	M.diffStatsPreview()
 
 	setupInputField()
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
@@ -261,7 +264,7 @@ end
 
 ---@param opts? { forcePush?: boolean }
 function M.amendNoEdit(opts)
-	if u.notInGitRepo() then return end
+	if u.notInGitRepo() or hasNoChanges() then return end
 
 	if not opts then opts = {} end
 	vim.cmd("silent update")

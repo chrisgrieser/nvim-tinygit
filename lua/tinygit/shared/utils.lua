@@ -34,7 +34,7 @@ end
 ---@param errorMsg string
 function M.nonZeroExit(errorMsg)
 	local exitCode = vim.v.shell_error
-	if exitCode ~= 0 then M.notify(vim.trim(errorMsg), "warn") end
+	if exitCode ~= 0 then M.notify(vim.trim(errorMsg), "error") end
 	return exitCode ~= 0
 end
 
