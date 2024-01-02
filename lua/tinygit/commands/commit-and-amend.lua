@@ -81,8 +81,7 @@ local function setupInputField()
 			local ns = vim.api.nvim_create_namespace("tinygit.inputField")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
-			-- custom highlighting
-			-- (INFO the order the highlights are added matters, later has priority)
+			-- INFO the order the highlights are added matters, later has priority
 			fn.matchadd("issueNumber", [[#\d\+]])
 			vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
 
@@ -214,14 +213,14 @@ end
 
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
----@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
+---@param msgNeedingFixing? string used internally when calling this function recursively due to corrected commit message
 ---@param opts? { pushIfClean?: boolean }
-function M.smartCommit(opts, prefillMsg)
+function M.smartCommit(opts, msgNeedingFixing)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
 
 	if not opts then opts = {} end
-	if not prefillMsg then prefillMsg = "" end
+	if not msgNeedingFixing then msgNeedingFixing = "" end
 
 	local doStageAllChanges = hasNoStagedChanges()
 	-- When committing with no staged changes, all changes are staged, resulting
@@ -237,7 +236,7 @@ function M.smartCommit(opts, prefillMsg)
 	diffStatsPreview()
 	setupInputField()
 
-	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
+	vim.ui.input({ prompt = "󰊢 " .. title, default = msgNeedingFixing }, function(commitMsg)
 		-- close preview (can only dismiss all and not by ID)
 		if package.loaded["notify"] and config.commitPreview then require("notify").dismiss() end
 
@@ -306,8 +305,8 @@ function M.amendNoEdit(opts)
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
----@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
-function M.amendOnlyMsg(opts, prefillMsg)
+---@param msgNeedingFixing? string used internally when calling this function recursively due to corrected commit message
+function M.amendOnlyMsg(opts, msgNeedingFixing)
 	vim.cmd("silent update")
 	-- GUARD
 	if u.notInGitRepo() then return end
@@ -318,13 +317,13 @@ function M.amendOnlyMsg(opts, prefillMsg)
 
 	if not opts then opts = {} end
 
-	if not prefillMsg then
+	if not msgNeedingFixing then
 		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
-		prefillMsg = lastCommitMsg
+		msgNeedingFixing = lastCommitMsg
 	end
 
 	setupInputField()
-	vim.ui.input({ prompt = "󰊢 Amend Only Message", default = prefillMsg }, function(commitMsg)
+	vim.ui.input({ prompt = "󰊢 Amend Only Message", default = msgNeedingFixing }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
