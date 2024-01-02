@@ -23,7 +23,7 @@ local function getBlame(bufnr)
 	local author, date, msg = unpack(vim.split(blame, "\t"))
 
 	-- shorten
-	date = (date:match("%d+ %wi?") or "") -- 1st letter (+i for min, to distinguish from "month")
+	date = (date:match("%d+ %wi?n?") or "") -- 1st letter (+in for min, to distinguish from "month")
 		:gsub(" ", "")
 	msg = #msg > config.maxMsgLen and vim.trim(msg:sub(1, config.maxMsgLen)) .. "…" or msg
 

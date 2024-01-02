@@ -193,7 +193,7 @@ local function diffStatsPreview()
 	-- Preview as notification
 	if not notifyInstalled or not config.commitPreview then return end
 
-	local notification = vim.notify(changes, vim.log.levels.INFO, {
+	vim.notify(changes, vim.log.levels.INFO, {
 		title = title,
 		timeout = false, -- keep shown, remove when input window closed
 		on_open = function(win)
@@ -207,8 +207,7 @@ local function diffStatsPreview()
 				fn.matchadd("Comment", "│")
 			end)
 		end,
-	}) ---@cast notification { id: number }
-	return notification.id
+	})
 end
 
 --------------------------------------------------------------------------------
@@ -235,12 +234,12 @@ function M.smartCommit(opts, prefillMsg)
 	if doStageAllChanges then title = "Stage All · " .. title end
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
 
-	local notificationId = diffStatsPreview()
+	diffStatsPreview()
 	setupInputField()
 
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
-		-- close preview
-		if notificationId then require("notify").dismiss { id = notificationId } end
+		-- close preview (can only dismiss all and not by ID)
+		if package.loaded["notify"] and config.commitPreview then require("notify").dismiss() end
 
 		-- aborted input modal
 		if not commitMsg then return end
