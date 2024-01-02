@@ -218,9 +218,9 @@ end
 ---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
 ---@param opts? { pushIfClean?: boolean }
 function M.smartCommit(opts, prefillMsg)
+	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
 
-	vim.cmd("silent update")
 	if not opts then opts = {} end
 	if not prefillMsg then prefillMsg = "" end
 
@@ -280,10 +280,10 @@ end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
 function M.amendNoEdit(opts)
+	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
 
 	if not opts then opts = {} end
-	vim.cmd("silent update")
 
 	local stageAllChanges = hasNoStagedChanges()
 	if stageAllChanges then
@@ -309,6 +309,7 @@ end
 ---@param opts? { forcePushIfDiverged?: boolean }
 ---@param prefillMsg? string used internally when calling this function recursively due to corrected commit message
 function M.amendOnlyMsg(opts, prefillMsg)
+	vim.cmd("silent update")
 	-- GUARD
 	if u.notInGitRepo() then return end
 	if not hasNoStagedChanges() then
@@ -317,7 +318,6 @@ function M.amendOnlyMsg(opts, prefillMsg)
 	end
 
 	if not opts then opts = {} end
-	vim.cmd("silent update")
 
 	if not prefillMsg then
 		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
@@ -355,6 +355,7 @@ end
 
 ---@param userOpts { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
 function M.fixupCommit(userOpts)
+	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
 
 	local defaultOpts = {
