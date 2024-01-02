@@ -150,7 +150,9 @@ local function showDiff(commitIdx, type)
 		vim.opt_local.smartcase = false
 
 		vim.fn.setreg("/", query) -- so `n` searches directly
-		vim.cmd.normal { "n", bang = true } -- move to first match
+		pcall(vim.cmd.normal, { "n", bang = true }) -- move to first match
+		-- (pcall to prevent error when query cannot found, due to non-equivalent
+		-- case-sensitivity with git, because of git-regex, or due to file renamings)
 	end
 
 	-- keymaps: info message as extmark
