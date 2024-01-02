@@ -235,7 +235,7 @@ vim.g.tinygit_no_rebase_ftplugin = true
 
 ### Git Blame Status Line Component
 Shows the message and date (`git blame`) of the last commit that changed the
-current *file* (not line).
+current *file* (not line), like at GitHub.
 
 ```lua
 require("tinygit.gitblame").statusLine()
@@ -305,9 +305,9 @@ local defaultConfig = {
 		autoUnshallowIfNeeded = false,
 	},
 	blameStatusLine = {
-		ignoreAuthors = {}, -- any of these authors and the blame will be hidden
-		maxMsgLen = 30,
-		icon = " ",
+		ignoreAuthors = {}, -- Any of these authors and the component is not shown. 
+		maxMsgLen = 35,
+		icon = "ﰖ ",
 	},
 }
 ```

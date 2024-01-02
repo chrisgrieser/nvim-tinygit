@@ -25,6 +25,7 @@ local function getBlame(bufnr)
 	-- shorten
 	date = (date:match("%d+ %wi?n?") or "") -- 1st letter (+in for min, to distinguish from "month")
 		:gsub(" ", "")
+		:gsub("%d+s", "just now")
 	msg = #msg > config.maxMsgLen and vim.trim(msg:sub(1, config.maxMsgLen)) .. "…" or msg
 
 	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end

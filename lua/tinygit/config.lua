@@ -92,9 +92,9 @@ local defaultConfig = {
 		autoUnshallowIfNeeded = false,
 	},
 	blameStatusLine = {
-		ignoreAuthors = {}, -- any of these authors and the blame will be hidden
-		maxMsgLen = 30,
-		icon = " ",
+		ignoreAuthors = {}, -- Any of these authors and the component is not shown. 
+		maxMsgLen = 35,
+		icon = "ﰖ ",
 	},
 }
 
