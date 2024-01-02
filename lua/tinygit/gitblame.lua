@@ -13,23 +13,27 @@ local config = require("tinygit.config").config.blameStatusLine
 ---@nodiscard
 local function getBlame(bufnr)
 	local bufPath = vim.api.nvim_buf_get_name(bufnr or 0)
-	local blame = vim.trim(
+	local gitLogLine = vim.trim(
 		vim.fn.system { "git", "log", "--format=%an\t%cr\t%s", "--max-count=1", "--", bufPath }
 	)
+	local author, relDate, msg = unpack(vim.split(gitLogLine, "\t"))
 
 	-- GUARD
-	if vim.v.shell_error ~= 0 or blame == "" then return "" end
+	if vim.v.shell_error ~= 0 or gitLogLine == "" then return "" end
+	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
 
-	local author, date, msg = unpack(vim.split(blame, "\t"))
-
-	-- shorten
-	date = (date:match("%d+ %wi?n?") or "") -- 1st letter (+in for min, to distinguish from "month")
+	-- shorten the output
+	local shortRelDate = (relDate:match("%d+ %wi?n?") or "") -- 1 unit char (+in for min, to distinguish from "month")
 		:gsub(" ", "")
 		:gsub("%d+s", "just now")
-	msg = #msg > config.maxMsgLen and vim.trim(msg:sub(1, config.maxMsgLen)) .. "…" or msg
+	local trimmedMsg = #msg < config.maxMsgLen and msg
+		or vim.trim(msg:sub(1, config.maxMsgLen)) .. "…"
+	local authorInitials = not (author:find("%s")) and author:sub(1, 2) -- "janedoe" -> "ja"
+		or author:sub(1, 1) .. author:match("%s(%S)") -- "Jane Doe" -> "JD"
+	local authorStr = vim.tbl_contains(config.hideAuthorNames, author) and ""
+		or " by " .. authorInitials
 
-	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
-	return ("%s%s (%s)"):format(config.icon, msg, date)
+	return config.icon .. ("%s [%s]"):format(trimmedMsg, shortRelDate, authorStr)
 end
 
 --------------------------------------------------------------------------------

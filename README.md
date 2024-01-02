@@ -305,7 +305,12 @@ local defaultConfig = {
 		autoUnshallowIfNeeded = false,
 	},
 	blameStatusLine = {
-		ignoreAuthors = {}, -- Any of these authors and the component is not shown. 
+		-- Any of these authors and the component is not shown (useful for bots)
+		ignoreAuthors = {},
+
+		-- show component, but leave out names (useful for your own name)
+		hideAuthorNames = {},
+
 		maxMsgLen = 35,
 		icon = "ﰖ ",
 	},
