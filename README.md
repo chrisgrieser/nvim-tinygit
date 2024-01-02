@@ -30,7 +30,7 @@ operations.
 
 ## Features
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
-  commit preview, and indicators for message overlength. If there are no staged
+  commit preview, and overlength indicators. If there are no staged
   changed, stages all changes before doing so (`git add -A`). Optionally trigger
   a `git push` afterward.
 - Quick commands for amend, stash, fixup, and squash commits.
@@ -84,11 +84,14 @@ use {
 ### Smart-Commit
 - Open a commit popup, alongside a preview of what is going to be committed. If
   there are no staged changes, stage all changes (`git add --all`) before the
-  commit. Currently, only supports the commit subject line (no commit body).
+  commit.
+- Input field contents of aborted commits are briefly kept, if you just want to
+  fix a detail.
 - Optionally run `git push` if the repo is clean after committing.
 - The title of the input field displays what actions are going to be performed.
   You can see at glance, whether all changes are going to be committed or whether
   there a `git push` is triggered afterward, so there are no surprises.
+- Currently, only supports the commit subject line (no commit body).
 
 ```lua
 require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
@@ -117,7 +120,7 @@ pushing into a single step, when it is the last commit you intend to make.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
   it stages all changes (`git add --all`), like `smartCommit`.
 - Optionally runs `git push --force-with-lease` afterward, if the branch has
-  diverged (i.e., the amended commit was already pushed).
+  diverged (that is, the amended commit was already pushed).
 
 ```lua
 -- options default to `false`

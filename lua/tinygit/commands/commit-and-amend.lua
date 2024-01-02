@@ -5,6 +5,7 @@ local push = require("tinygit.commands.push").push
 
 local M = {}
 local fn = vim.fn
+local abortedCommitMsg
 --------------------------------------------------------------------------------
 
 ---@nodiscard
@@ -73,7 +74,9 @@ local function processCommitMsg(commitMsg)
 	return true, commitMsg
 end
 
-local function setupInputField()
+---@param commitType? "smartCommit"
+local function setupInputField(commitType)
+	-- CUSTOM HIGHLIGHTING
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = "DressingInput",
 		once = true, -- do not affect other DressingInputs
@@ -116,6 +119,28 @@ local function setupInputField()
 				vim.opt_local.spelloptions = "camel"
 				vim.opt_local.spellcapcheck = ""
 			end
+		end,
+	})
+
+	-- SETUP BRIEFLY SAVING MESSAGE WHEN ABORTING COMMIT
+	-- Only relevant for smartCommit, since amendNoEdit has no commitMsg and
+	-- amendOnlyMsg uses different prefilled message.
+	if commitType ~= "smartCommit" then return end
+
+	local keepAbortedMsgSecs = 120 -- CONFIG
+
+	vim.api.nvim_create_autocmd("WinClosed", {
+		callback = function(ctx)
+			local ft = vim.api.nvim_buf_get_option(ctx.buf, "filetype")
+			if not (ft == "gitcommit" or ft == "DressingInput") then return end
+
+			abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
+			vim.defer_fn(function() abortedCommitMsg = nil end, 1000 * keepAbortedMsgSecs)
+
+			-- Disables this autocmd. Cannot use `once = true`, as things like
+			-- closed notification windows would still trigger it which would false
+			-- trigger and disable this autocmd then.
+			return true
 		end,
 	})
 end
@@ -220,7 +245,7 @@ function M.smartCommit(opts, msgNeedingFixing)
 	if u.notInGitRepo() or hasNoChanges() then return end
 
 	if not opts then opts = {} end
-	if not msgNeedingFixing then msgNeedingFixing = "" end
+	local prefillMsg = msgNeedingFixing or abortedCommitMsg or ""
 
 	local doStageAllChanges = hasNoStagedChanges()
 	-- When committing with no staged changes, all changes are staged, resulting
@@ -234,9 +259,9 @@ function M.smartCommit(opts, msgNeedingFixing)
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
 
 	diffStatsPreview()
-	setupInputField()
+	setupInputField("smartCommit")
 
-	vim.ui.input({ prompt = "󰊢 " .. title, default = msgNeedingFixing }, function(commitMsg)
+	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
 		-- close preview (can only dismiss all and not by ID)
 		if package.loaded["notify"] and config.commitPreview then require("notify").dismiss() end
 
