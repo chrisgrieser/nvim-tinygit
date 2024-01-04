@@ -363,7 +363,7 @@ function M.amendOnlyMsg(opts, msgNeedingFixing)
 		local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 
 		local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…" or nil
-		commitNotification("Amend-No-Edit", false, processedMsg, extra)
+		commitNotification("Amend Only Message", false, processedMsg, extra)
 
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if config.openReferencedIssue and issueReferenced then
