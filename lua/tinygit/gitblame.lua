@@ -33,7 +33,7 @@ local function getBlame(bufnr)
 	local authorStr = vim.tbl_contains(config.hideAuthorNames, author) and ""
 		or " by " .. authorInitials
 
-	return config.icon .. ("%s [%s]"):format(trimmedMsg, shortRelDate, authorStr)
+	return config.icon .. ("%s [%s%s]"):format(trimmedMsg, shortRelDate, authorStr)
 end
 
 --------------------------------------------------------------------------------
