@@ -334,8 +334,8 @@ function M.amendNoEdit(opts)
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
----@param msgNeedingFixing? string used internally when calling this function recursively due to corrected commit message
-function M.amendOnlyMsg(opts, msgNeedingFixing)
+---@param msgNeedsFixing? string used internally when calling this function recursively due to corrected commit message
+function M.amendOnlyMsg(opts, msgNeedsFixing)
 	vim.cmd("silent update")
 	-- GUARD
 	if u.notInGitRepo() then return end
@@ -346,38 +346,42 @@ function M.amendOnlyMsg(opts, msgNeedingFixing)
 
 	if not opts then opts = {} end
 
-	if not msgNeedingFixing then
+	if not msgNeedsFixing then
 		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
-		msgNeedingFixing = lastCommitMsg
+		msgNeedsFixing = lastCommitMsg
 	end
 
 	setupInputField()
-	vim.ui.input({ prompt = "󰊢 Amend Only Message", default = msgNeedingFixing }, function(commitMsg)
-		if not commitMsg then return end -- aborted input modal
-		local validMsg, processedMsg = processCommitMsg(commitMsg)
-		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.amendOnlyMsg(opts, processedMsg)
-			return
+	vim.ui.input(
+		{ prompt = "󰊢 Amend Only Message", default = msgNeedsFixing },
+		function(commitMsg)
+			if not commitMsg then return end -- aborted input modal
+			local validMsg, processedMsg = processCommitMsg(commitMsg)
+			if not validMsg then -- if msg invalid, run again to fix the msg
+				M.amendOnlyMsg(opts, processedMsg)
+				return
+			end
+
+			local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
+			if u.nonZeroExit(stderr) then return end
+
+			local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
+			local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
+
+			local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…"
+				or nil
+			commitNotification("Amend Only Message", false, processedMsg, extra)
+
+			local issueReferenced = processedMsg:match("#(%d+)")
+			if config.openReferencedIssue and issueReferenced then
+				local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
+				u.openUrl(url)
+			end
+
+			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
+			updateGitBlame()
 		end
-
-		local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
-		if u.nonZeroExit(stderr) then return end
-
-		local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
-		local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
-
-		local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…" or nil
-		commitNotification("Amend Only Message", false, processedMsg, extra)
-
-		local issueReferenced = processedMsg:match("#(%d+)")
-		if config.openReferencedIssue and issueReferenced then
-			local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
-			u.openUrl(url)
-		end
-
-		if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
-		updateGitBlame()
-	end)
+	)
 end
 
 ---@param userOpts { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
