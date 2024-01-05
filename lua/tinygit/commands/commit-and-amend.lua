@@ -234,6 +234,15 @@ local function diffStatsPreview()
 	})
 end
 
+---@param processedMsg string
+local function openReferencedIssue(processedMsg)
+	local issueReferenced = processedMsg:match("#(%d+)")
+	if config.openReferencedIssue and issueReferenced then
+		local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
+		u.openUrl(url)
+	end
+end
+
 --------------------------------------------------------------------------------
 
 ---If there are staged changes, commit them.
@@ -295,11 +304,7 @@ function M.smartCommit(opts, msgNeedingFixing)
 		commitNotification("Smart Commit", doStageAllChanges, processedMsg, extra)
 
 		-- extra actions after committing
-		local issueReferenced = processedMsg:match("#(%d+)")
-		if config.openReferencedIssue and issueReferenced then
-			local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
-			u.openUrl(url)
-		end
+		openReferencedIssue(processedMsg)
 		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
 		updateGitBlame()
 	end)
@@ -372,12 +377,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 				or nil
 			commitNotification("Amend Only Message", false, processedMsg, extra)
 
-			local issueReferenced = processedMsg:match("#(%d+)")
-			if config.openReferencedIssue and issueReferenced then
-				local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
-				u.openUrl(url)
-			end
-
+			openReferencedIssue(processedMsg)
 			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
 			updateGitBlame()
 		end
