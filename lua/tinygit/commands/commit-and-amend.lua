@@ -36,9 +36,9 @@ end
 
 --------------------------------------------------------------------------------
 
-local function postCommitHook()
-	local statuslineInUse = package.loaded["tinygit.gitblame"] ~= nil
-	if statuslineInUse then require("tinygit.gitblame").refreshBlame() end
+local function updateGitBlame()
+	if not package.loaded["tinygit.gitblame"] then return end
+	require("tinygit.gitblame").refreshBlame()
 end
 
 ---process a commit message: length, not empty, adheres to conventional commits
@@ -270,20 +270,22 @@ function M.smartCommit(opts, msgNeedingFixing)
 		if aborted then return end
 		if not aborted then abortedCommitMsg = nil end
 
+		-- validate
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
 			M.smartCommit(opts, processedMsg)
 			return
 		end
 
+		-- stage
 		if doStageAllChanges then
 			local stderr = fn.system { "git", "add", "-A" }
 			if u.nonZeroExit(stderr) then return end
 		end
-
 		local stderr = fn.system { "git", "commit", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
+		-- notification
 		local extra = nil
 		if opts.pushIfClean and cleanAfterCommit then
 			extra = "Pushing…"
@@ -292,14 +294,14 @@ function M.smartCommit(opts, msgNeedingFixing)
 		end
 		commitNotification("Smart Commit", doStageAllChanges, processedMsg, extra)
 
+		-- extra actions after committing
 		local issueReferenced = processedMsg:match("#(%d+)")
 		if config.openReferencedIssue and issueReferenced then
 			local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
 			u.openUrl(url)
 		end
-
 		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
-		postCommitHook()
+		updateGitBlame()
 	end)
 end
 
@@ -328,7 +330,7 @@ function M.amendNoEdit(opts)
 	else
 		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, nil)
 	end
-	postCommitHook()
+	updateGitBlame()
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
@@ -374,7 +376,7 @@ function M.amendOnlyMsg(opts, msgNeedingFixing)
 		end
 
 		if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
-		postCommitHook()
+		updateGitBlame()
 	end)
 end
 
@@ -431,7 +433,7 @@ function M.fixupCommit(userOpts)
 			if u.nonZeroExit(stdout) then return end
 			u.notify(stdout, "info", "Auto Rebase applied")
 		end
-		postCommitHook()
+		updateGitBlame()
 	end)
 end
 
