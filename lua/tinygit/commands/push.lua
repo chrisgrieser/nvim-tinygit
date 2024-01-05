@@ -58,6 +58,7 @@ function M.push(userOpts, calledByUser)
 		on_stdout = function(_, data)
 			if data[1] == "" and #data == 1 then return end
 			local output = vim.trim(table.concat(data, "\n"))
+			output = output:gsub("^%[K", "") -- remove weird ANSI escape code being added sometimes
 
 			-- no need to notify that the pull in `git pull ; git push` yielded no update
 			if
@@ -74,6 +75,7 @@ function M.push(userOpts, calledByUser)
 		on_stderr = function(_, data)
 			if data[1] == "" and #data == 1 then return end
 			local output = vim.trim(table.concat(data, "\n"))
+			output = output:gsub("^%[K", "") -- remove weird ANSI escape code being added sometimes
 
 			-- git often puts non-errors into STDERR, therefore checking here again
 			-- whether it is actually an error or not
