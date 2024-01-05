@@ -265,8 +265,10 @@ function M.smartCommit(opts, msgNeedingFixing)
 		-- close preview (can only dismiss all and not by ID)
 		if package.loaded["notify"] and config.commitPreview then require("notify").dismiss() end
 
-		-- aborted input modal
-		if not commitMsg then return end
+		-- abort
+		local aborted = not commitMsg
+		if aborted then return end
+		if not aborted then abortedCommitMsg = nil end
 
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
 		if not validMsg then -- if msg invalid, run again to fix the msg
