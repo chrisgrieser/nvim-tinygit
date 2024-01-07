@@ -194,7 +194,7 @@ local function diffStatsPreview()
 	local width = 50
 	if notifyInstalled then
 		local _, notifyConfig = notifyNvim.instance()
-		width = notifyConfig.max_width - 2
+		if notifyConfig.max_width then width = notifyConfig.max_width - 2 end
 	end
 
 	-- get changes
