@@ -165,12 +165,20 @@ local function showDiff(commitIdx, type)
 	-- keymaps: closing
 	local keymap = vim.keymap.set
 	local opts = { buffer = bufnr, nowait = true }
-	local function close()
-		a.nvim_win_close(winnr, true)
-		a.nvim_buf_delete(bufnr, { force = true })
+	local function closePopup()
+		if a.nvim_win_is_valid(winnr) then a.nvim_win_close(winnr, true) end
+		if a.nvim_buf_is_valid(bufnr) then a.nvim_buf_delete(bufnr, { force = true }) end
 	end
-	keymap("n", "q", close, opts)
-	keymap("n", "<Esc>", close, opts)
+	keymap("n", "q", closePopup, opts)
+	keymap("n", "<Esc>", closePopup, opts)
+
+	-- also close the popup on leaving buffer, ensures there is not leftover
+	-- buffer when user closes popup in a different way, such as `:close`.
+	vim.api.nvim_create_autocmd("BufLeave", {
+		buffer = bufnr,
+		once = true,
+		callback = closePopup,
+	})
 
 	-- keymaps: next/prev commit
 	keymap("n", "<Tab>", function()
@@ -178,7 +186,7 @@ local function showDiff(commitIdx, type)
 			u.notify("Already on last commit", "warn")
 			return
 		end
-		close()
+		closePopup()
 		showDiff(commitIdx + 1, type)
 	end, opts)
 	keymap("n", "<S-Tab>", function()
@@ -186,7 +194,7 @@ local function showDiff(commitIdx, type)
 			u.notify("Already on first commit", "warn")
 			return
 		end
-		close()
+		closePopup()
 		showDiff(commitIdx - 1, type)
 	end, opts)
 
