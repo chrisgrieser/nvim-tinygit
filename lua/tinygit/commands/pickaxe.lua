@@ -12,7 +12,6 @@ local selectCommit = require("tinygit.shared.select-commit")
 ---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field absPath string
 ---@field query string search query pickaxed for
----@field originalCwd? string cwd before running history search
 
 ---saves metadata for the current operation
 ---@type currentRun
@@ -155,7 +154,7 @@ local function showDiff(commitIdx, type)
 		-- case-sensitivity with git, because of git-regex, or due to file renamings)
 	end
 
-	-- keymaps: info message as extmark
+	-- info message as extmark for the keymaps
 	local infotext = "<[S-]Tab>: prev/next commit   q: close   yh: yank hash"
 	if type == "file" then infotext = infotext .. "   n/N: next/prev occurrence" end
 	a.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
@@ -169,8 +168,6 @@ local function showDiff(commitIdx, type)
 	local function close()
 		a.nvim_win_close(winnr, true)
 		a.nvim_buf_delete(bufnr, { force = true })
-		-- restore the original cwd
-		if currentRun.originalCwd ~= vim.loop.cwd() then vim.cmd.cd(currentRun.originalCwd) end
 	end
 	keymap("n", "q", close, opts)
 	keymap("n", "<Esc>", close, opts)
@@ -264,7 +261,6 @@ end
 function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
 	currentRun.absPath = a.nvim_buf_get_name(0)
-	currentRun.originalCwd = vim.loop.cwd()
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
@@ -323,7 +319,6 @@ function M.functionHistory()
 	end
 
 	currentRun.absPath = a.nvim_buf_get_name(0)
-	currentRun.originalCwd = vim.loop.cwd()
 
 	-- TODO figure out how to query treesitter for function names, and use
 	-- treesitter instead?
