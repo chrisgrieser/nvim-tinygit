@@ -23,7 +23,7 @@ local function getBlame(bufnr)
 	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
 
 	-- shorten the output
-	local shortRelDate = (relDate:match("%d+ %wi?n?") or "") -- 1 unit char (+in for min, to distinguish from "month")
+	local shortRelDate = (relDate:match("%d+ %wi?n?o?") or "") -- 1 unit char (except min/mo)
 		:gsub(" ", "")
 		:gsub("%d+s", "just now")
 	local trimmedMsg = #msg < config.maxMsgLen and msg
@@ -33,7 +33,7 @@ local function getBlame(bufnr)
 	local authorStr = vim.tbl_contains(config.hideAuthorNames, author) and ""
 		or " by " .. authorInitials
 
-	return config.icon .. ("%s [%s%s]"):format(trimmedMsg, shortRelDate, authorStr)
+	return config.icon .. ("%s [%s ago%s]"):format(trimmedMsg, shortRelDate, authorStr)
 end
 
 --------------------------------------------------------------------------------
