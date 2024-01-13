@@ -23,9 +23,10 @@ local function getBlame(bufnr)
 	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
 
 	-- shorten the output
-	local shortRelDate = (relDate:match("%d+ %wi?n?o?") or "") -- 1 unit char (except min/mo)
+	local shortRelDate = (relDate:match("%d+ %wi?n?") or "") -- 1 unit char (expect min)
+		:gsub("m$", "mo") -- month -> mo to be distinguishable from "min"
 		:gsub(" ", "")
-		:gsub("%d+s", "just now")
+		:gsub("%d+s", "just now") -- secs -> just now
 	local trimmedMsg = #msg < config.maxMsgLen and msg
 		or vim.trim(msg:sub(1, config.maxMsgLen)) .. "…"
 	local authorInitials = not (author:find("%s")) and author:sub(1, 2) -- "janedoe" -> "ja"
