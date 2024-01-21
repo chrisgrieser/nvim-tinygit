@@ -1,6 +1,4 @@
--- GUARD
 if vim.g.tinygit_no_rebase_ftplugin then return end
-
 --------------------------------------------------------------------------------
 
 -- BETTER HIGHLIGHTING

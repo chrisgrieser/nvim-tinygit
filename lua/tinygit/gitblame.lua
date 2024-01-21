@@ -1,13 +1,12 @@
+-- INFO This file is required nowhere but in the snippet the user uses. That
+-- means non of this code will be executed, if the user does not decide to use
+-- this feature.
+--------------------------------------------------------------------------------
 local M = {}
 
 local config = require("tinygit.config").config.blameStatusLine
 local trim = vim.trim
 local fn = vim.fn
-
--- INFO This file is required nowhere but in the snippet the user uses. That
--- means non of this code will be executed, if the user does not decide to use
--- this feature.
-
 --------------------------------------------------------------------------------
 
 ---@param bufnr? number
@@ -21,11 +20,12 @@ local function getBlame(bufnr)
 	local hash, author, relDate, msg = unpack(vim.split(gitLogLine, "\t"))
 
 	-- GUARD
-	local shallowRepo = require("tinygit.shared.utils").inShallowRepo()
+	-- get first commit: https://stackoverflow.com/a/5189296/22114136
 	local isOnFirstCommit = hash == trim(fn.system { "git", "rev-list", "--max-parents=0", "HEAD" })
+	local shallowRepo = require("tinygit.shared.utils").inShallowRepo()
 	if
-		vim.v.shell_error ~= 0 -- errors
-		or gitLogLine == ""
+		vim.v.shell_error ~= 0 -- not in git repo
+		or gitLogLine == "" -- errors
 		or vim.tbl_contains(config.ignoreAuthors, author) -- user config
 		or (shallowRepo and isOnFirstCommit) -- false commit infos on shallow repos
 	then
