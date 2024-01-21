@@ -20,8 +20,7 @@ local currentRun = { hashList = {}, absPath = "", query = "" }
 ---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
 ---@return boolean -- whether the repo is shallow
 local function repoIsShallow()
-	local isShallow = vim.trim(fn.system { "git", "rev-parse", "--is-shallow-repository" }) == "true"
-	if not isShallow then return false end
+	if not u.inShallowRepo() then return false end
 
 	if config.autoUnshallowIfNeeded then
 		u.notify("Auto-Unshallowing repo…", "info", "History Search")

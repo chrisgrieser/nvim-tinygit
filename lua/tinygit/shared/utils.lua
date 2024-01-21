@@ -47,6 +47,12 @@ function M.notInGitRepo()
 	return notInRepo
 end
 
+---@return boolean
+function M.inShallowRepo()
+	local isShallow = vim.trim(fn.system { "git", "rev-parse", "--is-shallow-repository" }) == "true"
+	return isShallow
+end
+
 ---@return string "user/name" of repo
 ---@nodiscard
 function M.getRepo()
