@@ -89,7 +89,7 @@ local function setupInputField(commitType)
 			vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
 
 			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@text.literal" })
+			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@markup.raw.markdown_inline" })
 
 			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(config.maxLen - 1))
 			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
@@ -106,7 +106,7 @@ local function setupInputField(commitType)
 
 			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
-			vim.api.nvim_set_hl(ns, "@text.title.gitcommit", { link = "Normal" })
+			vim.api.nvim_set_hl(ns, "@markup.heading.gitcommit", { link = "Normal" })
 			-- prevent auto-wrapping due to filetype "gitcommit" being set
 			vim.opt_local.formatoptions:remove("t")
 
@@ -172,7 +172,7 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 				-- using `matchadd`, since it is restricted to the current window anyway
 				-- INFO the order the highlights are added matters, later has priority
 				fn.matchadd("Number", [[#\d\+]]) -- issues number
-				fn.matchadd("@text.literal", [[`.\{-}`]]) -- inline code (.\{-} = non-greedy quantifier)
+				fn.matchadd("@markup.raw.markdown_inline", [[`.\{-}`]]) -- inline code (.\{-} = non-greedy quantifier)
 				-- setting the filetype to "gitcommit" does not work well with
 				-- nvim-notify, therefore manually highlighting conventional commits
 				fn.matchadd(

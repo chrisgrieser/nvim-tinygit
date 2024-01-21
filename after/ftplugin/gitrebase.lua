@@ -11,7 +11,7 @@ vim.fn.matchadd("tinygit_rebase_issueNumber", [[#\d\+]])
 vim.api.nvim_set_hl(ns, "tinygit_rebase_issueNumber", { link = "Number" })
 
 vim.fn.matchadd("tinygit_rebase_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-vim.api.nvim_set_hl(ns, "tinygit_rebase_mdInlineCode", { link = "@text.literal" })
+vim.api.nvim_set_hl(ns, "tinygit_rebase_mdInlineCode", { link = "@markup.raw.markdown_inline" })
 
 vim.fn.matchadd(
 	"tinygit_rebase_conventionalCommit",
