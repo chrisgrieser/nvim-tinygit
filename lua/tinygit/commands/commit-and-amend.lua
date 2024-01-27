@@ -213,6 +213,7 @@ local function diffStatsPreview()
 		.trim(vim.fn.system(diffStatsCmd))
 		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
 		:gsub(" | ", " │ ") -- pipes to full vertical bars
+		:gsub(" Bin ", "    ") -- binary icon
 
 	-- Preview as notification
 	if not notifyInstalled or not config.commitPreview then return end
