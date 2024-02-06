@@ -118,7 +118,7 @@ pushing into a single step, when it is the last commit you intend to make.
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
-  it stages all changes (`git add --all`), like `smartCommit`.
+  stages all changes (`git add --all`), like `smartCommit`.
 - Optionally runs `git push --force-with-lease` afterward, if the branch has
   diverged (that is, the amended commit was already pushed).
 
@@ -130,7 +130,9 @@ require("tinygit").amendNoEdit { forcePushIfDiverged = false }
 
 ### Fixup & Squash Commits
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
-  commit --fixup` on the selected commit
+  commit --fixup` on the selected commit.
+- If there are no staged changes, stages all changes (`git add --all`), like
+  `smartCommit`.
 - Use `squashInstead = true` to squash instead of fixup (`git commit --squash`).
 - `autoRebase = true` automatically runs rebase with `--autosquash` and
 `--autostash` afterward, confirming all fixups and squashes **without opening a

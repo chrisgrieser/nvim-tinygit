@@ -420,6 +420,14 @@ function M.fixupCommit(userOpts)
 		local hash = commit:match("^%w+")
 		local fixupOrSquash = opts.squashInstead and "--squash" or "--fixup"
 
+		-- stage
+		local stageAllChanges = hasNoStagedChanges()
+		if stageAllChanges then
+			local stderr = fn.system { "git", "add", "--all" }
+			if u.nonZeroExit(stderr) then return end
+		end
+
+		-- commit
 		local stdout = fn.system { "git", "commit", fixupOrSquash, hash }
 		if u.nonZeroExit(stdout) then return end
 		u.notify(stdout, "info", title .. " Commit")
