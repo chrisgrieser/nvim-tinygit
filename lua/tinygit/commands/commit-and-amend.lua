@@ -292,6 +292,8 @@ function M.smartCommit(opts, msgNeedingFixing)
 			local stderr = fn.system { "git", "add", "-A" }
 			if u.nonZeroExit(stderr) then return end
 		end
+
+		-- commit
 		local stderr = fn.system { "git", "commit", "-m", processedMsg }
 		if u.nonZeroExit(stderr) then return end
 
@@ -304,9 +306,10 @@ function M.smartCommit(opts, msgNeedingFixing)
 		end
 		commitNotification("Smart Commit", doStageAllChanges, processedMsg, extra)
 
-		-- extra actions after committing
-		openReferencedIssue(processedMsg)
+		-- push
 		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
+
+		openReferencedIssue(processedMsg)
 		updateGitBlame()
 	end)
 end
@@ -315,18 +318,20 @@ end
 function M.amendNoEdit(opts)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
-
 	if not opts then opts = {} end
 
+	-- stage
 	local stageAllChanges = hasNoStagedChanges()
 	if stageAllChanges then
 		local stderr = fn.system { "git", "add", "--all" }
 		if u.nonZeroExit(stderr) then return end
 	end
 
+	-- commit
 	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
 	if u.nonZeroExit(stderr) then return end
 
+	-- push & notification
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --format=%s"))
 	local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
 	local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
@@ -336,6 +341,7 @@ function M.amendNoEdit(opts)
 	else
 		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, nil)
 	end
+
 	updateGitBlame()
 end
 
@@ -359,7 +365,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 
 	setupInputField()
 	vim.ui.input(
-		{ prompt = "󰊢 Amend Only Message", default = msgNeedsFixing },
+		{ prompt = "󰊢 Amend only message", default = msgNeedsFixing },
 		function(commitMsg)
 			if not commitMsg then return end -- aborted input modal
 			local validMsg, processedMsg = processCommitMsg(commitMsg)
@@ -368,18 +374,19 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 				return
 			end
 
+			-- commit
 			local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
 			if u.nonZeroExit(stderr) then return end
 
+			-- push & notification
 			local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
 			local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
-
 			local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…"
 				or nil
-			commitNotification("Amend Only Message", false, processedMsg, extra)
+			commitNotification("Amend only message", false, processedMsg, extra)
+			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
 
 			openReferencedIssue(processedMsg)
-			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
 			updateGitBlame()
 		end
 	)
@@ -395,7 +402,7 @@ function M.fixupCommit(userOpts)
 		squashInstead = false,
 		autoRebase = false,
 	}
-	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
+	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts or {})
 
 	local response = fn.system {
 		"git",
@@ -432,6 +439,7 @@ function M.fixupCommit(userOpts)
 		if u.nonZeroExit(stdout) then return end
 		u.notify(stdout, "info", title .. " Commit")
 
+		-- rebase
 		if opts.autoRebase then
 			stdout = fn.system {
 				"git",
