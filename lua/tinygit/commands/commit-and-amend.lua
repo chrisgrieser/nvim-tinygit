@@ -404,17 +404,18 @@ function M.fixupCommit(userOpts)
 	}
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts or {})
 
+	-- get commits
 	local response = fn.system {
 		"git",
 		"log",
 		"-n" .. tostring(opts.selectFromLastXCommits),
 		"--format=" .. selectCommit.gitlogFormat,
 	}
-
-	-- GUARD
 	if u.nonZeroExit(response) then return end
 	local commits = vim.split(vim.trim(response), "\n")
 
+	-- commit selection
+	diffStatsPreview()
 	local autocmdId = selectCommit.setupAppearance()
 	local title = opts.squashInstead and "Squash" or "Fixup"
 	vim.ui.select(commits, {
