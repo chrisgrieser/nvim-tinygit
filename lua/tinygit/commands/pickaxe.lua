@@ -126,7 +126,8 @@ local function showDiff(commitIdx, type)
 
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
-	local ft = vim.filetype.match { filename = basename(nameAtCommit) }
+	local ft = vim.filetype.match { buf = bufnr }
+	if ft == nil then ft = "diff" end -- fallback to diff if not ft can be determined
 	a.nvim_buf_set_option(bufnr, "filetype", ft)
 
 	for _, ln in pairs(diffAddLines) do
