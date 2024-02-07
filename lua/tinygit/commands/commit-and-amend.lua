@@ -34,11 +34,8 @@ local function hasNoChanges()
 	return noChanges
 end
 
---------------------------------------------------------------------------------
-
 local function updateGitBlame()
-	if not package.loaded["tinygit.gitblame"] then return end
-	require("tinygit.gitblame").refreshBlame()
+	if package.loaded["tinygit.gitblame"] then require("tinygit.gitblame").refreshBlame() end
 end
 
 ---process a commit message: length, not empty, adheres to conventional commits
@@ -148,11 +145,11 @@ end
 ---@param title string title for nvim-notify
 ---@param stagedAllChanges boolean
 ---@param commitMsg string
----@param extra? string extra lines to display
-local function commitNotification(title, stagedAllChanges, commitMsg, extra)
+---@param extraInfo? string extra lines to display
+local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 	local lines = { commitMsg }
 	if stagedAllChanges then table.insert(lines, 1, "Staged all changes.") end
-	if extra then table.insert(lines, extra) end
+	if extraInfo then table.insert(lines, extraInfo) end
 	local text = table.concat(lines, "\n")
 
 	vim.notify(text, vim.log.levels.INFO, {
@@ -164,7 +161,7 @@ local function commitNotification(title, stagedAllChanges, commitMsg, extra)
 			-- commented info lines
 			local lastLine = vim.api.nvim_buf_line_count(bufnr) - 1
 			if stagedAllChanges then vim.api.nvim_buf_add_highlight(bufnr, ns, "Comment", 1, 0, -1) end
-			if extra then vim.api.nvim_buf_add_highlight(bufnr, ns, "Comment", lastLine, 0, -1) end
+			if extraInfo then vim.api.nvim_buf_add_highlight(bufnr, ns, "Comment", lastLine, 0, -1) end
 
 			-- commit msg custom highlights
 			vim.api.nvim_buf_call(bufnr, function()
@@ -188,9 +185,11 @@ end
 ---committed. (This is similar to the commented out lines at the bottom of a git
 ---message in the terminal.)
 ---@return number|nil -- nil if no notification is shown
-local function diffStatsPreview()
-	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
+local function showCommitPreview()
 	local notifyInstalled, notifyNvim = pcall(require, "notify")
+	if not notifyInstalled or not config.commitPreview then return end
+
+	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
 	local width = 50
 	if notifyInstalled then
 		local _, notifyConfig = notifyNvim.instance()
@@ -215,9 +214,7 @@ local function diffStatsPreview()
 		:gsub(" | ", " │ ") -- pipes to full vertical bars
 		:gsub(" Bin ", "    ") -- binary icon
 
-	-- Preview as notification
-	if not notifyInstalled or not config.commitPreview then return end
-
+	-- send notification
 	vim.notify(changes, vim.log.levels.INFO, {
 		title = title,
 		timeout = false, -- keep shown, remove when input window closed
@@ -233,6 +230,13 @@ local function diffStatsPreview()
 			end)
 		end,
 	})
+end
+
+local function closeCommitPreview()
+	if package.loaded["notify"] and config.commitPreview then
+		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
+		require("notify").dismiss()
+	end
 end
 
 ---@param processedMsg string
@@ -268,12 +272,11 @@ function M.smartCommit(opts, msgNeedingFixing)
 	if doStageAllChanges then title = "Stage All · " .. title end
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
 
-	diffStatsPreview()
+	showCommitPreview()
 	setupInputField("smartCommit")
 
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
-		-- close preview (can only dismiss all and not by ID)
-		if package.loaded["notify"] and config.commitPreview then require("notify").dismiss() end
+		closeCommitPreview()
 
 		-- abort
 		local aborted = not commitMsg
@@ -282,8 +285,8 @@ function M.smartCommit(opts, msgNeedingFixing)
 
 		-- validate
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
-		if not validMsg then -- if msg invalid, run again to fix the msg
-			M.smartCommit(opts, processedMsg)
+		if not validMsg then
+			M.smartCommit(opts, processedMsg) -- if msg invalid, run again to fix the msg
 			return
 		end
 
@@ -304,7 +307,7 @@ function M.smartCommit(opts, msgNeedingFixing)
 		elseif opts.pushIfClean and not cleanAfterCommit then
 			extra = "Not pushing since repo still dirty."
 		end
-		commitNotification("Smart Commit", doStageAllChanges, processedMsg, extra)
+		postCommitNotif("Smart Commit", doStageAllChanges, processedMsg, extra)
 
 		-- push
 		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
@@ -335,12 +338,12 @@ function M.amendNoEdit(opts)
 	local lastCommitMsg = vim.trim(fn.system("git log -1 --format=%s"))
 	local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
 	local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
+	local extraInfo
 	if opts.forcePushIfDiverged and prevCommitWasPushed then
-		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, "Force Pushing…")
+		extraInfo = "Force Pushing…"
 		push { forceWithLease = true }
-	else
-		commitNotification("Amend-No-Edit", stageAllChanges, lastCommitMsg, nil)
 	end
+	postCommitNotif("Amend-No-Edit", stageAllChanges, lastCommitMsg, extraInfo)
 
 	updateGitBlame()
 end
@@ -383,7 +386,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 			local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 			local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…"
 				or nil
-			commitNotification("Amend only message", false, processedMsg, extra)
+			postCommitNotif("Amend only message", false, processedMsg, extra)
 			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
 
 			openReferencedIssue(processedMsg)
@@ -414,8 +417,8 @@ function M.fixupCommit(userOpts)
 	if u.nonZeroExit(response) then return end
 	local commits = vim.split(vim.trim(response), "\n")
 
-	-- commit selection
-	diffStatsPreview()
+	-- user selection of commit
+	showCommitPreview()
 	local autocmdId = selectCommit.setupAppearance()
 	local title = opts.squashInstead and "Squash" or "Fixup"
 	vim.ui.select(commits, {
@@ -423,8 +426,11 @@ function M.fixupCommit(userOpts)
 		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)
+		closeCommitPreview()
+
 		vim.api.nvim_del_autocmd(autocmdId)
 		if not commit then return end
+
 		local hash = commit:match("^%w+")
 		local fixupOrSquash = opts.squashInstead and "--squash" or "--fixup"
 
