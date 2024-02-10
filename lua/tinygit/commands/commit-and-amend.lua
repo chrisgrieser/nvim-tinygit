@@ -124,15 +124,13 @@ local function setupInputField(commitType)
 	-- amendOnlyMsg uses different prefilled message.
 	if commitType ~= "smartCommit" then return end
 
-	local keepAbortedMsgSecs = 120 -- CONFIG
-
 	vim.api.nvim_create_autocmd("WinClosed", {
 		callback = function(ctx)
 			local ft = vim.api.nvim_buf_get_option(ctx.buf, "filetype")
 			if not (ft == "gitcommit" or ft == "DressingInput") then return end
 
 			abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
-			vim.defer_fn(function() abortedCommitMsg = nil end, 1000 * keepAbortedMsgSecs)
+			vim.defer_fn(function() abortedCommitMsg = nil end, 1000 * config.keepAbortedMsgSecs)
 
 			-- Disables this autocmd. Cannot use `once = true`, as things like
 			-- closed notification windows would still trigger it which would false

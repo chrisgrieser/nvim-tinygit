@@ -23,6 +23,7 @@ local M = {}
 ---@field spellcheck boolean
 ---@field openReferencedIssue boolean
 ---@field commitPreview boolean
+---@field keepAbortedMsgSecs number
 
 ---@class historySearchConfig
 ---@field diffPopup { width: number, height: number, border: "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]}
@@ -70,10 +71,13 @@ local defaultConfig = {
 
 		-- if commit message references issue/PR, open it in the browser
 		openReferencedIssue = false,
+
+		-- how long to remember the state of the message input field when aborting
+		keepAbortedMsgSecs = 300,
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
-		confirmationSound = true, -- currently macOS only
+		confirmationSound = true, -- currently macOS only, PRs welcome
 	},
 	issueIcons = {
 		openIssue = "🟢",
