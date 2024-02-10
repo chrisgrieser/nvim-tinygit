@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2024 February 07
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2024 February 10
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -317,10 +317,13 @@ The `setup` call is optional. These are the default settings:
     
             -- if commit message references issue/PR, open it in the browser
             openReferencedIssue = false,
+    
+            -- how long to remember the state of the message input field when aborting
+            keepAbortedMsgSecs = 300,
         },
         push = {
             preventPushingFixupOrSquashCommits = true,
-            confirmationSound = true, -- currently macOS only
+            confirmationSound = true, -- currently macOS only, PRs welcome
         },
         issueIcons = {
             openIssue = "🟢",
