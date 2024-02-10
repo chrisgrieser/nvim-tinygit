@@ -261,10 +261,6 @@ local defaultConfig = {
 		mediumLen = 50,
 		maxLen = 72,
 
-		-- When conforming the commit message popup with an empty message, fill in
-		-- this message. Set to `false` to disallow empty commit messages.
-		emptyFillIn = "chore", ---@type string|false
-
 		-- Shows diffstats of the changes that are going to be committed. 
 		-- (requires nvim-notify)
 		commitPreview = true,

@@ -18,7 +18,6 @@ local M = {}
 ---@class commitConfig
 ---@field maxLen number
 ---@field mediumLen number
----@field emptyFillIn string|false
 ---@field conventionalCommits {enforce: boolean, keywords: string[]}
 ---@field spellcheck boolean
 ---@field openReferencedIssue boolean
@@ -47,10 +46,6 @@ local defaultConfig = {
 		-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
 		mediumLen = 50,
 		maxLen = 72,
-
-		-- When conforming the commit message popup with an empty message, fill in
-		-- this message. Set to `false` to disallow empty commit messages.
-		emptyFillIn = "chore", ---@type string|false
 
 		-- Shows diffstats of the changes that are going to be committed.
 		-- (requires nvim-notify)

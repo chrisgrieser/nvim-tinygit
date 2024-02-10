@@ -51,12 +51,8 @@ local function processCommitMsg(commitMsg)
 		local shortenedMsg = commitMsg:sub(1, config.maxLen)
 		return false, shortenedMsg
 	elseif commitMsg == "" then
-		if type(config.emptyFillIn) == "string" then
-			return true, config.emptyFillIn ---@diagnostic disable-line: return-type-mismatch
-		else
-			u.notify("Commit Message empty.", "warn")
-			return false, ""
-		end
+		u.notify("Commit Message empty.", "warn")
+		return false, ""
 	end
 
 	if config.conventionalCommits.enforce then
