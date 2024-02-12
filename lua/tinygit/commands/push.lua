@@ -21,6 +21,11 @@ local function postPushActions(userOpts, soundFilepath)
 
 	if userOpts.pullBefore then vim.cmd.checktime() end
 	if userOpts.createGitHubPr then createGitHubPr() end
+
+	-- conditation to avoid unnecessarily loading the module
+	if package.loaded["tinygit.statusline.branch-state"] then
+		require("tinygit.statusline.branch-state").refreshBranchState()
+	end
 end
 
 --------------------------------------------------------------------------------
