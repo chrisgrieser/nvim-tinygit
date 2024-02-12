@@ -9,7 +9,7 @@ operations.
 
 <!-- toc -->
 
-- [Features](#features)
+- [Features Overview](#features-overview)
 - [Installation](#installation)
 - [Commands](#commands)
 	* [Smart-Commit](#smart-commit)
@@ -30,7 +30,7 @@ operations.
 
 <!-- tocstop -->
 
-## Features
+## Features Overview
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
   commit preview, and overlength indicators. If there are no staged
   changed, stages all changes before doing so (`git add -A`). Optionally trigger
@@ -40,7 +40,7 @@ operations.
 - Open the **GitHub URL** of the current file or selection.
 - **Search the file history** for a string ("git pickaxe"), show results in a diff
   with filetype syntax highlighting, correctly following file renamings.
-- A simple `git blame` status line component for the current file.
+- **Statusline Components:** `git blame` and branch state.
 - Highlighting improvements for interactive **rebasing** when using nvim as sequence
   editor.
 
