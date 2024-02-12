@@ -37,9 +37,9 @@ local function getBranchState(bufnr)
 	if ahead and behind then
 		return ("󰃻 %s/%s"):format(ahead, behind)
 	elseif ahead then
-		return "⇡" .. ahead
+		return "󰶣" .. ahead
 	elseif behind then
-		return "⇣" .. behind
+		return "󰶡" .. behind
 	end
 	return ""
 end
