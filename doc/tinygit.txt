@@ -1,4 +1,4 @@
-*tinygit.txt*           For NVIM v0.8.0          Last change: 2024 February 10
+*tinygit.txt*           For NVIM v0.8.0          Last change: 2024 February 12
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -7,6 +7,7 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Features                                   |tinygit-nvim-tinygit-features|
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Commands                                   |tinygit-nvim-tinygit-commands|
+  - Status Line Components       |tinygit-nvim-tinygit-status-line-components|
   - Other Features                       |tinygit-nvim-tinygit-other-features|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
   - Comparison to existing git plugins|tinygit-nvim-tinygit-comparison-to-existing-git-plugins|
@@ -30,9 +31,10 @@ operations.
     - |tinygit-push-&-pr|
     - |tinygit-search-file/function-history-("git-pickaxe")|
     - |tinygit-stash|
+- |tinygit-status-line-components|
+    - |tinygit-git-blame-status-line-component|
 - |tinygit-other-features|
     - |tinygit-improved-highlighting-of-interactive-rebase|
-    - |tinygit-git-blame-status-line-component|
 - |tinygit-configuration|
 - |tinygit-comparison-to-existing-git-plugins|
 - |tinygit-credits|
@@ -248,6 +250,26 @@ STASH ~
 <
 
 
+STATUS LINE COMPONENTS           *tinygit-nvim-tinygit-status-line-components*
+
+
+GIT BLAME STATUS LINE COMPONENT ~
+
+Shows the message and date (`git blame`) of the last commit that changed the
+current _file_ (not line), like at GitHub.
+
+>lua
+    require("tinygit.statusline").blame()
+<
+
+
+  [!TIP] Some status line plugin also allow you to put components into the
+  tabline or winbar. If your status line is too crowded, you can add the
+  blame-component to the one of those bars instead.
+The component can be configured with the `statusline.blame` options in the
+|tinygit-plugin-configuration|.
+
+
 OTHER FEATURES                           *tinygit-nvim-tinygit-other-features*
 
 
@@ -266,23 +288,6 @@ If you want to disable the modifications by `tinygit`, add this to your config:
 <
 
 
-GIT BLAME STATUS LINE COMPONENT ~
-
-Shows the message and date (`git blame`) of the last commit that changed the
-current _file_ (not line), like at GitHub.
-
->lua
-    require("tinygit.gitblame").statusLine()
-<
-
-
-  [!TIP] Some status line plugin also allow you to put components into the
-  tabline or winbar. If your status line is too crowded, you can add the
-  blame-component to the one of those bars instead.
-The component can be configured with the `blameStatusLine` options in the
-|tinygit-plugin-configuration|.
-
-
 CONFIGURATION                             *tinygit-nvim-tinygit-configuration*
 
 The `setup` call is optional. These are the default settings:
@@ -294,7 +299,7 @@ The `setup` call is optional. These are the default settings:
             mediumLen = 50,
             maxLen = 72,
     
-            -- Shows diffstats of the changes that are going to be committed. 
+            -- Shows diffstats of the changes that are going to be committed.
             -- (requires nvim-notify)
             commitPreview = true,
     
@@ -338,15 +343,17 @@ The `setup` call is optional. These are the default settings:
             -- unshallow the repo by running `git fetch --unshallow`
             autoUnshallowIfNeeded = false,
         },
-        blameStatusLine = {
-            -- Any of these authors and the component is not shown (useful for bots)
-            ignoreAuthors = {},
+        statusline = {
+            blame = {
+                -- Any of these authors and the component is not shown (useful for bots)
+                ignoreAuthors = {},
     
-            -- show component, but leave out names (useful for your own name)
-            hideAuthorNames = {},
+                -- show component, but leave out names (useful for your own name)
+                hideAuthorNames = {},
     
-            maxMsgLen = 35,
-            icon = "ﰖ ",
+                maxMsgLen = 35,
+                icon = "ﰖ ",
+            },
         },
     }
 <
