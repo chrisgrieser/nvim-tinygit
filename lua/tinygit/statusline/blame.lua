@@ -56,13 +56,14 @@ end
 function M.refreshBlame(bufnr) vim.b["tinygit_blame"] = getBlame(bufnr) end
 
 vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged", "FocusGained" }, {
+	group = vim.api.nvim_create_augroup("tinygit_blame", { clear = true }),
 	callback = function(ctx)
 		-- so buftype is set before checking the buffer
 		vim.defer_fn(function() M.refreshBlame(ctx.buf) end, 1)
 	end,
 })
 
-M.refreshBlame() -- initialize in case of lazy-loading
+vim.defer_fn(M.refreshBlame, 1) -- initialize in case of lazy-loading
 
 function M.getBlame() return vim.b["tinygit_blame"] or "" end
 
