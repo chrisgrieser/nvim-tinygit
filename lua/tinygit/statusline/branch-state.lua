@@ -31,15 +31,17 @@ local function getBranchState(bufnr)
 		if currentBranchInfo then break end
 	end
 	if not currentBranchInfo then return "" end
-
 	local ahead = currentBranchInfo:match("ahead (%d+)")
 	local behind = currentBranchInfo:match("behind (%d+)")
-	if ahead then ahead = "󰶣 " .. ahead end
-	if behind then behind = "󰶡 " .. behind end
-	local text = table.concat({ ahead, behind }, "  ") or ""
-	if ahead and behind then text = "󰃻 " .. text end
 
-	return text
+	if ahead and behind then
+		return ("󰃻 %s/%s"):format(ahead, behind)
+	elseif ahead then
+		return "⇡" .. ahead
+	elseif behind then
+		return "⇣" .. behind
+	end
+	return ""
 end
 
 --------------------------------------------------------------------------------
