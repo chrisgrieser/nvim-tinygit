@@ -6,7 +6,7 @@ local M = {}
 ---@field issueIcons issueIconConfig
 ---@field historySearch historySearchConfig
 ---@field push pushConfig
----@field blameStatusLine blameConfig
+---@field statusline { branchState: branchStateConfig, blame: blameConfig }
 
 ---@class issueIconConfig
 ---@field closedIssue string
@@ -37,6 +37,8 @@ local M = {}
 ---@field hideAuthorNames string[]
 ---@field maxMsgLen number
 ---@field icon string
+
+---@class branchStateConfig
 
 --------------------------------------------------------------------------------
 
@@ -91,15 +93,18 @@ local defaultConfig = {
 		-- unshallow the repo by running `git fetch --unshallow`
 		autoUnshallowIfNeeded = false,
 	},
-	blameStatusLine = {
-		-- Any of these authors and the component is not shown (useful for bots)
-		ignoreAuthors = {},
+	statusline = {
+		blame = {
+			-- Any of these authors and the component is not shown (useful for bots)
+			ignoreAuthors = {},
 
-		-- show component, but leave out names (useful for your own name)
-		hideAuthorNames = {},
+			-- show component, but leave out names (useful for your own name)
+			hideAuthorNames = {},
 
-		maxMsgLen = 35,
-		icon = "ﰖ ",
+			maxMsgLen = 35,
+			icon = "ﰖ ",
+		},
+		branchState = {}, -- TODO
 	},
 }
 

@@ -35,7 +35,10 @@ local function hasNoChanges()
 end
 
 local function updateGitBlame()
-	if package.loaded["tinygit.gitblame"] then require("tinygit.gitblame").refreshBlame() end
+	-- conditation to avoid unnecessarily loading the module
+	if package.loaded["tinygit.statusline.blame"] then
+		require("tinygit.statusline.blame").refreshBlame()
+	end
 end
 
 ---process a commit message: length, not empty, adheres to conventional commits

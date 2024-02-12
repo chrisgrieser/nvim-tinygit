@@ -19,9 +19,10 @@ operations.
 	* [Push & PR](#push--pr)
 	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
+- [Status Line Components](#status-line-components)
+	* [Git Blame Status Line Component](#git-blame-status-line-component)
 - [Other Features](#other-features)
 	* [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
-	* [Git Blame Status Line Component](#git-blame-status-line-component)
 - [Configuration](#configuration)
 - [Comparison to existing git plugins](#comparison-to-existing-git-plugins)
 - [Credits](#credits)
@@ -219,6 +220,24 @@ require("tinygit").stashPush()
 require("tinygit").stashPop()
 ```
 
+## Status Line Components
+
+### Git Blame Status Line Component
+Shows the message and date (`git blame`) of the last commit that changed the
+current *file* (not line), like at GitHub.
+
+```lua
+require("tinygit.statusline").blame()
+```
+
+> [!TIP]
+> Some status line plugin also allow you to put components into the tabline or
+> winbar. If your status line is too crowded, you can add the blame-component to
+> the one of those bars instead.
+
+The component can be configured with the `statusline.blame` options in the [plugin
+configuration](#configuration).
+
 ## Other Features
 
 ### Improved Highlighting of Interactive Rebase
@@ -235,22 +254,6 @@ If you want to disable the modifications by `tinygit`, add this to your config:
 vim.g.tinygit_no_rebase_ftplugin = true
 ```
 
-### Git Blame Status Line Component
-Shows the message and date (`git blame`) of the last commit that changed the
-current *file* (not line), like at GitHub.
-
-```lua
-require("tinygit.gitblame").statusLine()
-```
-
-> [!TIP]
-> Some status line plugin also allow you to put components into the tabline or
-> winbar. If your status line is too crowded, you can add the blame-component to
-> the one of those bars instead.
-
-The component can be configured with the `blameStatusLine` options in the [plugin
-configuration](#configuration).
-
 ## Configuration
 The `setup` call is optional. These are the default settings:
 
@@ -261,7 +264,7 @@ local defaultConfig = {
 		mediumLen = 50,
 		maxLen = 72,
 
-		-- Shows diffstats of the changes that are going to be committed. 
+		-- Shows diffstats of the changes that are going to be committed.
 		-- (requires nvim-notify)
 		commitPreview = true,
 
@@ -305,15 +308,17 @@ local defaultConfig = {
 		-- unshallow the repo by running `git fetch --unshallow`
 		autoUnshallowIfNeeded = false,
 	},
-	blameStatusLine = {
-		-- Any of these authors and the component is not shown (useful for bots)
-		ignoreAuthors = {},
+	statusline = {
+		blame = {
+			-- Any of these authors and the component is not shown (useful for bots)
+			ignoreAuthors = {},
 
-		-- show component, but leave out names (useful for your own name)
-		hideAuthorNames = {},
+			-- show component, but leave out names (useful for your own name)
+			hideAuthorNames = {},
 
-		maxMsgLen = 35,
-		icon = "ﰖ ",
+			maxMsgLen = 35,
+			icon = "ﰖ ",
+		},
 	},
 }
 ```
