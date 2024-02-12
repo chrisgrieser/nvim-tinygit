@@ -32,7 +32,8 @@ operations.
     - |tinygit-search-file/function-history-("git-pickaxe")|
     - |tinygit-stash|
 - |tinygit-status-line-components|
-    - |tinygit-git-blame-status-line-component|
+    - |tinygit-git-blame|
+    - |tinygit-branch-state|
 - |tinygit-other-features|
     - |tinygit-improved-highlighting-of-interactive-rebase|
 - |tinygit-configuration|
@@ -253,10 +254,10 @@ STASH ~
 STATUS LINE COMPONENTS           *tinygit-nvim-tinygit-status-line-components*
 
 
-GIT BLAME STATUS LINE COMPONENT ~
+GIT BLAME ~
 
 Shows the message and date (`git blame`) of the last commit that changed the
-current _file_ (not line), like at GitHub.
+current _file_ (not line).
 
 >lua
     require("tinygit.statusline").blame()
@@ -268,6 +269,17 @@ current _file_ (not line), like at GitHub.
   blame-component to the one of those bars instead.
 The component can be configured with the `statusline.blame` options in the
 |tinygit-plugin-configuration|.
+
+
+BRANCH STATE ~
+
+Shows whether the local branch is ahead or behind of its remote counterpart.
+(Note that this component does not run `git fetch` for performance reasons, so
+the information may not be up-to-date with remote changes.)
+
+>lua
+    require("tinygit.statusline").branchState()
+<
 
 
 OTHER FEATURES                           *tinygit-nvim-tinygit-other-features*
