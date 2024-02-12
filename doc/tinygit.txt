@@ -4,7 +4,7 @@
 Table of Contents                                  *tinygit-table-of-contents*
 
 1. nvim-tinygit                                         |tinygit-nvim-tinygit|
-  - Features                                   |tinygit-nvim-tinygit-features|
+  - Features Overview                 |tinygit-nvim-tinygit-features-overview|
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Commands                                   |tinygit-nvim-tinygit-commands|
   - Status Line Components       |tinygit-nvim-tinygit-status-line-components|
@@ -21,7 +21,7 @@ Table of Contents                                  *tinygit-table-of-contents*
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
-- |tinygit-features|
+- |tinygit-features-overview|
 - |tinygit-installation|
 - |tinygit-commands|
     - |tinygit-smart-commit|
@@ -41,7 +41,7 @@ operations.
 - |tinygit-credits|
 
 
-FEATURES                                       *tinygit-nvim-tinygit-features*
+FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
 
 - **Smart-Commit**Open a popup to enter a commit message with syntax highlighting,
     commit preview, and overlength indicators. If there are no staged
@@ -52,7 +52,7 @@ FEATURES                                       *tinygit-nvim-tinygit-features*
 - Open the **GitHub URL** of the current file or selection.
 - **Search the file history** for a string ("git pickaxe"), show results in a diff
     with filetype syntax highlighting, correctly following file renamings.
-- A simple `git blame` status line component for the current file.
+- **Statusline Components:** `git blame` and branch state.
 - Highlighting improvements for interactive **rebasing** when using nvim as sequence
     editor.
 
