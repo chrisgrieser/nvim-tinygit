@@ -20,7 +20,8 @@ operations.
 	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
 - [Status Line Components](#status-line-components)
-	* [Git Blame Status Line Component](#git-blame-status-line-component)
+	* [Git Blame](#git-blame)
+	* [Branch State](#branch-state)
 - [Other Features](#other-features)
 	* [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
 - [Configuration](#configuration)
@@ -222,9 +223,9 @@ require("tinygit").stashPop()
 
 ## Status Line Components
 
-### Git Blame Status Line Component
+### Git Blame
 Shows the message and date (`git blame`) of the last commit that changed the
-current *file* (not line), like at GitHub.
+current *file* (not line).
 
 ```lua
 require("tinygit.statusline").blame()
@@ -237,6 +238,15 @@ require("tinygit.statusline").blame()
 
 The component can be configured with the `statusline.blame` options in the [plugin
 configuration](#configuration).
+
+### Branch State
+Shows whether the local branch is ahead or behind of its remote counterpart.
+(Note that this component does not run `git fetch` for performance reasons, so
+the information may not be up-to-date with remote changes.)
+
+```lua
+require("tinygit.statusline").branchState()
+```
 
 ## Other Features
 
