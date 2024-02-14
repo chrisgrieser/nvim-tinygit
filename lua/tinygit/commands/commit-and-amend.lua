@@ -444,7 +444,7 @@ function M.fixupCommit(userOpts)
 		-- commit
 		local stdout = fn.system { "git", "commit", fixupOrSquash, hash }
 		if u.nonZeroExit(stdout) then return end
-		u.notify(stdout, "info", title .. " Commit")
+		u.notify(u.rmAnsiEscFromStr(stdout), "info", title .. " Commit")
 
 		-- rebase
 		if opts.autoRebase then

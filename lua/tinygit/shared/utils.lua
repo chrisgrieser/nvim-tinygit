@@ -34,7 +34,8 @@ end
 ---@param errorMsg string
 function M.nonZeroExit(errorMsg)
 	local exitCode = vim.v.shell_error
-	if exitCode ~= 0 then M.notify(vim.trim(errorMsg), "error") end
+	local msg = M.rmAnsiEscFromStr(vim.trim(errorMsg))
+	if exitCode ~= 0 then M.notify(msg, "error") end
 	return exitCode ~= 0
 end
 
@@ -59,6 +60,15 @@ function M.getRepo()
 	local allRemotes = fn.system { "git", "remote", "-v" }
 	local firstRemote = vim.split(allRemotes, "\n")[1]:match(":.*%."):sub(2, -2)
 	return firstRemote
+end
+
+---for some edge cases like pre-commit-hooks that add colored output, it is
+---still necessary to remove the ansi escapes from the output
+---@param str string
+---@return string
+function M.rmAnsiEscFromStr(str)
+	str = str:gsub("\\033%[[%d;]-m", "") -- \033[1;34m or \033[0m
+	return str
 end
 
 --------------------------------------------------------------------------------

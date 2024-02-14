@@ -48,8 +48,11 @@ function M.push(userOpts, calledByUser)
 	if config.preventPushingFixupOrSquashCommits then
 		local fixupOrSquashCommits = getFixupOrSquashCommits()
 		if fixupOrSquashCommits ~= "" then
-			-- stylua: ignore
-			u.notify("Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits, "warn", "Push")
+			u.notify(
+				"Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits,
+				"warn",
+				"Push"
+			)
 			return
 		end
 	end
@@ -72,7 +75,7 @@ function M.push(userOpts, calledByUser)
 				return
 			end
 
-			u.notify(output, "info", title)
+			u.notify(u.rmAnsiEscFromStr(output), "info", title)
 			local sound =
 				"/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 			postPushActions(userOpts, sound)
@@ -95,7 +98,7 @@ function M.push(userOpts, calledByUser)
 				sound = "/System/Library/Sounds/Basso.aiff"
 			end
 
-			u.notify(output, logLevel, title)
+			u.notify(u.rmAnsiEscFromStr(output), logLevel, title)
 			postPushActions(userOpts, sound)
 		end,
 	})
