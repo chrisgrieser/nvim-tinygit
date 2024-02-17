@@ -226,6 +226,7 @@ local function showCommitPreview()
 				fn.matchadd("diffAdded", [[ +\+]]) -- color the plus/minus like in the terminal
 				fn.matchadd("diffRemoved", [[-\+\s*$]])
 				fn.matchadd("Keyword", [[(new.*)]])
+				fn.matchadd("Keyword", [[(gone.*)]])
 				fn.matchadd("Comment", "│")
 			end)
 		end,

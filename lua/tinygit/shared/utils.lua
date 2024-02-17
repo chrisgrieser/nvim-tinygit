@@ -67,7 +67,7 @@ end
 ---@param str string
 ---@return string
 function M.rmAnsiEscFromStr(str)
-	str = str:gsub("\\033%[[%d;]-m", "") -- \033[1;34m or \033[0m
+	str = str:gsub("%[[%d;]-m", "") -- \033[1;34m or \033[0m
 	return str
 end
 
