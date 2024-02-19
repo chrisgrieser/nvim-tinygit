@@ -12,11 +12,13 @@ local function getBranchState(bufnr)
 	-- GUARD valid buffer
 	if not vim.api.nvim_buf_is_valid(bufnr) then return "" end
 	if vim.api.nvim_buf_get_option(bufnr, "buftype") ~= "" then return "" end
+	local cwd = vim.loop.cwd()
+	if not cwd then return "" end
 
 	local allBranchInfo = vim.fn.system {
 		"git",
 		"-C",
-		vim.loop.cwd(),
+		cwd,
 		"branch",
 		"--verbose",
 	}
