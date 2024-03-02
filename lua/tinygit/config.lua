@@ -16,8 +16,6 @@ local M = {}
 ---@field closedPR string
 
 ---@class commitConfig
----@field maxLen number
----@field mediumLen number
 ---@field conventionalCommits {enforce: boolean, keywords: string[]}
 ---@field spellcheck boolean
 ---@field openReferencedIssue boolean
@@ -45,10 +43,6 @@ local M = {}
 ---@type pluginConfig
 local defaultConfig = {
 	commitMsg = {
-		-- Why 50/72 is recommended: https://stackoverflow.com/q/2290016/22114136
-		mediumLen = 50,
-		maxLen = 72,
-
 		-- Shows diffstats of the changes that are going to be committed.
 		-- (requires nvim-notify)
 		commitPreview = true,

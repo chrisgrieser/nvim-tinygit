@@ -51,10 +51,11 @@ end
 ---@return string -- the (modified) commit message
 local function processCommitMsg(commitMsg)
 	commitMsg = vim.trim(commitMsg)
+	local commitMaxLen = 72
 
-	if #commitMsg > config.maxLen then
+	if #commitMsg > commitMaxLen then
 		u.notify("Commit Message too long.", "warn")
-		local shortenedMsg = commitMsg:sub(1, config.maxLen)
+		local shortenedMsg = commitMsg:sub(1, commitMaxLen)
 		return false, shortenedMsg
 	elseif commitMsg == "" then
 		u.notify("Commit Message empty.", "warn")
@@ -83,6 +84,9 @@ local function setupInputField(commitType)
 			local ns = vim.api.nvim_create_namespace("tinygit.inputField")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
+			local commitMaxLen = 72 -- hard git limit
+			local commitOverflowLen = 50 -- limit set by treesitter gitcommit parser
+
 			-- INFO the order the highlights are added matters, later has priority
 			fn.matchadd("issueNumber", [[#\d\+]])
 			vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
@@ -90,18 +94,13 @@ local function setupInputField(commitType)
 			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
 			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@markup.raw.markdown_inline" })
 
-			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(config.maxLen - 1))
+			-- INFO no need to highlight between 50-72, since the treesitter parser
+			-- for gitcommit already does this now
+			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen - 1))
 			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
 
-			fn.matchadd(
-				"closeToOverlength",
-				-- \ze = end of match, \zs = start of match
-				([[.\{%s}\zs.\{1,%s}\ze]]):format(config.mediumLen, config.maxLen - config.mediumLen)
-			)
-			vim.api.nvim_set_hl(ns, "closeToOverlength", { link = "WarningMsg" })
-
 			-- colorcolumn as extra indicators of overLength
-			vim.opt_local.colorcolumn = { config.mediumLen, config.maxLen }
+			vim.opt_local.colorcolumn = { commitOverflowLen, commitMaxLen }
 
 			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
