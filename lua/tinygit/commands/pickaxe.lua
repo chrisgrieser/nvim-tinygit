@@ -23,9 +23,12 @@ local function repoIsShallow()
 	if not u.inShallowRepo() then return false end
 
 	if config.autoUnshallowIfNeeded then
-		u.notify("Auto-Unshallowing repo…", "info", "History Search")
-		-- delayed, so notification shows up before fn.system blocks execution
-		vim.defer_fn(function() fn.system { "git", "fetch", "--unshallow" } end, 300)
+		vim.notify("Auto-Unshallowing repo…", vim.log.levels.INFO, {
+			title = "History Search",
+			animate = false, -- since unshallowing is blocking
+		})
+		-- delayed, so notification shows up before `fn.system` blocks execution
+		vim.defer_fn(function() fn.system { "git", "fetch", "--unshallow" } end, 150)
 		return false
 	else
 		u.notify(
