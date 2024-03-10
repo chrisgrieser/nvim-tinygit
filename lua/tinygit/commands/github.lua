@@ -14,9 +14,16 @@ function M.githubUrl(justRepo)
 	local filepath = vim.fn.expand("%:p")
 	local gitroot = vim.fn.system("git --no-optional-locks rev-parse --show-toplevel")
 	local pathInRepo = filepath:sub(#gitroot + 1)
-
 	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
-	local remote = fn.system("git --no-optional-locks remote -v"):gsub(".*:(.-)%.git.*", "%1")
+
+	local remoteInfo = fn.system("git --no-optional-locks remote --verbose")
+	local remote = remoteInfo:match("github%.com[:/]([^%s/]-/[^%s/]+)")
+	if not remote then
+		u.notify("Remote does not appear to be at GitHub: " .. remoteInfo, "warn")
+		return
+	end
+	remote = remote:gsub("%.git$", "")
+
 	local hash = vim.trim(fn.system("git --no-optional-locks rev-parse HEAD"))
 	local branch = vim.trim(fn.system("git --no-optional-locks branch --show-current"))
 
