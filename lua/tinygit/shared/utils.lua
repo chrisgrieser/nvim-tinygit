@@ -54,12 +54,16 @@ function M.inShallowRepo()
 	return isShallow
 end
 
----@return string "user/name" of repo
+---@return string? "user/name" of repo, without the trailing ".git"
 ---@nodiscard
-function M.getRepo()
-	local allRemotes = fn.system { "git", "remote", "-v" }
-	local firstRemote = vim.split(allRemotes, "\n")[1]:match(":.*%."):sub(2, -2)
-	return firstRemote
+function M.getGithubRemote()
+	local remotes = fn.system { "git", "remote", "--verbose" }
+	local githubRemote = remotes:match("github%.com[/:](%S+)")
+	if not githubRemote then
+		M.notify("Not a GitHub repo", "error")
+		return
+	end
+	return githubRemote:gsub("%.git$", "")
 end
 
 ---for some edge cases like pre-commit-hooks that add colored output, it is

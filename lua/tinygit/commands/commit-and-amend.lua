@@ -243,7 +243,9 @@ end
 local function openReferencedIssue(processedMsg)
 	local issueReferenced = processedMsg:match("#(%d+)")
 	if config.openReferencedIssue and issueReferenced then
-		local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issueReferenced)
+		local repo = u.getGithubRemote()
+		if not repo then return end
+		local url = ("https://github.com/%s/issues/%s"):format(repo, issueReferenced)
 		u.openUrl(url)
 	end
 end

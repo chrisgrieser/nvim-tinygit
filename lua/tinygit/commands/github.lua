@@ -121,7 +121,8 @@ function M.issuesAndPrs(userOpts)
 	}
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
-	local repo = u.getRepo()
+	local repo = u.getGithubRemote()
+	if not repo then return end
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
 	local rawJsonUrl = ("https://api.github.com/repos/%s/issues?per_page=100&state=%s&sort=updated"):format(
@@ -174,7 +175,9 @@ function M.openIssueUnderCursor()
 	end
 
 	local issue = cword:sub(2) -- remove the `#`
-	local url = ("https://github.com/%s/issues/%s"):format(u.getRepo(), issue)
+	local repo = u.getGithubRemote()
+	if not repo then return end
+	local url = ("https://github.com/%s/issues/%s"):format(repo, issue)
 	u.openUrl(url)
 
 	vim.opt_local.iskeyword = prevKeywordSetting
@@ -182,7 +185,9 @@ end
 
 function M.createGitHubPr()
 	local branchName = vim.trim(fn.system("git --no-optional-locks branch --show-current"))
-	local prUrl = ("https://github.com/%s/pull/new/%s"):format(u.getRepo(), branchName)
+	local repo = u.getGithubRemote()
+	if not repo then return end
+	local prUrl = ("https://github.com/%s/pull/new/%s"):format(repo, branchName)
 	u.openUrl(prUrl)
 end
 
