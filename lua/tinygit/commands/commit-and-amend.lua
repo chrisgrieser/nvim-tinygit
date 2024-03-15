@@ -173,7 +173,7 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 				-- nvim-notify, therefore manually highlighting conventional commits
 				fn.matchadd(
 					"Title",
-					[[\v(feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
+					[[\v(feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(.{-})?\ze:]]
 				)
 			end)
 		end,
@@ -186,14 +186,11 @@ end
 ---@return number|nil -- nil if no notification is shown
 local function showCommitPreview()
 	local notifyInstalled, notifyNvim = pcall(require, "notify")
-	if not notifyInstalled or not config.commitPreview then return end
+	if not (notifyInstalled and config.commitPreview) then return end
 
 	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
-	local width = 50
-	if notifyInstalled then
-		local _, notifyConfig = notifyNvim.instance()
-		if notifyConfig.max_width then width = notifyConfig.max_width - 2 end
-	end
+	local _, notifyConfig = notifyNvim.instance()
+	local width = (notifyConfig and notifyConfig.max_width) and notifyConfig.max_width - 2 or 50
 
 	-- get changes
 	local diffStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. tostring(width) }
