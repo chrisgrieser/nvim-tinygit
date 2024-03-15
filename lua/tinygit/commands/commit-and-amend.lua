@@ -189,8 +189,14 @@ local function showCommitPreview()
 	if not (notifyInstalled and config.commitPreview) then return end
 
 	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
+	-- INFO max_width can be number, nil, or function, see https://github.com/chrisgrieser/nvim-tinygit/issues/6#issuecomment-1999537606
 	local _, notifyConfig = notifyNvim.instance()
-	local width = (notifyConfig and notifyConfig.max_width) and notifyConfig.max_width - 2 or 50
+	local width = 50
+	if notifyConfig and notifyConfig.max_width then
+		local max_width = type(notifyConfig.max_width) == "number" and notifyConfig.max_width
+			or notifyConfig.max_width()
+		width = max_width - 2
+	end
 
 	-- get changes
 	local diffStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. tostring(width) }
