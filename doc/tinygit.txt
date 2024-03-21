@@ -363,13 +363,13 @@ The `setup` call is optional. These are the default settings:
                 icon = "ﰖ ",
             },
             
-            -- custom icons for branch state
             branchState = {
-                iconAhead = "↑",
-                iconBehind = "↓",
-                iconAheadBehind = "↑↓",
+                icons = {
+                    ahead = "󰶣",
+                    behind = "󰶡",
+                    diverge = "󰃻",
+                },
             },
-    
         },
     }
 <
