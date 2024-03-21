@@ -325,7 +325,7 @@ local defaultConfig = {
 			maxMsgLen = 35,
 			icon = "ﰖ ",
 		},
-		
+
 		branchState = {
 			icons = {
 				ahead = "󰶣",
@@ -347,15 +347,25 @@ require("dressing").setup {
 }
 ```
 
+The appearance of the commit preview is determined by
+[nvim-notify](https://github.com/rcarriga/nvim-notify). To change for example
+the width of the preview, use:
+
+```lua
+require("notify").setup {
+	max_width = 60,
+}
+```
+
 ## Comparison to existing git plugins
 - `gitsigns.nvim`: No feature overlap. `tinygit` rather complements `gitsigns`
   as the latter is used to stage changes (`:GitSigns stage_hunk`) quickly, and
   the former allows you to commit (and push) those changes quickly.
 - `Neogit` / `Fugitive`: These two probably cover every feature `tinygit` has,
   but with much more configuration options. The benefit of `tinygit` is that it
-  is aims to streamline common actions as much as possible by smartly combining
-  git operations. For instance, smart-commit combines staging, committing, and
-  pushing.
+  is more lightweight and aims to streamline common actions by smartly combining
+  operations. For instance, the smart-commit command combines staging,
+  committing, and pushing.
 - `diffview.nvim`: No overlap, except for the command to search the file history.
   `tinygit`'s version of file history search should be easier to use and has a few
   more quality-of-life features, such as automatically jumping to occurrences of
