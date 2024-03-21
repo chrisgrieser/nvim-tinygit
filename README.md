@@ -325,6 +325,14 @@ local defaultConfig = {
 			maxMsgLen = 35,
 			icon = "ﰖ ",
 		},
+		
+		-- custom icons for branch state
+		branchState = {
+			iconAhead = "↑",
+			iconBehind = "↓",
+			iconAheadBehind = "↑↓",
+		},
+
 	},
 }
 ```
