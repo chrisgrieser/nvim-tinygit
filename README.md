@@ -326,13 +326,13 @@ local defaultConfig = {
 			icon = "ﰖ ",
 		},
 		
-		-- custom icons for branch state
 		branchState = {
-			iconAhead = "↑",
-			iconBehind = "↓",
-			iconAheadBehind = "↑↓",
+			icons = {
+				ahead = "󰶣",
+				behind = "󰶡",
+				diverge = "󰃻",
+			},
 		},
-
 	},
 }
 ```

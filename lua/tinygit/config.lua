@@ -37,9 +37,7 @@ local M = {}
 ---@field icon string
 
 ---@class branchStateConfig
----@field iconAhead string
----@field iconBehind string
----@field iconAheadBehind string
+---@field icons { ahead: string, behind: string, diverge: string }
 
 --------------------------------------------------------------------------------
 
@@ -101,7 +99,13 @@ local defaultConfig = {
 			maxMsgLen = 35,
 			icon = "ﰖ ",
 		},
-		branchState = {}, -- TODO
+		branchState = {
+			icons = {
+				ahead = "󰶣",
+				behind = "󰶡",
+				diverge = "󰃻",
+			},
+		},
 	},
 }
 

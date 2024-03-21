@@ -1,5 +1,5 @@
 local M = {}
-local config = require("tinygit.config").config.statusline.branchState
+local icons = require("tinygit.config").config.statusline.branchState.icons
 --------------------------------------------------------------------------------
 
 ---Returns info ahead, behind, and divergence of the local branch with the
@@ -37,17 +37,12 @@ local function getBranchState(bufnr)
 	local ahead = currentBranchInfo:match("ahead (%d+)")
 	local behind = currentBranchInfo:match("behind (%d+)")
 
-	--icons
-	local aheadIcon = config.iconAhead or "󰶣"
-	local behindIcon = config.iconBehind or "󰶡"
-	local aheadAndBehindIcon = config.iconAheadBehind or "󰃻"
-
 	if ahead and behind then
-		return (aheadAndBehindIcon .. " %s/%s"):format(ahead, behind)
+		return (icons.diverge .. " %s/%s"):format(ahead, behind)
 	elseif ahead then
-		return aheadIcon .. ahead
+		return icons.ahead .. ahead
 	elseif behind then
-		return behindIcon .. behind
+		return icons.behind .. behind
 	end
 	return ""
 end
