@@ -362,6 +362,14 @@ The `setup` call is optional. These are the default settings:
                 maxMsgLen = 35,
                 icon = "ﰖ ",
             },
+            
+            -- custom icons for branch state
+            branchState = {
+                iconAhead = "↑",
+                iconBehind = "↓",
+                iconAheadBehind = "↑↓",
+            },
+    
         },
     }
 <
