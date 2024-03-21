@@ -232,7 +232,7 @@ require("tinygit.statusline").blame()
 ```
 
 > [!TIP]
-> Some status line plugin also allow you to put components into the tabline or
+> Some status line plugins also allow you to put components into the tabline or
 > winbar. If your status line is too crowded, you can add the blame-component to
 > the one of those bars instead.
 
@@ -364,20 +364,14 @@ require("dressing").setup {
 
 <!-- vale Google.FirstPerson = NO -->
 ## Credits
-**About Me**  
 In my day job, I am a sociologist studying the social mechanisms underlying the
 digital economy. For my PhD project, I investigate the governance of the app
 economy and how software ecosystems manage the tension between innovation and
 compatibility. If you are interested in this subject, feel free to get in touch.
 
-**Blog**  
 I also occasionally blog about vim: [Nano Tips for Vim](https://nanotipsforvim.prose.sh)
 
-**Profiles**  
-- [reddit](https://www.reddit.com/user/pseudometapseudo)
-- [Discord](https://discordapp.com/users/462774483044794368/)
 - [Academic Website](https://chris-grieser.de/)
-- [Twitter](https://twitter.com/pseudo_meta)
 - [Mastodon](https://pkm.social/@pseudometa)
 - [ResearchGate](https://www.researchgate.net/profile/Christopher-Grieser)
 - [LinkedIn](https://www.linkedin.com/in/christopher-grieser-ba693b17a/)
