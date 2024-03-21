@@ -1,4 +1,4 @@
-*tinygit.txt*            For NVIM v0.8.0            Last change: 2024 March 15
+*tinygit.txt*            For NVIM v0.8.0            Last change: 2024 March 21
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -73,13 +73,13 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
 
 Install the Treesitter parser for git filetypes: `TSInstall gitcommit
-gitrebase`
+git_rebase`
 
 >lua
     -- lazy.nvim
     {
         "chrisgrieser/nvim-tinygit",
-        ft = { "gitrebase", "gitcommit" }, -- so ftplugins are loaded
+        ft = { "git_rebase", "gitcommit" }, -- so ftplugins are loaded
         dependencies = {
             "stevearc/dressing.nvim",
             "nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
