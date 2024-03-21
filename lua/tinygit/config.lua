@@ -37,6 +37,9 @@ local M = {}
 ---@field icon string
 
 ---@class branchStateConfig
+---@field iconAhead string
+---@field iconBehind string
+---@field iconAheadBehind string
 
 --------------------------------------------------------------------------------
 
