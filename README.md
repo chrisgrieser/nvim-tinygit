@@ -54,13 +54,13 @@ operations.
 
 ## Installation
 
-Install the Treesitter parser for git filetypes: `TSInstall gitcommit gitrebase`
+Install the Treesitter parser for git filetypes: `TSInstall gitcommit git_rebase`
 
 ```lua
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	ft = { "gitrebase", "gitcommit" }, -- so ftplugins are loaded
+	ft = { "git_rebase", "gitcommit" }, -- so ftplugins are loaded
 	dependencies = {
 		"stevearc/dressing.nvim",
 		"nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
