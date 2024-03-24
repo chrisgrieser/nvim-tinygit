@@ -16,6 +16,7 @@ operations.
 	* [Amend](#amend)
 	* [Fixup & Squash Commits](#fixup--squash-commits)
 	* [GitHub Interaction](#github-interaction)
+	* [Undo Last Commit](#undo-last-commit)
 	* [Push & PR](#push--pr)
 	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
@@ -148,6 +149,18 @@ require("tinygit").fixupCommit {
 	autoRebase = false,
 }
 ```
+
+
+### Undo Last Commit
+
+- `undoLastCommit` removes the most recent commit (in a non-destructive way)
+
+```lua
+require("tinygit").undoLastCommit()
+```
+- This runs `git reset --mixed HEAD~` which removes the last commit.
+- It keeps the changes in the working directory but unstages them.
+
 
 ### GitHub Interaction
 - Search issues & PRs. (Requires `curl`.)
