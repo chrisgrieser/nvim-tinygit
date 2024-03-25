@@ -28,6 +28,7 @@ operations.
     - |tinygit-amend|
     - |tinygit-fixup-&-squash-commits|
     - |tinygit-github-interaction|
+    - |tinygit-undo-last-commit|
     - |tinygit-push-&-pr|
     - |tinygit-search-file/function-history-("git-pickaxe")|
     - |tinygit-stash|
@@ -171,6 +172,18 @@ FIXUP & SQUASH COMMITS ~
         autoRebase = false,
     }
 <
+
+
+UNDO LAST COMMIT ~
+
+- `undoLastCommit` removes the most recent commit (in a non-destructive way)
+
+>lua
+    require("tinygit").undoLastCommit()
+<
+
+- This runs `git reset --mixed HEAD~` which removes the last commit.
+- It keeps the changes in the working directory but unstages them.
 
 
 GITHUB INTERACTION ~
