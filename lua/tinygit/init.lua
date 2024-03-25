@@ -52,6 +52,7 @@ function M.functionHistory() require("tinygit.commands.pickaxe").functionHistory
 
 function M.stashPop() require("tinygit.commands.stash").stashPop() end
 function M.stashPush() require("tinygit.commands.stash").stashPush() end
+function M.undoLastCommit() require("tinygit.commands.undo-last-commit").undoLastCommit() end
 
 --------------------------------------------------------------------------------
 return M
