@@ -34,7 +34,11 @@ function M.setupAppearance()
 			vim.api.nvim_set_hl(ns, "tinygit_selector_date", { link = "Comment" })
 
 			vim.fn.matchadd("tinygit_selector_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-			vim.api.nvim_set_hl(ns, "tinygit_selector_mdInlineCode", { link = "@markup.raw.markdown_inline" })
+			vim.api.nvim_set_hl(
+				ns,
+				"tinygit_selector_mdInlineCode",
+				{ link = "@markup.raw.markdown_inline" }
+			)
 
 			vim.fn.matchadd(
 				"tinygit_selector_conventionalCommit",
