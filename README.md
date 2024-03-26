@@ -144,7 +144,7 @@ rebase view**. (Note that this can potentially result in conflicts.)
 ```lua
 -- options show default values
 require("tinygit").fixupCommit { 
-	selectFromLastXCommits = 15
+	selectFromLastXCommits = 15,
 	squashInstead = false, 
 	autoRebase = false,
 }
