@@ -34,16 +34,6 @@ local function hasNoChanges()
 	return noChanges
 end
 
-local function updateStatuslineComponents()
-	-- conditions to avoid unnecessarily loading the module(s)
-	if package.loaded["tinygit.statusline.blame"] then
-		require("tinygit.statusline.blame").refreshBlame()
-	end
-	if package.loaded["tinygit.statusline.branch-state"] then
-		require("tinygit.statusline.branch-state").refreshBranchState()
-	end
-end
-
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
@@ -318,7 +308,7 @@ function M.smartCommit(opts, msgNeedingFixing)
 		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
 
 		openReferencedIssue(processedMsg)
-		updateStatuslineComponents()
+		u.updateStatuslineComponents()
 	end)
 end
 
@@ -350,7 +340,7 @@ function M.amendNoEdit(opts)
 	end
 	postCommitNotif("Amend-No-Edit", stageAllChanges, lastCommitMsg, extraInfo)
 
-	updateStatuslineComponents()
+	u.updateStatuslineComponents()
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
@@ -395,7 +385,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
 
 			openReferencedIssue(processedMsg)
-			updateStatuslineComponents()
+			u.updateStatuslineComponents()
 		end
 	)
 end
@@ -466,7 +456,7 @@ function M.fixupCommit(userOpts)
 			if u.nonZeroExit(stdout) then return end
 			u.notify(stdout, "info", "Auto Rebase applied")
 		end
-		updateStatuslineComponents()
+		u.updateStatuslineComponents()
 	end)
 end
 

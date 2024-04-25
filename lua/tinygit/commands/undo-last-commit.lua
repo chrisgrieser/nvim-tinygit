@@ -10,6 +10,7 @@ function M.undoLastCommit()
 
 	u.notify(response, "info", "Undo Last Commit")
 	vim.cmd.checktime() -- updates the current buffer
+	u.updateStatuslineComponents()
 end
 
 --------------------------------------------------------------------------------
