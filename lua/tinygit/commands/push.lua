@@ -17,7 +17,7 @@ local function pushCmd(userOpts)
 		u.notify(out, severity, "Push")
 
 		-- sound
-		if fn.has("macunix") == 1 and config.confirmationSound then
+		if config.confirmationSound and fn.has("macunix") == 1 then
 			local sound = result.code == 0
 					and "/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 				or "/System/Library/Sounds/Basso.aiff"
@@ -25,13 +25,8 @@ local function pushCmd(userOpts)
 		end
 
 		vim.schedule_wrap(function()
-			if userOpts.pullBefore then vim.cmd.checktime() end
 			if userOpts.createGitHubPr then createGitHubPr() end
-
-			-- condition to avoid unnecessarily loading the module
-			if package.loaded["tinygit.statusline.branch-state"] then
-				require("tinygit.statusline.branch-state").refreshBranchState()
-			end
+			u.updateStatuslineComponents()
 		end)
 	end)
 end
@@ -75,6 +70,7 @@ function M.push(userOpts, calledByUser)
 			end
 			-- only push if pull was successful
 			if result.code == 0 then pushCmd(userOpts) end
+			vim.schedule_wrap(vim.cmd.checktime)
 		end)
 	else
 		pushCmd(userOpts)

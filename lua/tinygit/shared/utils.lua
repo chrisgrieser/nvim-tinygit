@@ -41,7 +41,7 @@ end
 ---@return string? "user/name" of repo, without the trailing ".git"
 ---@nodiscard
 function M.getGithubRemote()
-	local remotes = vim.system ({ "git", "remote", "--verbose" }):wait().stdout or ""
+	local remotes = vim.system({ "git", "remote", "--verbose" }):wait().stdout or ""
 	local githubRemote = remotes:match("github%.com[/:](%S+)")
 	if not githubRemote then
 		M.notify("Not a GitHub repo", "error")
@@ -55,7 +55,9 @@ end
 ---@param str string
 ---@return string
 function M.rmAnsiEscFromStr(str)
-	str = str:gsub("%[[%w;]-m", "") -- \033[1;34m, \033[0m, ^[[K, etc
+	str = str
+		:gsub("%[[%w;]-m", "") -- colors codes like \033[1;34m or \033[0m
+		:gsub("%[K", "") -- special keycodes
 	return str
 end
 
