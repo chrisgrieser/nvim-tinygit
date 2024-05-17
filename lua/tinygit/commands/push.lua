@@ -24,13 +24,15 @@ local function pushCmd(userOpts)
 			vim.system { "afplay", sound }
 		end
 
-		if userOpts.pullBefore then vim.cmd.checktime() end
-		if userOpts.createGitHubPr then createGitHubPr() end
+		vim.schedule_wrap(function()
+			if userOpts.pullBefore then vim.cmd.checktime() end
+			if userOpts.createGitHubPr then createGitHubPr() end
 
-		-- condition to avoid unnecessarily loading the module
-		if package.loaded["tinygit.statusline.branch-state"] then
-			require("tinygit.statusline.branch-state").refreshBranchState()
-		end
+			-- condition to avoid unnecessarily loading the module
+			if package.loaded["tinygit.statusline.branch-state"] then
+				require("tinygit.statusline.branch-state").refreshBranchState()
+			end
+		end)
 	end)
 end
 --------------------------------------------------------------------------------
@@ -66,7 +68,7 @@ function M.push(userOpts, calledByUser)
 	if userOpts.pullBefore then
 		vim.system({ "git", "pull" }, { detach = true, text = true }, function(result)
 			local out = (result.stdout or "") .. (result.stderr or "")
-			if not out:find("Current branch .* is up to date") or out:find("Already up to date.") then
+			if not (out:find("Current branch .* is up to date") or out:find("Already up to date")) then
 				out = u.rmAnsiEscFromStr(vim.trim(out))
 				local severity = result.code == 0 and "info" or "error"
 				u.notify(out, severity, "Pull")
