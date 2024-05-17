@@ -277,8 +277,9 @@ function M.searchFileHistory()
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
+		currentRun.query = query
 		-- without argument, search all commits that touched the current file
-		local args = currentRun.query == ""
+		local args = query == ""
 				and {
 					"git",
 					"log",
