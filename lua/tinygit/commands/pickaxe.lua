@@ -27,8 +27,8 @@ local function repoIsShallow()
 			title = "History Search",
 			animate = false, -- since unshallowing is blocking
 		})
-		-- delayed, so notification shows up before `fn.system` blocks execution
-		vim.defer_fn(function() fn.system { "git", "fetch", "--unshallow" } end, 150)
+		-- delayed, so notification shows up before `vim.system` blocks execution
+		vim.defer_fn(function() vim.system({ "git", "fetch", "--unshallow" }):wait() end, 150)
 		return false
 	else
 		u.notify(
@@ -49,13 +49,14 @@ local function showDiff(commitIdx, type)
 	local hashList = currentRun.hashList
 	local hash = hashList[commitIdx]
 	local query = currentRun.query
-	local date = vim.trim(fn.system { "git", "log", "-n1", "--format=%cr", hash })
-	local shortMsg = vim.trim(fn.system({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50))
+	local date = vim.trim(vim.system({ "git", "log", "-n1", "--format=%cr", hash }):wait().stdout)
+	local shortMsg =
+		vim.trim(vim.system({ "git", "log", "-n1", "--format=%s", hash }):wait().stdout:sub(1, 50))
 
 	-- determine filename in case of renaming
 	local filenameInPresent = currentRun.absPath
-	local gitroot = vim.trim(fn.system { "git", "rev-parse", "--show-toplevel" })
-	local nameHistory = vim.trim(fn.system {
+	local gitroot = vim.trim(vim.system({ "git", "rev-parse", "--show-toplevel" }):wait().stdout)
+	local nameHistory = vim.trim(vim.system({
 		"git",
 		"-C",
 		gitroot, -- in case cwd is not the git root
@@ -67,6 +68,7 @@ local function showDiff(commitIdx, type)
 		"--",
 		filenameInPresent,
 	})
+		:wait().stdout)
 	local nameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 
 	-- get diff
@@ -76,8 +78,9 @@ local function showDiff(commitIdx, type)
 	elseif type == "function" then
 		diffCmd = vim.list_extend(diffCmd, { "log", "-n1", ("-L:%s:%s"):format(query, nameAtCommit) })
 	end
-	local diff = fn.system(diffCmd)
-	if u.nonZeroExit(diff) then return end -- GUARD
+	local diffResult = vim.system(diffCmd):wait()
+	if u.nonZeroExit(diffResult) then return end -- GUARD
+	local diff = diffResult.stdout or ""
 
 	local diffLines = vim.split(vim.trim(diff), "\n")
 	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
@@ -107,7 +110,7 @@ local function showDiff(commitIdx, type)
 	local bufnr = a.nvim_create_buf(false, true)
 	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
-	a.nvim_buf_set_option(bufnr, "modifiable", false)
+	a.nvim_set_option_value("modifiable", false, { buf = bufnr })
 
 	-- open new win for the buff
 	local width = math.min(config.diffPopup.width, 0.99)
@@ -131,7 +134,7 @@ local function showDiff(commitIdx, type)
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
 	local ft = vim.filetype.match { buf = bufnr }
 	if ft == nil then ft = "diff" end -- fallback to diff if not ft can be determined
-	a.nvim_buf_set_option(bufnr, "filetype", ft)
+	a.nvim_set_option_value("filetype", ft, { buf = bufnr })
 
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
@@ -215,10 +218,9 @@ end
 ---@param type "file"|"function"
 local function selectFromCommits(commitList, type)
 	-- GUARD
-	if u.nonZeroExit(commitList) then return end
-	commitList = vim.trim(commitList)
+	commitList = vim.trim(commitList or "")
 	if commitList == "" then
-		u.notify(('No commits found where "%s" was changed.'):format(currentRun.query))
+		u.notify(("No commits found where %q was changed."):format(currentRun.query))
 		return
 	end
 
@@ -275,21 +277,18 @@ function M.searchFileHistory()
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
-		currentRun.query = query
-		local commitList
-		if query == "" then
-			-- without argument, search all commits that touched the current file
-			commitList = fn.system {
-				"git",
-				"log",
-				"--format=" .. selectCommit.gitlogFormat,
-				"--follow", -- follow file renamings
-				"--name-only", -- add filenames to display renamed files
-				"--",
-				currentRun.absPath,
-			}
-		else
-			commitList = fn.system {
+		-- without argument, search all commits that touched the current file
+		local args = currentRun.query == ""
+				and {
+					"git",
+					"log",
+					"--format=" .. selectCommit.gitlogFormat,
+					"--follow", -- follow file renamings
+					"--name-only", -- add filenames to display renamed files
+					"--",
+					currentRun.absPath,
+				}
+			or {
 				"git",
 				"log",
 				"--format=" .. selectCommit.gitlogFormat,
@@ -300,9 +299,9 @@ function M.searchFileHistory()
 				"--",
 				currentRun.absPath,
 			}
-		end
-
-		selectFromCommits(commitList, "file")
+		local result = vim.system(args):wait()
+		if u.nonZeroExit(result) then return end
+		selectFromCommits(result.stdout, "file")
 	end)
 end
 
@@ -311,15 +310,16 @@ function M.functionHistory()
 	local function selectFromFunctionHistory(funcname)
 		if not funcname or funcname == "" then return end
 
-		local response = fn.system {
+		local result = vim.system ({
 			-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 			"git",
 			"log",
 			"--format=" .. selectCommit.gitlogFormat,
 			("-L:%s:%s"):format(funcname, currentRun.absPath),
 			"--no-patch",
-		}
-		selectFromCommits(response, "function")
+		}):wait()
+		if u.nonZeroExit(result) then return end
+		selectFromCommits(result.stdout, "function")
 	end
 
 	-- GUARD
@@ -334,7 +334,7 @@ function M.functionHistory()
 	-- TODO figure out how to query treesitter for function names, and use
 	-- treesitter instead?
 	local lspWithSymbolSupport = false
-	local clients = vim.lsp.get_active_clients { bufnr = 0 }
+	local clients = vim.lsp.get_clients { bufnr = 0 }
 	for _, client in pairs(clients) do
 		if client.server_capabilities.documentSymbolProvider then
 			lspWithSymbolSupport = true

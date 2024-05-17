@@ -12,22 +12,16 @@ local function getBranchState(bufnr)
 
 	-- GUARD valid buffer
 	if not vim.api.nvim_buf_is_valid(bufnr) then return "" end
-	if vim.api.nvim_buf_get_option(bufnr, "buftype") ~= "" then return "" end
-	local cwd = vim.loop.cwd()
+	if vim.api.nvim_get_option_value("buftype", { buf = bufnr }) ~= "" then return "" end
+	local cwd = vim.uv.cwd()
 	if not cwd then return "" end
 
-	local allBranchInfo = vim.fn.system {
-		"git",
-		"-C",
-		cwd,
-		"branch",
-		"--verbose",
-	}
+	local allBranchInfo = vim.system({ "git", "-C", cwd, "branch", "--verbose" }):wait()
 	-- GUARD not in git repo
-	if vim.v.shell_error ~= 0 then return "" end
+	if allBranchInfo.code ~= 0 then return "" end
 
 	-- get only line on current branch (starting with `*`)
-	local branches = vim.split(allBranchInfo, "\n")
+	local branches = vim.split(allBranchInfo.stdout, "\n")
 	local currentBranchInfo
 	for _, line in pairs(branches) do
 		currentBranchInfo = line:match("^%* .*")
@@ -50,7 +44,7 @@ end
 --------------------------------------------------------------------------------
 
 ---@param bufnr? number
-function M.refreshBranchState(bufnr) vim.b["tinygit_branchState"] = getBranchState(bufnr) end
+function M.refreshBranchState(bufnr) vim.b.tinygit_branchState = getBranchState(bufnr) end
 
 vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged", "FocusGained" }, {
 	group = vim.api.nvim_create_augroup("tinygit_branchState", { clear = true }),

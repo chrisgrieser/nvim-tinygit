@@ -54,6 +54,7 @@ operations.
 | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/a8a775bf-f7ce-4730-83e3-a91563481d35" alt="showcase 3">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb" alt="showcase 4">   |
 
 ## Installation
+At least version 0.10 of nvim is required for this plugin.
 
 Install the Treesitter parser for git filetypes: `TSInstall gitcommit git_rebase`
 

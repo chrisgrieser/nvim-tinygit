@@ -5,8 +5,6 @@
 local M = {}
 
 local config = require("tinygit.config").config.statusline.blame
-local trim = vim.trim
-local fn = vim.fn
 --------------------------------------------------------------------------------
 
 ---@param bufnr? number
@@ -17,21 +15,23 @@ local function getBlame(bufnr)
 
 	-- GUARD valid buffer
 	if not vim.api.nvim_buf_is_valid(bufnr) then return "" end
-	if vim.api.nvim_buf_get_option(bufnr, "buftype") ~= "" then return "" end
+	if vim.api.nvim_get_option_value("buftype", { buf = bufnr }) ~= "" then return "" end
 
 	local bufPath = vim.api.nvim_buf_get_name(bufnr)
-	local gitLogLine = trim(
-		vim.fn.system { "git", "log", "--format=%H\t%an\t%cr\t%s", "--max-count=1", "--", bufPath }
-	)
-	-- GUARD git log
-	if gitLogLine == "" or vim.v.shell_error ~= 0 then return "" end
+	local gitLogResult =
+		vim.system({ "git", "log", "--format=%H\t%an\t%cr\t%s", "--max-count=1", "--", bufPath })
+			:wait()
 
-	local hash, author, relDate, msg = unpack(vim.split(gitLogLine, "\t"))
+	-- GUARD git log output
+	if vim.trim(gitLogResult.stdout) == "" or gitLogResult.code ~= 0 then return "" end
+
+	local hash, author, relDate, msg = unpack(vim.split(gitLogResult.stdout, "\t"))
 	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
 
 	-- GUARD shallow and on first commit
 	-- get first commit: https://stackoverflow.com/a/5189296/22114136
-	local isOnFirstCommit = hash == trim(fn.system { "git", "rev-list", "--max-parents=0", "HEAD" })
+	local isOnFirstCommit = hash
+		== vim.trim(vim.system({ "git", "rev-list", "--max-parents=0", "HEAD" }):wait().stdout)
 	local shallowRepo = require("tinygit.shared.utils").inShallowRepo()
 	if shallowRepo and isOnFirstCommit then return "" end
 
@@ -42,7 +42,7 @@ local function getBlame(bufnr)
 		:gsub("%d+s", "just now") -- secs -> just now
 	if not shortRelDate:find("just now") then shortRelDate = shortRelDate .. " ago" end
 	local trimmedMsg = #msg <= config.maxMsgLen and msg
-		or trim(msg:sub(1, config.maxMsgLen)) .. "…"
+		or vim.trim(msg:sub(1, config.maxMsgLen)) .. "…"
 	local authorInitials = not (author:find("%s")) and author:sub(1, 2) -- "janedoe" -> "ja"
 		or author:sub(1, 1) .. author:match("%s(%S)") -- "Jane Doe" -> "JD"
 	local authorStr = vim.tbl_contains(config.hideAuthorNames, author) and ""
@@ -66,7 +66,7 @@ vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged", "FocusGained" }, {
 
 vim.defer_fn(M.refreshBlame, 1) -- initialize in case of lazy-loading
 
-function M.getBlame() return vim.b["tinygit_blame"] or "" end
+function M.getBlame() return vim.b.tinygit_blame or "" end
 
 --------------------------------------------------------------------------------
 return M

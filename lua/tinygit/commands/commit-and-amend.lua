@@ -11,23 +11,19 @@ local abortedCommitMsg
 ---@nodiscard
 ---@return boolean
 local function hasNoStagedChanges()
-	fn.system { "git", "diff", "--staged", "--quiet" }
-	local hasNoStaged = vim.v.shell_error == 0
-	return hasNoStaged
+	return vim.system({ "git", "diff", "--staged", "--quiet" }):wait().code == 0
 end
 
 ---@nodiscard
 ---@return boolean
 local function hasNoUnstagedChanges()
-	fn.system { "git", "diff", "--quiet" }
-	local hasNoUnstaged = vim.v.shell_error == 0
-	return hasNoUnstaged
+	return vim.system({ "git", "diff", "--quiet" }):wait().code == 0
 end
 
 ---@nodiscard
 ---@return boolean
 local function hasNoChanges()
-	local noChanges = vim.fn.system { "git", "status", "--porcelain" } == ""
+	local noChanges = vim.system({ "git", "status", "--porcelain" }):wait().stdout == ""
 	if noChanges then
 		u.notify("There are no staged or unstaged changes to be committed.", "warn")
 	end
@@ -117,7 +113,7 @@ local function setupInputField(commitType)
 
 	vim.api.nvim_create_autocmd("WinClosed", {
 		callback = function(ctx)
-			local ft = vim.api.nvim_buf_get_option(ctx.buf, "filetype")
+			local ft = vim.api.nvim_get_option_value("filetype", { buf = ctx.buf })
 			if not (ft == "gitcommit" or ft == "DressingInput") then return end
 
 			abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
@@ -195,13 +191,13 @@ local function showCommitPreview()
 	if willStageAllChanges then
 		title = "Stage & Commit Preview"
 		-- so new files show up in the diff stats
-		fn.system("git ls-files --others --exclude-standard | xargs git add --intent-to-add")
+		vim.system({ "git", "add", "--intent-to-add", "--all" }):wait()
 	else
 		title = "Commit Preview"
 		table.insert(diffStatsCmd, "--staged")
 	end
 	local changes = vim
-		.trim(vim.fn.system(diffStatsCmd))
+		.trim(vim.system(diffStatsCmd):wait().stdout)
 		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
 		:gsub(" | ", " │ ") -- pipes to full vertical bars
 		:gsub(" Bin ", "    ") -- binary icon
@@ -239,7 +235,7 @@ local function openReferencedIssue(processedMsg)
 		local repo = u.getGithubRemote()
 		if not repo then return end
 		local url = ("https://github.com/%s/issues/%s"):format(repo, issueReferenced)
-		u.openUrl(url)
+		vim.ui.open(url)
 	end
 end
 
@@ -287,13 +283,13 @@ function M.smartCommit(opts, msgNeedingFixing)
 
 		-- stage
 		if doStageAllChanges then
-			local stderr = fn.system { "git", "add", "-A" }
-			if u.nonZeroExit(stderr) then return end
+			local result = vim.system({ "git", "add", "--all" }):wait()
+			if u.nonZeroExit(result) then return end
 		end
 
 		-- commit
-		local stderr = fn.system { "git", "commit", "-m", processedMsg }
-		if u.nonZeroExit(stderr) then return end
+		local result = vim.system({ "git", "commit", "-m", processedMsg }):wait()
+		if u.nonZeroExit(result) then return end
 
 		-- notification
 		local extra = nil
@@ -319,26 +315,27 @@ function M.amendNoEdit(opts)
 	if not opts then opts = {} end
 
 	-- stage
-	local stageAllChanges = hasNoStagedChanges()
-	if stageAllChanges then
-		local stderr = fn.system { "git", "add", "--all" }
-		if u.nonZeroExit(stderr) then return end
+	local doStageAllChanges = hasNoStagedChanges()
+	if doStageAllChanges then
+		local result = vim.system({ "git", "add", "--all" }):wait()
+		if u.nonZeroExit(result) then return end
 	end
 
 	-- commit
-	local stderr = fn.system { "git", "commit", "--amend", "--no-edit" }
-	if u.nonZeroExit(stderr) then return end
+	local result = vim.system({ "git", "commit", "--amend", "--no-edit" }):wait()
+	if u.nonZeroExit(result) then return end
 
 	-- push & notification
-	local lastCommitMsg = vim.trim(fn.system("git log -1 --format=%s"))
-	local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
+	local lastCommitMsg = vim.trim(vim.system({ "git", "log", "-1", "--format=%s" }):wait().stdout)
+		or ""
+	local branchInfo = vim.system({ "git", "branch", "--verbose" }):wait().stdout or ""
 	local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 	local extraInfo
 	if opts.forcePushIfDiverged and prevCommitWasPushed then
 		extraInfo = "Force Pushing…"
 		push { forceWithLease = true }
 	end
-	postCommitNotif("Amend-No-Edit", stageAllChanges, lastCommitMsg, extraInfo)
+	postCommitNotif("Amend-No-Edit", doStageAllChanges, lastCommitMsg, extraInfo)
 
 	u.updateStatuslineComponents()
 end
@@ -357,7 +354,8 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	if not opts then opts = {} end
 
 	if not msgNeedsFixing then
-		local lastCommitMsg = vim.trim(fn.system { "git", "log", "-n1", "--pretty=%s" })
+		local lastCommitMsg =
+			vim.trim(vim.system({ "git", "log", "-n1", "--pretty=%s" }):wait().stdout)
 		msgNeedsFixing = lastCommitMsg
 	end
 
@@ -373,11 +371,11 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 			end
 
 			-- commit
-			local stderr = fn.system { "git", "commit", "--amend", "-m", processedMsg }
-			if u.nonZeroExit(stderr) then return end
+			local result = vim.system({ "git", "commit", "--amend", "-m", processedMsg }):wait()
+			if u.nonZeroExit(result) then return end
 
 			-- push & notification
-			local branchInfo = vim.fn.system { "git", "branch", "--verbose" }
+			local branchInfo = vim.system({ "git", "branch", "--verbose" }):wait().stdout or ""
 			local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 			local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…"
 				or nil
@@ -403,14 +401,14 @@ function M.fixupCommit(userOpts)
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts or {})
 
 	-- get commits
-	local response = fn.system {
+	local result = vim.system({
 		"git",
 		"log",
 		"-n" .. tostring(opts.selectFromLastXCommits),
 		"--format=" .. selectCommit.gitlogFormat,
-	}
-	if u.nonZeroExit(response) then return end
-	local commits = vim.split(vim.trim(response), "\n")
+	}):wait()
+	if u.nonZeroExit(result) then return end
+	local commits = vim.split(vim.trim(result.stdout), "\n")
 
 	-- user selection of commit
 	showCommitPreview()
@@ -430,20 +428,20 @@ function M.fixupCommit(userOpts)
 		local fixupOrSquash = opts.squashInstead and "--squash" or "--fixup"
 
 		-- stage
-		local stageAllChanges = hasNoStagedChanges()
-		if stageAllChanges then
-			local stderr = fn.system { "git", "add", "--all" }
-			if u.nonZeroExit(stderr) then return end
+		local doStageAllChanges = hasNoStagedChanges()
+		if doStageAllChanges then
+			local _result = vim.system({ "git", "add", "--all" }):wait()
+			if u.nonZeroExit(_result) then return end
 		end
 
 		-- commit
-		local stdout = fn.system { "git", "commit", fixupOrSquash, hash }
-		if u.nonZeroExit(stdout) then return end
-		u.notify(u.rmAnsiEscFromStr(stdout), "info", title .. " Commit")
+		local commitResult = vim.system({ "git", "commit", fixupOrSquash, hash }):wait()
+		if u.nonZeroExit(commitResult) then return end
+		u.notify(u.rmAnsiEscFromStr(commitResult.stdout), "info", title .. " Commit")
 
 		-- rebase
 		if opts.autoRebase then
-			stdout = fn.system {
+			local _result = vim.system({
 				"git",
 				"-c",
 				"sequence.editor=:", -- HACK ":" is a "no-op-"editor https://www.reddit.com/r/git/comments/uzh2no/what_is_the_utility_of_noninteractive_rebase/
@@ -452,9 +450,9 @@ function M.fixupCommit(userOpts)
 				"--autostash",
 				"--autosquash",
 				hash .. "^", -- rebase up until the selected commit
-			}
-			if u.nonZeroExit(stdout) then return end
-			u.notify(stdout, "info", "Auto Rebase applied")
+			}):wait()
+			if u.nonZeroExit(_result) then return end
+			u.notify(_result.stdout, "info", "Auto Rebase applied")
 		end
 		u.updateStatuslineComponents()
 	end)

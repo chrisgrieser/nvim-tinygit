@@ -1,29 +1,27 @@
 local M = {}
-local fn = vim.fn
 local u = require("tinygit.shared.utils")
-
 --------------------------------------------------------------------------------
 
 function M.stashPush()
 	if u.notInGitRepo() then return end
 
-	local response = fn.system({ "git", "stash", "push" })
-		:gsub("\n$", "")
-		:gsub("^Saved working directory and index state ", "")
-	if u.nonZeroExit(response) then return end
-	local stashStat = fn.system({ "git", "stash", "show", "0" }):gsub("\n$", "")
+	local result = vim.system({ "git", "stash", "push" }):wait()
+	if u.nonZeroExit(result) then return end
+	local infoText = vim.trim(result.stdout):gsub("^Saved working directory and index state ", "")
+	local stashStat = vim.system({ "git", "stash", "show", "0" }):wait().stdout or ""
 
-	u.notify(response .. "\n" .. stashStat, "info", "Stash Push")
+	u.notify(infoText .. "\n" .. stashStat, "info", "Stash Push")
 	vim.cmd.checktime() -- reload this file from disk
 end
 
 function M.stashPop()
 	if u.notInGitRepo() then return end
 
-	local response = fn.system({ "git", "stash", "pop" }):gsub("\n$", "")
-	if u.nonZeroExit(response) then return end
+	local result = vim.system({ "git", "stash", "push" }):wait()
+	if u.nonZeroExit(result) then return end
+	local infoText = vim.trim(result.stdout)
 
-	u.notify(response, "info", "Stash Pop")
+	u.notify(infoText, "info", "Stash Pop")
 	vim.cmd.checktime() -- reload this file from disk
 end
 

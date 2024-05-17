@@ -12,11 +12,11 @@ function M.githubUrl(justRepo)
 	if u.notInGitRepo() then return end
 
 	local filepath = vim.fn.expand("%:p")
-	local gitroot = vim.fn.system("git --no-optional-locks rev-parse --show-toplevel")
+	local gitroot = vim.trim(vim.system({ "git", "rev-parse", "--show-toplevel" }):wait().stdout)
 	local pathInRepo = filepath:sub(#gitroot + 1)
 	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
 
-	local remoteInfo = fn.system("git --no-optional-locks remote --verbose")
+	local remoteInfo = vim.system({ "git", "remote", "--verbose" }):wait().stdout or ""
 	local remote = remoteInfo:match("github%.com[:/]([^%s/]-/[^%s/]+)")
 	if not remote then
 		u.notify("Remote does not appear to be at GitHub: " .. remoteInfo, "warn")
@@ -24,8 +24,8 @@ function M.githubUrl(justRepo)
 	end
 	remote = remote:gsub("%.git$", "")
 
-	local hash = vim.trim(fn.system("git --no-optional-locks rev-parse HEAD"))
-	local branch = vim.trim(fn.system("git --no-optional-locks branch --show-current"))
+	local hash = vim.trim(vim.system({ "git", "rev-parse", "HEAD" }):wait().stdout)
+	local branch = vim.trim(vim.system({ "git", "branch", "--show-current" }):wait().stdout)
 
 	local selStart = fn.line("v")
 	local selEnd = fn.line(".")
@@ -47,7 +47,7 @@ function M.githubUrl(justRepo)
 		url = url .. ("/blob/%s/%s%s"):format(hash, pathInRepoEncoded, location)
 	end
 
-	u.openUrl(url)
+	vim.ui.open(url)
 	fn.setreg("+", url) -- copy to clipboard
 end
 
@@ -129,7 +129,7 @@ function M.issuesAndPrs(userOpts)
 		repo,
 		opts.state
 	)
-	local rawJSON = fn.system { "curl", "-sL", rawJsonUrl }
+	local rawJSON = vim.system({ "curl", "-sL", rawJsonUrl }):wait().stdout or ""
 	local issues = vim.json.decode(rawJSON)
 	if not issues then
 		u.notify("Failed to fetch issues.", "warn")
@@ -159,7 +159,7 @@ function M.issuesAndPrs(userOpts)
 	}, function(choice)
 		vim.api.nvim_del_autocmd(autocmdId)
 		if not choice then return end
-		u.openUrl(choice.html_url)
+		vim.ui.open(choice.html_url)
 	end)
 end
 
@@ -178,17 +178,17 @@ function M.openIssueUnderCursor()
 	local repo = u.getGithubRemote()
 	if not repo then return end
 	local url = ("https://github.com/%s/issues/%s"):format(repo, issue)
-	u.openUrl(url)
+	vim.ui.open(url)
 
 	vim.opt_local.iskeyword = prevKeywordSetting
 end
 
 function M.createGitHubPr()
-	local branchName = vim.trim(fn.system("git --no-optional-locks branch --show-current"))
+	local branchName = vim.system({ "git", "branch", "--show-current" }):wait().stdout
 	local repo = u.getGithubRemote()
 	if not repo then return end
 	local prUrl = ("https://github.com/%s/pull/new/%s"):format(repo, branchName)
-	u.openUrl(prUrl)
+	vim.ui.open(prUrl)
 end
 
 --------------------------------------------------------------------------------
