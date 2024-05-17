@@ -1,4 +1,4 @@
-*tinygit.txt*            For NVIM v0.8.0            Last change: 2024 April 25
+*tinygit.txt*             For NVIM v0.8.0             Last change: 2024 May 17
 
 ==============================================================================
 Table of Contents                                  *tinygit-table-of-contents*
@@ -72,6 +72,8 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
   -----------------------------------------------------------------------
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
+
+At least version 0.10 of nvim is required for this plugin.
 
 Install the Treesitter parser for git filetypes: `TSInstall gitcommit
 git_rebase`
