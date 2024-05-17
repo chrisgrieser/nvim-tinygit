@@ -25,7 +25,7 @@ local function getBlame(bufnr)
 	-- GUARD git log output
 	if vim.trim(gitLogResult.stdout) == "" or gitLogResult.code ~= 0 then return "" end
 
-	local hash, author, relDate, msg = unpack(vim.split(gitLogResult.stdout, "\t"))
+	local hash, author, relDate, msg = unpack(vim.split(vim.trim(gitLogResult.stdout), "\t"))
 	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
 
 	-- GUARD shallow and on first commit
