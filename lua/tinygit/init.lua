@@ -52,7 +52,26 @@ function M.functionHistory() require("tinygit.commands.pickaxe").functionHistory
 
 function M.stashPop() require("tinygit.commands.stash").stashPop() end
 function M.stashPush() require("tinygit.commands.stash").stashPush() end
-function M.undoLastCommit() require("tinygit.commands.undo-last-commit").undoLastCommit() end
+
+function M.undoLastCommitOrAmend()
+	require("tinygit.commands.undo-commit-amend").undoLastCommitOrAmend()
+end
+
+--------------------------------------------------------------------------------
+
+local wasNotifiedOnce = false
+---@deprecated
+function M.undoLastCommit()
+	require("undo-commit-amend").undoLastCommitOrAmend()
+	if not wasNotifiedOnce then
+		wasNotifiedOnce = true
+		vim.notify(
+			"`require('tinygit').undoLastCommit()` is deprecated, use `.undoLastCommitOrAmend()` instead.",
+			vim.log.levels.WARN,
+			{ title = "tinygit" }
+		)
+	end
+end
 
 --------------------------------------------------------------------------------
 return M

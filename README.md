@@ -152,16 +152,17 @@ require("tinygit").fixupCommit {
 ```
 
 
-### Undo Last Commit
-
-- `undoLastCommit` removes the most recent commit (in a non-destructive way)
+### Undo Last Commit/Amend
 
 ```lua
-require("tinygit").undoLastCommit()
+require("tinygit").undoLastCommitOrAmend()
 ```
-- This runs `git reset --mixed HEAD~` which removes the last commit.
-- It keeps the changes in the working directory but unstages them.
 
+- Changes in the working directory are kept, but unstaged. Effectively, any
+  `commit` (or `amend`) operation is undone.
+- Note that any `push` operation done as a followup (such as `.smartCommit {
+  pushIfClean = false }`) are not undone.
+- This command basically runs `git reset --mixed HEAD@{1}`.
 
 ### GitHub Interaction
 - Search issues & PRs. (Requires `curl`.)
