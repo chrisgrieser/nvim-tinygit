@@ -68,7 +68,7 @@ end
 local wasNotifiedOnce = false
 ---@deprecated
 function M.undoLastCommit()
-	require("undo-commit-amend").undoLastCommitOrAmend()
+	require("tinygit.commands.undo-commit-amend").undoLastCommitOrAmend()
 	if not wasNotifiedOnce then
 		wasNotifiedOnce = true
 		vim.notify(
