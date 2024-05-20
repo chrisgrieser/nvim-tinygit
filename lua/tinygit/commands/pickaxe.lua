@@ -30,11 +30,8 @@ local function repoIsShallow()
 		vim.defer_fn(function() vim.system({ "git", "fetch", "--unshallow" }):wait() end, 150)
 		return false
 	else
-		u.notify(
-			"Aborting: Repository is shallow.\nRun `git fetch --unshallow`.",
-			"warn",
-			"History Search"
-		)
+		local msg = "Aborting: Repository is shallow.\nRun `git fetch --unshallow`."
+		u.notify(msg, "warn", "History Search")
 		return true
 	end
 end
@@ -55,7 +52,7 @@ local function showDiff(commitIdx, type)
 	-- determine filename in case of renaming
 	local filenameInPresent = currentRun.absPath
 	local gitroot = vim.trim(vim.system({ "git", "rev-parse", "--show-toplevel" }):wait().stdout)
-	local nameHistory = vim.trim(vim.system({
+	local logCmd = {
 		"git",
 		"-C",
 		gitroot, -- in case cwd is not the git root
@@ -66,16 +63,16 @@ local function showDiff(commitIdx, type)
 		"--format=", -- suppress commit info
 		"--",
 		filenameInPresent,
-	})
-		:wait().stdout)
+	}
+	local nameHistory = vim.trim(vim.system(logCmd):wait().stdout)
 	local nameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 
 	-- get diff
-	local diffCmd = { "git", "-C", gitroot, "show", "--format=" }
+	local diffCmd = { "git", "-C", gitroot }
 	if type == "file" then
-		diffCmd = vim.list_extend(diffCmd, { hash, "--", nameAtCommit })
+		diffCmd = vim.list_extend(diffCmd, { "show", "--format=", hash, "--", nameAtCommit })
 	elseif type == "function" then
-		diffCmd = vim.list_extend(diffCmd, { "log", "-n1", ("-L:%s:%s"):format(query, nameAtCommit) })
+		diffCmd = vim.list_extend(diffCmd, { "log", "--format=", "-n1", ("-L:%s:%s"):format(query, nameAtCommit) })
 	end
 	local diffResult = vim.system(diffCmd):wait()
 	if u.nonZeroExit(diffResult) then return end -- GUARD
