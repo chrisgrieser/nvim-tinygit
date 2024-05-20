@@ -62,8 +62,13 @@ function M.push(userOpts, calledByUser)
 	-- system command
 	if userOpts.pullBefore then
 		vim.system({ "git", "pull" }, { detach = true, text = true }, function(result)
+			-- Git messaging is weird and sometimes puts normal messages into
+			-- stderr. Thus we print all messages and silence some of them.
 			local out = (result.stdout or "") .. (result.stderr or "")
-			if not (out:find("Current branch .* is up to date") or out:find("Already up to date")) then
+			local silenceMsg = out:find("Current branch .* is up to date")
+				or out:find("Already up to date")
+				or out:find("Successfully rebased and updated refs/heads/")
+			if not (silenceMsg) then
 				local severity = result.code == 0 and "info" or "error"
 				u.notify(out, severity, "Pull")
 			end
