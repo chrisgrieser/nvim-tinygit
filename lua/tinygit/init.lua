@@ -1,3 +1,9 @@
+local version = vim.version()
+if version.major == 0 and version.minor < 10 then
+	vim.notify("tinygit requires at least nvim 0.10.", vim.log.levels.WARN)
+	return
+end
+--------------------------------------------------------------------------------
 local M = {}
 
 -- PERF do not require the plugin's modules here, since it loads the complete
