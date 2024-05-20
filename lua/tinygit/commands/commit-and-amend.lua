@@ -452,7 +452,7 @@ function M.fixupCommit(userOpts)
 				hash .. "^", -- rebase up until the selected commit
 			}):wait()
 			if u.nonZeroExit(_result) then return end
-			u.notify(_result.stdout, "info", "Auto Rebase applied")
+			u.notify("Auto-rebase applied.", "info", title .. " Commit")
 		end
 		u.updateStatuslineComponents()
 	end)
