@@ -137,8 +137,7 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 	if extraInfo then table.insert(lines, extraInfo) end
 	local text = table.concat(lines, "\n")
 
-	vim.notify(text, vim.log.levels.INFO, {
-		title = "tinygit: " .. title,
+	u.notify(text, "info", title, {
 		on_open = function(win)
 			local ns = vim.api.nvim_create_namespace("tinygit.commitNotification")
 			local bufnr = vim.api.nvim_win_get_buf(win)
@@ -203,8 +202,7 @@ local function showCommitPreview()
 		:gsub(" Bin ", "    ") -- binary icon
 
 	-- send notification
-	vim.notify(changes, vim.log.levels.INFO, {
-		title = title,
+	u.notify(changes, "info", title, {
 		timeout = false, -- keep shown, remove when input window closed
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
@@ -437,7 +435,7 @@ function M.fixupCommit(userOpts)
 		-- commit
 		local commitResult = vim.system({ "git", "commit", fixupOrSquash, hash }):wait()
 		if u.nonZeroExit(commitResult) then return end
-		u.notify(u.rmAnsiEscFromStr(commitResult.stdout), "info", title .. " Commit")
+		u.notify(commitResult.stdout, "info", title .. " Commit")
 
 		-- rebase
 		if opts.autoRebase then

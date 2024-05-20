@@ -12,7 +12,7 @@ local function pushCmd(userOpts)
 	if userOpts.forceWithLease then table.insert(cmd, "--force-with-lease") end
 
 	vim.system(cmd, { detach = true, text = true }, function(result)
-		local out = u.rmAnsiEscFromStr(vim.trim((result.stdout or "") .. (result.stderr or "")))
+		local out = (result.stdout or "") .. (result.stderr or "")
 		local severity = result.code == 0 and "info" or "error"
 		u.notify(out, severity, "Push")
 
@@ -64,7 +64,6 @@ function M.push(userOpts, calledByUser)
 		vim.system({ "git", "pull" }, { detach = true, text = true }, function(result)
 			local out = (result.stdout or "") .. (result.stderr or "")
 			if not (out:find("Current branch .* is up to date") or out:find("Already up to date")) then
-				out = u.rmAnsiEscFromStr(vim.trim(out))
 				local severity = result.code == 0 and "info" or "error"
 				u.notify(out, severity, "Pull")
 			end

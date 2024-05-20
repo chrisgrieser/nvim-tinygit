@@ -23,8 +23,7 @@ local function repoIsShallow()
 	if not u.inShallowRepo() then return false end
 
 	if config.autoUnshallowIfNeeded then
-		vim.notify("Auto-Unshallowing repo…", vim.log.levels.INFO, {
-			title = "History Search",
+		u.notify("Auto-Unshallowing repo…", "info", "History Search", {
 			animate = false, -- since unshallowing is blocking
 		})
 		-- delayed, so notification shows up before `vim.system` blocks execution
@@ -311,7 +310,7 @@ function M.functionHistory()
 	local function selectFromFunctionHistory(funcname)
 		if not funcname or funcname == "" then return end
 
-		local result = vim.system ({
+		local result = vim.system({
 			-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 			"git",
 			"log",

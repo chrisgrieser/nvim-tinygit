@@ -1,16 +1,27 @@
 local M = {}
-local fn = vim.fn
 --------------------------------------------------------------------------------
 
 ---send notification
 ---@param body string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
 ---@param title? string
-function M.notify(body, level, title)
-	local titlePrefix = "tinygit"
-	if not level then level = "info" end
-	local notifyTitle = title and titlePrefix .. ": " .. title or titlePrefix
-	vim.notify(vim.trim(body), vim.log.levels[level:upper()], { title = notifyTitle })
+---@param extraOpts? { icon?: string, on_open?: function, timeout?: boolean|number, animate?: boolean }
+function M.notify(body, level, title, extraOpts)
+	local pluginName = "tinygit"
+	local notifyTitle = title and pluginName .. ": " .. title or pluginName
+	local notifyLevel = level and vim.log.levels[level:upper()] or vim.log.levels.INFO
+
+	---for some edge cases like pre-commit-hooks that add colored output, it is
+	---still necessary to remove the ansi escapes from the output
+	body = vim.trim(
+		body
+			:gsub("%[[%w;]-m", "") -- colors codes like \033[1;34m or \033[0m
+			:gsub("%[K", "") -- special keycodes
+	)
+
+	local baseOpts = { title = notifyTitle }
+	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
+	vim.notify(body, notifyLevel, opts)
 end
 
 ---checks if last command was successful, if not, notify
@@ -18,7 +29,7 @@ end
 ---@return boolean
 ---@param result vim.SystemCompleted
 function M.nonZeroExit(result)
-	local msg = M.rmAnsiEscFromStr(vim.trim((result.stdout or "") .. (result.stderr or "")))
+	local msg = (result.stdout or "") .. (result.stderr or "")
 	if result.code ~= 0 then M.notify(msg, "error") end
 	return result.code ~= 0
 end
@@ -48,17 +59,6 @@ function M.getGithubRemote()
 		return
 	end
 	return githubRemote:gsub("%.git$", "")
-end
-
----for some edge cases like pre-commit-hooks that add colored output, it is
----still necessary to remove the ansi escapes from the output
----@param str string
----@return string
-function M.rmAnsiEscFromStr(str)
-	str = str
-		:gsub("%[[%w;]-m", "") -- colors codes like \033[1;34m or \033[0m
-		:gsub("%[K", "") -- special keycodes
-	return str
 end
 
 function M.updateStatuslineComponents()
