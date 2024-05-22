@@ -27,8 +27,8 @@ operations.
     - |tinygit-smart-commit|
     - |tinygit-amend|
     - |tinygit-fixup-&-squash-commits|
+    - |tinygit-undo-last-commit/amend|
     - |tinygit-github-interaction|
-    - |tinygit-undo-last-commit|
     - |tinygit-push-&-pr|
     - |tinygit-search-file/function-history-("git-pickaxe")|
     - |tinygit-stash|
@@ -168,9 +168,9 @@ FIXUP & SQUASH COMMITS ~
 
 >lua
     -- options show default values
-    require("tinygit").fixupCommit { 
+    require("tinygit").fixupCommit {
         selectFromLastXCommits = 15,
-        squashInstead = false, 
+        squashInstead = false,
         autoRebase = false,
     }
 <
@@ -184,8 +184,9 @@ UNDO LAST COMMIT/AMEND ~
 
 - Changes in the working directory are kept, but unstaged. Effectively, any
     `commit` (or `amend`) operation is undone.
-- Note that any `push` operation done as a followup (such as `.smartCommit {   pushIfClean = false }`) are not undone.
-- This command basically runs `git reset --mixed HEAD@{1}`.
+- Any `push` operation done as a followup (such as `.smartCommit {   pushIfClean = false }`) is not undone.
+- Note that this command is going to undo any last git operation that changes
+    the HEAD, as it basically runs `git reset --mixed HEAD@{1}`.
 
 
 GITHUB INTERACTION ~
