@@ -15,8 +15,8 @@ operations.
 	* [Smart-Commit](#smart-commit)
 	* [Amend](#amend)
 	* [Fixup & Squash Commits](#fixup--squash-commits)
+	* [Undo Last Commit/Amend](#undo-last-commitamend)
 	* [GitHub Interaction](#github-interaction)
-	* [Undo Last Commit](#undo-last-commit)
 	* [Push & PR](#push--pr)
 	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
 	* [Stash](#stash)
@@ -144,13 +144,12 @@ rebase view**. (Note that this can potentially result in conflicts.)
 
 ```lua
 -- options show default values
-require("tinygit").fixupCommit { 
+require("tinygit").fixupCommit {
 	selectFromLastXCommits = 15,
-	squashInstead = false, 
+	squashInstead = false,
 	autoRebase = false,
 }
 ```
-
 
 ### Undo Last Commit/Amend
 
@@ -160,9 +159,10 @@ require("tinygit").undoLastCommitOrAmend()
 
 - Changes in the working directory are kept, but unstaged. Effectively, any
   `commit` (or `amend`) operation is undone.
-- Note that any `push` operation done as a followup (such as `.smartCommit {
-  pushIfClean = false }`) are not undone.
-- This command basically runs `git reset --mixed HEAD@{1}`.
+- Any `push` operation done as a followup (such as `.smartCommit {
+  pushIfClean = false }`) is not undone.
+- Note that this command is going to undo any last git operation that changes
+  the HEAD, as it basically runs `git reset --mixed HEAD@{1}`.
 
 ### GitHub Interaction
 - Search issues & PRs. (Requires `curl`.)
