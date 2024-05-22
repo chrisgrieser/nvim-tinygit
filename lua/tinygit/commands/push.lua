@@ -1,5 +1,4 @@
 local M = {}
-local fn = vim.fn
 
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.push
@@ -11,25 +10,27 @@ local function pushCmd(userOpts)
 	local cmd = { "git", "push" }
 	if userOpts.forceWithLease then table.insert(cmd, "--force-with-lease") end
 
-	vim.system(cmd, { detach = true, text = true }, function(result)
-		local out = (result.stdout or "") .. (result.stderr or "")
-		local severity = result.code == 0 and "info" or "error"
-		u.notify(out, severity, "Push")
+	vim.system(
+		cmd,
+		{ detach = true, text = true },
+		vim.schedule_wrap(function(result)
+			local out = (result.stdout or "") .. (result.stderr or "")
+			local severity = result.code == 0 and "info" or "error"
+			u.notify(out, severity, "Push")
 
-		-- sound
-		if config.confirmationSound and fn.has("macunix") == 1 then
-			local sound = result.code == 0
-					and "/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
-				or "/System/Library/Sounds/Basso.aiff"
-			vim.system { "afplay", sound }
-		end
+			-- sound
+			if config.confirmationSound and vim.uv.os_uname().sysname == "Darwin" then
+				local sound = result.code == 0
+						and "/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
+					or "/System/Library/Sounds/Basso.aiff"
+				vim.system { "afplay", sound }
+			end
 
-		-- post-push actions
-		vim.schedule_wrap(function()
+			-- post-push actions
 			if userOpts.createGitHubPr then createGitHubPr() end
 			u.updateStatuslineComponents()
 		end)
-	end)
+	)
 end
 --------------------------------------------------------------------------------
 
@@ -67,24 +68,28 @@ function M.push(userOpts, calledByUser)
 	end
 
 	-- Pull & Push
-	vim.system({ "git", "pull" }, { detach = true, text = true }, function(result)
-		-- Git messaging is weird and sometimes puts normal messages into
-		-- stderr. Thus we print all messages and silence some of them.
-		local out = (result.stdout or "") .. (result.stderr or "")
-		local silenceMsg = out:find("Current branch .* is up to date")
-			or out:find("Already up to date")
-			or out:find("Successfully rebased and updated refs/heads/")
-		if not silenceMsg then
-			local severity = result.code == 0 and "info" or "error"
-			u.notify(out, severity, "Pull")
-		end
+	vim.system(
+		{ "git", "pull" },
+		{ detach = true, text = true },
+		vim.schedule_wrap(function(result)
+			-- Git messaging is weird and sometimes puts normal messages into
+			-- stderr. Thus we print all messages and silence some of them.
+			local out = (result.stdout or "") .. (result.stderr or "")
+			local silenceMsg = out:find("Current branch .* is up to date")
+				or out:find("Already up to date")
+				or out:find("Successfully rebased and updated refs/heads/")
+			if not silenceMsg then
+				local severity = result.code == 0 and "info" or "error"
+				u.notify(out, severity, "Pull")
+			end
 
-		-- update buffer in case the pull changed it
-		vim.schedule_wrap(vim.cmd.checktime)
+			-- update buffer in case the pull changed it
+			vim.cmd.checktime()
 
-		-- only push if pull was successful
-		if result.code == 0 then pushCmd(userOpts) end
-	end)
+			-- only push if pull was successful
+			if result.code == 0 then pushCmd(userOpts) end
+		end)
+	)
 end
 
 --------------------------------------------------------------------------------
