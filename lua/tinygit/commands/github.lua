@@ -184,7 +184,7 @@ function M.openIssueUnderCursor()
 end
 
 function M.createGitHubPr()
-	local branchName = vim.system({ "git", "branch", "--show-current" }):wait().stdout
+	local branchName = vim.trim(vim.system({ "git", "branch", "--show-current" }):wait().stdout)
 	local repo = u.getGithubRemote()
 	if not repo then return end
 	local prUrl = ("https://github.com/%s/pull/new/%s"):format(repo, branchName)

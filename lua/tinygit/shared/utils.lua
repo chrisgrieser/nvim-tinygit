@@ -57,7 +57,8 @@ function M.getGithubRemote()
 		M.notify("Not a GitHub repo", "error")
 		return
 	end
-	return githubRemote:gsub("%.git$", "")
+	githubRemote = githubRemote:gsub("%.git$", "")
+	return githubRemote
 end
 
 function M.updateStatuslineComponents()
