@@ -48,19 +48,6 @@ function M.inShallowRepo()
 		== "true"
 end
 
----@return string? "user/name" of repo, without the trailing ".git"
----@nodiscard
-function M.getGithubRemote()
-	local remotes = vim.system({ "git", "remote", "--verbose" }):wait().stdout or ""
-	local githubRemote = remotes:match("github%.com[/:](%S+)")
-	if not githubRemote then
-		M.notify("Not a GitHub repo", "error")
-		return
-	end
-	githubRemote = githubRemote:gsub("%.git$", "")
-	return githubRemote
-end
-
 function M.updateStatuslineComponents()
 	-- conditions to avoid unnecessarily loading the module(s)
 	if package.loaded["tinygit.statusline.blame"] then

@@ -4,6 +4,21 @@ local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config
 --------------------------------------------------------------------------------
 
+---@return string? "user/name" of repo, without the trailing ".git"
+---@nodiscard
+local function getGithubRepo()
+	local remotes = vim.system({ "git", "remote", "--verbose" }):wait().stdout or ""
+	local githubRemote = remotes:match("github%.com[/:](%S+)")
+	if not githubRemote then
+		M.notify("Remote does not appear to be at GitHub: " .. githubRemote, "warn")
+		return
+	end
+	githubRemote = githubRemote:gsub("%.git$", "")
+	return githubRemote
+end
+
+--------------------------------------------------------------------------------
+
 ---opens current buffer in the browser & copies the link to the clipboard
 ---normal mode: link to file
 ---visual mode: link to selected lines
@@ -13,17 +28,11 @@ function M.githubUrl(justRepo)
 
 	local filepath = vim.fn.expand("%:p")
 	local gitroot = vim.trim(vim.system({ "git", "rev-parse", "--show-toplevel" }):wait().stdout)
-	local pathInRepo = filepath:sub(#gitroot + 1)
+	local pathInRepo = filepath:sub(#gitroot + 2)
 	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
 
-	local remoteInfo = vim.system({ "git", "remote", "--verbose" }):wait().stdout or ""
-	local remote = remoteInfo:match("github%.com[:/]([^%s/]-/[^%s/]+)")
-	if not remote then
-		u.notify("Remote does not appear to be at GitHub: " .. remoteInfo, "warn")
-		return
-	end
-	remote = remote:gsub("%.git$", "")
-
+	local repo = getGithubRepo()
+	if not repo then return end
 	local hash = vim.trim(vim.system({ "git", "rev-parse", "HEAD" }):wait().stdout)
 	local branch = vim.trim(vim.system({ "git", "branch", "--show-current" }):wait().stdout)
 
@@ -31,7 +40,7 @@ function M.githubUrl(justRepo)
 	local selEnd = fn.line(".")
 	local isVisualMode = fn.mode():find("[Vv]")
 	local isNormalMode = fn.mode() == "n"
-	local url = "https://github.com/" .. remote
+	local url = "https://github.com/" .. repo
 
 	if not justRepo and isNormalMode then
 		url = url .. ("/blob/%s/%s"):format(branch, pathInRepoEncoded)
@@ -121,7 +130,7 @@ function M.issuesAndPrs(userOpts)
 	}
 	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
 
-	local repo = u.getGithubRemote()
+	local repo = getGithubRepo()
 	if not repo then return end
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
@@ -175,7 +184,7 @@ function M.openIssueUnderCursor()
 	end
 
 	local issue = cword:sub(2) -- remove the `#`
-	local repo = u.getGithubRemote()
+	local repo = getGithubRepo()
 	if not repo then return end
 	local url = ("https://github.com/%s/issues/%s"):format(repo, issue)
 	vim.ui.open(url)
@@ -185,7 +194,7 @@ end
 
 function M.createGitHubPr()
 	local branchName = vim.trim(vim.system({ "git", "branch", "--show-current" }):wait().stdout)
-	local repo = u.getGithubRemote()
+	local repo = getGithubRepo()
 	if not repo then return end
 	local prUrl = ("https://github.com/%s/pull/new/%s"):format(repo, branchName)
 	vim.ui.open(prUrl)
