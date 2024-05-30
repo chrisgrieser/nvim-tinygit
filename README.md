@@ -157,12 +157,10 @@ require("tinygit").fixupCommit {
 require("tinygit").undoLastCommitOrAmend()
 ```
 
-- Changes in the working directory are kept, but unstaged. Effectively, any
-  `commit` (or `amend`) operation is undone.
+- Changes in the working directory are kept, but unstaged. (In the background,
+  this uses `git reset --mixed`.)
 - Any `push` operation done as a followup (such as `.smartCommit {
   pushIfClean = false }`) is not undone.
-- Note that this command is going to undo any last git operation that changes
-  the HEAD, as it basically runs `git reset --mixed HEAD@{1}`.
 
 ### GitHub Interaction
 - Search issues & PRs. (Requires `curl`.)
