@@ -16,7 +16,7 @@ function M.notify(body, level, title, extraOpts)
 	body = vim.trim(body
 		:gsub("%[[%w;]-m", "") -- colors codes like \033[1;34m or \033[0m
 		:gsub("%[K", "") -- special keycodes
-		:gsub("%^%[%[K", ""))
+		:gsub("%^%[%[?K", ""))
 
 	local baseOpts = { title = notifyTitle }
 	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
@@ -44,8 +44,15 @@ end
 
 ---@return boolean
 function M.inShallowRepo()
-	return vim.trim(vim.system({ "git", "rev-parse", "--is-shallow-repository" }):wait().stdout)
-		== "true"
+	return M.syncShellCmd { "git", "rev-parse", "--is-shallow-repository" } == "true"
+end
+
+---@nodiscard
+---@param cmd string[]
+---@return string
+function M.syncShellCmd(cmd)
+	local stdout = vim.system(cmd):wait().stdout or ""
+	return vim.trim(stdout)
 end
 
 function M.updateStatuslineComponents()

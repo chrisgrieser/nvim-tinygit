@@ -5,6 +5,7 @@
 local M = {}
 
 local config = require("tinygit.config").config.statusline.blame
+local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@param bufnr? number
@@ -18,9 +19,8 @@ local function getBlame(bufnr)
 	if vim.api.nvim_get_option_value("buftype", { buf = bufnr }) ~= "" then return "" end
 
 	local bufPath = vim.api.nvim_buf_get_name(bufnr)
-	local gitLogResult =
-		vim.system({ "git", "log", "--format=%H\t%an\t%cr\t%s", "--max-count=1", "--", bufPath })
-			:wait()
+	local gitLogCmd = { "git", "log", "--format=%H\t%an\t%cr\t%s", "--", bufPath }
+	local gitLogResult = vim.system(gitLogCmd):wait()
 
 	-- GUARD git log output
 	if vim.trim(gitLogResult.stdout) == "" or gitLogResult.code ~= 0 then return "" end
@@ -30,14 +30,13 @@ local function getBlame(bufnr)
 
 	-- GUARD shallow and on first commit
 	-- get first commit: https://stackoverflow.com/a/5189296/22114136
-	local isOnFirstCommit = hash
-		== vim.trim(vim.system({ "git", "rev-list", "--max-parents=0", "HEAD" }):wait().stdout)
+	local isOnFirstCommit = hash == u.syncShellCmd { "git", "rev-list", "--max-parents=0", "HEAD" }
 	local shallowRepo = require("tinygit.shared.utils").inShallowRepo()
 	if shallowRepo and isOnFirstCommit then return "" end
 
 	-- shorten the output
 	local shortRelDate = (relDate:match("%d+ %wi?n?") or "") -- 1 unit char (expect min)
-		:gsub("m$", "mo") -- month -> mo to be distinguishable from "min"
+		:gsub("m$", "mo") -- "month" -> "mo" to be distinguishable from "min"
 		:gsub(" ", "")
 		:gsub("%d+s", "just now") -- secs -> just now
 	if not shortRelDate:find("just now") then shortRelDate = shortRelDate .. " ago" end

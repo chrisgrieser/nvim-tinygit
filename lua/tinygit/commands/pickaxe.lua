@@ -45,13 +45,12 @@ local function showDiff(commitIdx, type)
 	local hashList = currentRun.hashList
 	local hash = hashList[commitIdx]
 	local query = currentRun.query
-	local date = vim.trim(vim.system({ "git", "log", "-n1", "--format=%cr", hash }):wait().stdout)
-	local shortMsg =
-		vim.trim(vim.system({ "git", "log", "-n1", "--format=%s", hash }):wait().stdout:sub(1, 50))
+	local date = u.syncShellCmd { "git", "log", "-n1", "--format=%cr", hash }
+	local shortMsg = u.syncShellCmd({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50)
 
 	-- determine filename in case of renaming
 	local filenameInPresent = currentRun.absPath
-	local gitroot = vim.trim(vim.system({ "git", "rev-parse", "--show-toplevel" }):wait().stdout)
+	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	local logCmd = {
 		"git",
 		"-C",
@@ -64,7 +63,7 @@ local function showDiff(commitIdx, type)
 		"--",
 		filenameInPresent,
 	}
-	local nameHistory = vim.trim(vim.system(logCmd):wait().stdout)
+	local nameHistory = u.syncShellCmd(logCmd)
 	local nameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 
 	-- get diff
@@ -72,7 +71,10 @@ local function showDiff(commitIdx, type)
 	if type == "file" then
 		diffCmd = vim.list_extend(diffCmd, { "show", "--format=", hash, "--", nameAtCommit })
 	elseif type == "function" then
-		diffCmd = vim.list_extend(diffCmd, { "log", "--format=", "-n1", ("-L:%s:%s"):format(query, nameAtCommit) })
+		diffCmd = vim.list_extend(
+			diffCmd,
+			{ "log", "--format=", "-n1", ("-L:%s:%s"):format(query, nameAtCommit) }
+		)
 	end
 	local diffResult = vim.system(diffCmd):wait()
 	if u.nonZeroExit(diffResult) then return end -- GUARD

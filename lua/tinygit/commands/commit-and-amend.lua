@@ -195,8 +195,8 @@ local function showCommitPreview()
 		title = "Commit Preview"
 		table.insert(diffStatsCmd, "--staged")
 	end
-	local changes = vim
-		.trim(vim.system(diffStatsCmd):wait().stdout)
+	local changes = u
+		.syncShellCmd(diffStatsCmd)
 		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
 		:gsub(" | ", " │ ") -- pipes to full vertical bars
 		:gsub(" Bin ", "    ") -- binary icon
@@ -324,8 +324,7 @@ function M.amendNoEdit(opts)
 	if u.nonZeroExit(result) then return end
 
 	-- push & notification
-	local lastCommitMsg = vim.trim(vim.system({ "git", "log", "-1", "--format=%s" }):wait().stdout)
-		or ""
+	local lastCommitMsg = u.syncShellCmd { "git", "log", "-1", "--format=%s" }
 	local branchInfo = vim.system({ "git", "branch", "--verbose" }):wait().stdout or ""
 	local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 	local extraInfo
@@ -352,8 +351,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	if not opts then opts = {} end
 
 	if not msgNeedsFixing then
-		local lastCommitMsg =
-			vim.trim(vim.system({ "git", "log", "-n1", "--pretty=%s" }):wait().stdout)
+		local lastCommitMsg = u.syncShellCmd { "git", "log", "-n1", "--pretty=%s" }
 		msgNeedsFixing = lastCommitMsg
 	end
 

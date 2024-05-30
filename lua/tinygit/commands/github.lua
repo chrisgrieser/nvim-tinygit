@@ -26,15 +26,15 @@ end
 function M.githubUrl(justRepo)
 	if u.notInGitRepo() then return end
 
-	local filepath = vim.fn.expand("%:p")
-	local gitroot = vim.trim(vim.system({ "git", "rev-parse", "--show-toplevel" }):wait().stdout)
+	local filepath = vim.api.nvim_buf_get_name(0)
+	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	local pathInRepo = filepath:sub(#gitroot + 2)
 	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
 
 	local repo = getGithubRepo()
 	if not repo then return end
-	local hash = vim.trim(vim.system({ "git", "rev-parse", "HEAD" }):wait().stdout)
-	local branch = vim.trim(vim.system({ "git", "branch", "--show-current" }):wait().stdout)
+	local hash = u.syncShellCmd { "git", "rev-parse", "HEAD" }
+	local branch = u.syncShellCmd { "git", "branch", "--show-current" }
 
 	local selStart = fn.line("v")
 	local selEnd = fn.line(".")
@@ -193,7 +193,7 @@ function M.openIssueUnderCursor()
 end
 
 function M.createGitHubPr()
-	local branchName = vim.trim(vim.system({ "git", "branch", "--show-current" }):wait().stdout)
+	local branchName = u.syncShellCmd { "git", "branch", "--show-current" }
 	local repo = getGithubRepo()
 	if not repo then return end
 	local prUrl = ("https://github.com/%s/pull/new/%s"):format(repo, branchName)

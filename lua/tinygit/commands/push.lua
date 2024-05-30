@@ -41,15 +41,11 @@ function M.push(userOpts, calledByUser)
 	-- GUARD
 	if u.notInGitRepo() then return end
 	if config.preventPushingFixupOrSquashCommits then
-		local fixupOrSquashCommits = vim.trim(
-			vim.system({ "git", "log", "--oneline", "--grep=^fixup!", "--grep=^squash!" }):wait().stdout
-		)
+		local fixupOrSquashCommits =
+			u.syncShellCmd { "git", "log", "--oneline", "--grep=^fixup!", "--grep=^squash!" }
 		if fixupOrSquashCommits ~= "" then
-			u.notify(
-				"Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits,
-				"warn",
-				"Push"
-			)
+			local msg = "Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits
+			u.notify(msg, "warn", "Push")
 			return
 		end
 	end
