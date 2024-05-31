@@ -11,12 +11,12 @@ function M.notify(body, level, title, extraOpts)
 	local notifyTitle = title and pluginName .. ": " .. title or pluginName
 	local notifyLevel = level and vim.log.levels[level:upper()] or vim.log.levels.INFO
 
-	---for some edge cases like pre-commit-hooks that add colored output, it is
-	---still necessary to remove the ansi escapes from the output
+	-- for some edge cases like pre-commit-hooks that add colored output, it is
+	-- still necessary to remove the ansi escapes from the output
 	body = vim.trim(body
 		:gsub("%[[%w;]-m", "") -- colors codes like \033[1;34m or \033[0m
 		:gsub("%[K", "") -- special keycodes
-		:gsub("%^%[%[?K", ""))
+		:gsub(vim.pesc("^[[K"), ""))
 
 	local baseOpts = { title = notifyTitle }
 	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
