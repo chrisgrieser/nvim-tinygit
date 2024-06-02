@@ -164,7 +164,7 @@ function M.issuesAndPrs(userOpts)
 	vim.ui.select(issues, {
 		prompt = (" Select %s (%s)"):format(type, opts.state),
 		kind = "tinygit.githubIssue",
-		format_item = function(issue) return issueListFormatter(issue) end,
+		format_item = issueListFormatter,
 	}, function(choice)
 		vim.api.nvim_del_autocmd(autocmdId)
 		if not choice then return end

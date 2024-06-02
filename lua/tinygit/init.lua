@@ -26,7 +26,7 @@ function M.amendOnlyMsg(userOpts)
 	require("tinygit.commands.commit-and-amend").amendOnlyMsg(userOpts or {})
 end
 
----@param userOpts? table
+---@param userOpts? { pushIfClean?: boolean }
 function M.smartCommit(userOpts)
 	require("tinygit.commands.commit-and-amend").smartCommit(userOpts or {})
 end
@@ -41,7 +41,7 @@ end
 ---@param justRepo any -- don't link to file with a specific commit, just link to repo
 function M.githubUrl(justRepo) require("tinygit.commands.github").githubUrl(justRepo) end
 
----@param userOpts? table
+---@param userOpts? { state?: string, type?: string }
 function M.issuesAndPrs(userOpts) require("tinygit.commands.github").issuesAndPrs(userOpts or {}) end
 
 function M.openIssueUnderCursor() require("tinygit.commands.github").openIssueUnderCursor() end
