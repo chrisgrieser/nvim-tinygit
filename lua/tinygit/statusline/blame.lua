@@ -19,13 +19,14 @@ local function getBlame(bufnr)
 	if vim.api.nvim_get_option_value("buftype", { buf = bufnr }) ~= "" then return "" end
 
 	local bufPath = vim.api.nvim_buf_get_name(bufnr)
-	local gitLogCmd = { "git", "log", "--format=%H\t%an\t%cr\t%s", "--", bufPath }
+	local gitLogCmd = { "git", "log", "--max-count=1", "--format=%H\t%an\t%cr\t%s", "--", bufPath }
 	local gitLogResult = vim.system(gitLogCmd):wait()
 
 	-- GUARD git log output
-	if vim.trim(gitLogResult.stdout) == "" or gitLogResult.code ~= 0 then return "" end
+	local stdout = vim.trim(gitLogResult.stdout)
+	if stdout == "" or gitLogResult.code ~= 0 then return "" end
 
-	local hash, author, relDate, msg = unpack(vim.split(vim.trim(gitLogResult.stdout), "\t"))
+	local hash, author, relDate, msg = unpack(vim.split(stdout, "\t"))
 	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
 
 	-- GUARD shallow and on first commit
