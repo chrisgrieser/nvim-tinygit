@@ -84,13 +84,12 @@ local function showDiff(commitIdx, type)
 	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
 		table.remove(diffLines, 1)
 	end
-	table.insert(diffLines, 1, "") -- empty line for extmark
 
 	-- remove diff signs and remember line numbers
 	local diffAddLines = {}
 	local diffDelLines = {}
 	local diffHunkHeaderLines = {}
-	for i = 1, #diffLines, 1 do
+	for i = 1, #diffLines do
 		local line = diffLines[i]
 		if line:find("^%+") then
 			table.insert(diffAddLines, i - 1)
@@ -110,10 +109,11 @@ local function showDiff(commitIdx, type)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	a.nvim_set_option_value("modifiable", false, { buf = bufnr })
 
-	-- open new win for the buff
+	-- open new win for the buf
+	local footerText = "<[S-]Tab>: prev/next commit  q: close  yh: yank hash"
+	if type == "file" then footerText = footerText .. "  n/N: next/prev occurrence" end
 	local width = math.min(config.diffPopup.width, 0.99)
 	local height = math.min(config.diffPopup.height, 0.99)
-
 	local winnr = a.nvim_open_win(bufnr, true, {
 		relative = "win",
 		-- center of current win
@@ -125,6 +125,7 @@ local function showDiff(commitIdx, type)
 		title_pos = "center",
 		border = config.diffPopup.border,
 		style = "minimal",
+		footer = { { " " .. footerText .. " ", "Comment" } },
 		zindex = 1, -- below nvim-notify floats
 	})
 
@@ -157,14 +158,6 @@ local function showDiff(commitIdx, type)
 		-- (pcall to prevent error when query cannot found, due to non-equivalent
 		-- case-sensitivity with git, because of git-regex, or due to file renamings)
 	end
-
-	-- info message as extmark for the keymaps
-	local infotext = "<[S-]Tab>: prev/next commit   q: close   yh: yank hash"
-	if type == "file" then infotext = infotext .. "   n/N: next/prev occurrence" end
-	a.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
-		virt_text = { { infotext, "DiagnosticVirtualTextInfo" } },
-		virt_text_win_col = 0,
-	})
 
 	-- keymaps: closing
 	local keymap = vim.keymap.set
