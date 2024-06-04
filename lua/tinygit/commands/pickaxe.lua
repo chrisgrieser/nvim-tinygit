@@ -13,7 +13,7 @@ local selectCommit = require("tinygit.shared.select-commit")
 ---@field absPath string
 ---@field query string search query pickaxed for
 ---@field ft string
-local state = {hashList = {}, absPath = "", query = "", ft = ""}
+local state = { hashList = {}, absPath = "", query = "", ft = "" }
 
 ---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
 ---@return boolean -- whether the repo is shallow
@@ -43,8 +43,9 @@ local function showDiff(commitIdx, type)
 	local hashList = state.hashList
 	local hash = hashList[commitIdx]
 	local query = state.query
-	local date = u.syncShellCmd { "git", "log", "-n1", "--format=%cr", hash }
-	local shortMsg = u.syncShellCmd({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50)
+	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%cr", hash }
+	local shortMsg =
+		u.syncShellCmd({ "git", "log", "--max-count=1", "--format=%s", hash }):sub(1, 50)
 
 	-- determine filename in case of renaming
 	local filenameInPresent = state.absPath
@@ -71,7 +72,7 @@ local function showDiff(commitIdx, type)
 	elseif type == "function" then
 		diffCmd = vim.list_extend(
 			diffCmd,
-			{ "log", "--format=", "-n1", ("-L:%s:%s"):format(query, nameAtCommit) }
+			{ "log", "--format=", "--max-count=1", ("-L:%s:%s"):format(query, nameAtCommit) }
 		)
 	end
 	local diffResult = vim.system(diffCmd):wait()
@@ -130,7 +131,6 @@ local function showDiff(commitIdx, type)
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
 	a.nvim_set_option_value("filetype", state.ft, { buf = bufnr })
-
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
 	end
@@ -145,8 +145,9 @@ local function showDiff(commitIdx, type)
 	if query ~= "" and type == "file" then
 		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 
-		vim.opt_local.ignorecase = true -- consistent with `--regexp-ignore-case`
-		vim.opt_local.smartcase = false
+		-- consistent with git's `--regexp-ignore-case`
+		a.nvim_set_option_value("ignorecase", true, { buf = bufnr })
+		a.nvim_set_option_value("smartcase", false, { buf = bufnr })
 
 		vim.fn.setreg("/", query) -- so `n` searches directly
 		pcall(vim.cmd.normal, { "n", bang = true }) -- move to first match
@@ -168,7 +169,6 @@ local function showDiff(commitIdx, type)
 	-- buffer when user closes popup in a different way, such as `:close`.
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = bufnr,
-		once = true,
 		callback = closePopup,
 	})
 
@@ -235,13 +235,13 @@ local function selectFromCommits(commitList, type)
 		commits = vim.split(commitList, "\n")
 	end
 
-	-- save data
+	-- save state
 	state.hashList = vim.tbl_map(function(commitLine)
 		local hash = vim.split(commitLine, "\t")[1]
 		return hash
 	end, commits)
 
-	-- select
+	-- select commit
 	local autocmdId = selectCommit.setupAppearance()
 	local searchMode = state.query == "" and basename(state.absPath) or state.query
 	vim.ui.select(commits, {
@@ -250,8 +250,7 @@ local function selectFromCommits(commitList, type)
 		kind = "tinygit.pickaxeDiff",
 	}, function(_, commitIdx)
 		a.nvim_del_autocmd(autocmdId)
-		if not commitIdx then return end -- aborted selection
-		showDiff(commitIdx, type)
+		if commitIdx then showDiff(commitIdx, type) end
 	end)
 end
 
@@ -331,44 +330,45 @@ function M.functionHistory()
 		end
 	end
 
-	if lspWithSymbolSupport then
-		-- 1. query LSP for symbols,
-		-- 2. filter by kind "function"/"method", prompt to select a name,
-		-- 3. prompt to select a commit that changed that function/method
-		vim.lsp.buf.document_symbol {
-			on_list = function(response)
-				local funcsObjs = vim.tbl_filter(
-					function(item) return item.kind == "Function" or item.kind == "Method" end,
-					response.items
-				)
-				if #funcsObjs == 0 then
-					local client = vim.lsp.get_client_by_id(response.context.client_id)
-					u.notify(("LSP (%s) could not find any functions."):format(client), "warn")
-				end
-
-				local funcNames = vim.tbl_map(function(item)
-					if item.kind == "Function" then
-						return item.text:gsub("^%[Function%] ", "")
-					elseif item.kind == "Method" then
-						return item.text:match("%[Method%]%s+([^%(]+)")
-					end
-				end, funcsObjs)
-				vim.ui.select(
-					funcNames,
-					{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
-					function(funcname)
-						state.query = funcname
-						selectFromFunctionHistory(funcname)
-					end
-				)
-			end,
-		}
-	else
+	if not lspWithSymbolSupport then
 		vim.ui.input({ prompt = "󰊢 Search History of Function named:" }, function(funcname)
 			state.query = funcname
 			selectFromFunctionHistory(funcname)
 		end)
+		return
 	end
+
+	vim.lsp.buf.document_symbol {
+		on_list = function(response)
+			-- filter by kind "function"/"method", prompt to select a name,
+			local funcsObjs = vim.tbl_filter(
+				function(item) return item.kind == "Function" or item.kind == "Method" end,
+				response.items
+			)
+			if #funcsObjs == 0 then
+				local client = vim.lsp.get_client_by_id(response.context.client_id)
+				u.notify(("LSP (%s) could not find any functions."):format(client), "warn")
+			end
+
+			local funcNames = vim.tbl_map(function(item)
+				if item.kind == "Function" then
+					return item.text:gsub("^%[Function%] ", "")
+				elseif item.kind == "Method" then
+					return item.text:match("%[Method%]%s+([^%(]+)")
+				end
+			end, funcsObjs)
+
+			-- prompt to select a commit that changed that function/method
+			vim.ui.select(
+				funcNames,
+				{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
+				function(funcname)
+					state.query = funcname
+					selectFromFunctionHistory(funcname)
+				end
+			)
+		end,
+	}
 end
 
 --------------------------------------------------------------------------------

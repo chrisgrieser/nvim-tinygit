@@ -175,7 +175,7 @@ local function showCommitPreview()
 
 	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
 	-- INFO max_width can be number, nil, or function, see https://github.com/chrisgrieser/nvim-tinygit/issues/6#issuecomment-1999537606
-	local _, notifyConfig = notifyNvim.instance()
+	local _, notifyConfig = notifyNvim.instance() ---@diagnostic disable-line: missing-parameter
 	local width = 50
 	if notifyConfig and notifyConfig.max_width then
 		local max_width = type(notifyConfig.max_width) == "number" and notifyConfig.max_width
@@ -222,7 +222,7 @@ end
 local function closeCommitPreview()
 	if package.loaded["notify"] and config.commitPreview then
 		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
-		require("notify").dismiss()
+		require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
 	end
 end
 
@@ -351,7 +351,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	if not opts then opts = {} end
 
 	if not msgNeedsFixing then
-		local lastCommitMsg = u.syncShellCmd { "git", "log", "-n1", "--pretty=%s" }
+		local lastCommitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--pretty=%s" }
 		msgNeedsFixing = lastCommitMsg
 	end
 
