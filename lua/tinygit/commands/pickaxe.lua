@@ -96,8 +96,10 @@ local function showDiff(commitIdx, type)
 		elseif line:find("^%-") then
 			table.insert(diffDelLines, lnum)
 		elseif line:find("^@@") then
+			-- remove preproc info and inject it alter as inline text,
+			-- as keeping in the text breaks filetype-highlighting
 			local preprocInfo, cleanLine = line:match("^(@@.-@@)(.*)")
-			diffLines[i] = cleanLine -- remove preproc info, breaks ft highlighting
+			diffLines[i] = cleanLine
 			diffHunkHeaderLines[lnum] = preprocInfo
 		end
 		diffLines[i] = diffLines[i]:sub(2)
@@ -151,8 +153,8 @@ local function showDiff(commitIdx, type)
 		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 
 		-- consistent with git's `--regexp-ignore-case`
-		a.nvim_set_option_value("ignorecase", true, { buf = bufnr })
-		a.nvim_set_option_value("smartcase", false, { buf = bufnr })
+		a.nvim_set_option_value("ignorecase", true, { win = winnr })
+		a.nvim_set_option_value("smartcase", false, { win = winnr })
 
 		vim.fn.setreg("/", query) -- so `n` searches directly
 		pcall(vim.cmd.normal, { "n", bang = true }) -- move to first match
