@@ -138,8 +138,7 @@ local function showDiff(commitIdx, type)
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
 	end
 	for _, ln in pairs(diffHunkHeaderLines) do
-		a.nvim_buf_add_highlight(bufnr, ns, "PreProcLine", ln, 0, -1)
-		vim.api.nvim_set_hl(0, "PreProcLine", { underline = true })
+		a.nvim_buf_add_highlight(bufnr, ns, "DiffText", ln, 0, -1)
 	end
 
 	-- search for the query
