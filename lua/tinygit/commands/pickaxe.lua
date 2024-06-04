@@ -90,14 +90,15 @@ local function showDiff(commitIdx, type)
 	local diffHunkHeaderLines = {}
 	for i = 1, #diffLines do
 		local line = diffLines[i]
+		local lnum = i - 1
 		if line:find("^%+") then
-			table.insert(diffAddLines, i - 1)
+			table.insert(diffAddLines, lnum)
 		elseif line:find("^%-") then
-			table.insert(diffDelLines, i - 1)
+			table.insert(diffDelLines, lnum)
 		elseif line:find("^@@") then
-			table.insert(diffHunkHeaderLines, i - 1)
-			-- removing preproc info, since it breaks ft highlighting
-			diffLines[i] = line:gsub("@@.-@@", "")
+			local preprocInfo, cleanLine = line:match("^(@@.-@@)(.*)")
+			diffLines[i] = cleanLine -- remove preproc info, breaks ft highlighting
+			diffHunkHeaderLines[lnum] = preprocInfo
 		end
 		diffLines[i] = diffLines[i]:sub(2)
 	end
@@ -129,7 +130,7 @@ local function showDiff(commitIdx, type)
 	})
 
 	-- Highlighting
-	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
+	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
 	a.nvim_set_option_value("filetype", state.ft, { buf = bufnr })
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
@@ -137,8 +138,12 @@ local function showDiff(commitIdx, type)
 	for _, ln in pairs(diffDelLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
 	end
-	for _, ln in pairs(diffHunkHeaderLines) do
+	for ln, preprocInfo in pairs(diffHunkHeaderLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffText", ln, 0, -1)
+		a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
+			virt_text = { { preprocInfo .. " ", "DiffText" } },
+			virt_text_pos = "inline",
+		})
 	end
 
 	-- search for the query
@@ -163,7 +168,6 @@ local function showDiff(commitIdx, type)
 		if a.nvim_buf_is_valid(bufnr) then a.nvim_buf_delete(bufnr, { force = true }) end
 	end
 	keymap("n", "q", closePopup, opts)
-	keymap("n", "<Esc>", closePopup, opts)
 
 	-- also close the popup on leaving buffer, ensures there is not leftover
 	-- buffer when user closes popup in a different way, such as `:close`.
