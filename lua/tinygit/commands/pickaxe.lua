@@ -8,14 +8,12 @@ local config = require("tinygit.config").config.historySearch
 local selectCommit = require("tinygit.shared.select-commit")
 --------------------------------------------------------------------------------
 
----@class currentRun
+---@class (exact) pickaxeState
 ---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field absPath string
 ---@field query string search query pickaxed for
-
----saves metadata for the current operation
----@type currentRun
-local currentRun = { hashList = {}, absPath = "", query = "" }
+---@field ft string
+local state = {hashList = {}, absPath = "", query = "", ft = ""}
 
 ---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
 ---@return boolean -- whether the repo is shallow
@@ -42,14 +40,14 @@ end
 ---@param type "file"|"function"
 local function showDiff(commitIdx, type)
 	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
-	local hashList = currentRun.hashList
+	local hashList = state.hashList
 	local hash = hashList[commitIdx]
-	local query = currentRun.query
+	local query = state.query
 	local date = u.syncShellCmd { "git", "log", "-n1", "--format=%cr", hash }
 	local shortMsg = u.syncShellCmd({ "git", "log", "-n1", "--format=%s", hash }):sub(1, 50)
 
 	-- determine filename in case of renaming
-	local filenameInPresent = currentRun.absPath
+	local filenameInPresent = state.absPath
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	local logCmd = {
 		"git",
@@ -131,9 +129,7 @@ local function showDiff(commitIdx, type)
 
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that would remove filetype-specific highlighting
-	local ft = vim.filetype.match { buf = bufnr }
-	if ft == nil then ft = "diff" end -- fallback to diff if not ft can be determined
-	a.nvim_set_option_value("filetype", ft, { buf = bufnr })
+	a.nvim_set_option_value("filetype", state.ft, { buf = bufnr })
 
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
@@ -211,7 +207,7 @@ local function selectFromCommits(commitList, type)
 	-- GUARD
 	commitList = vim.trim(commitList or "")
 	if commitList == "" then
-		u.notify(("No commits found where %q was changed."):format(currentRun.query))
+		u.notify(("No commits found where %q was changed."):format(state.query))
 		return
 	end
 
@@ -227,7 +223,7 @@ local function selectFromCommits(commitList, type)
 			local commitLine = oneCommitPer3Lines[i]
 			local nameAtCommit = basename(oneCommitPer3Lines[i + 2])
 			-- append name at commit only when it is not the same name as in the present
-			if basename(currentRun.absPath) ~= nameAtCommit then
+			if basename(state.absPath) ~= nameAtCommit then
 				-- tab-separated for consistently with `--format` output
 				commitLine = commitLine .. "\t" .. nameAtCommit
 			end
@@ -241,14 +237,14 @@ local function selectFromCommits(commitList, type)
 	end
 
 	-- save data
-	currentRun.hashList = vim.tbl_map(function(commitLine)
+	state.hashList = vim.tbl_map(function(commitLine)
 		local hash = vim.split(commitLine, "\t")[1]
 		return hash
 	end, commits)
 
 	-- select
 	local autocmdId = selectCommit.setupAppearance()
-	local searchMode = currentRun.query == "" and basename(currentRun.absPath) or currentRun.query
+	local searchMode = state.query == "" and basename(state.absPath) or state.query
 	vim.ui.select(commits, {
 		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
 		format_item = selectCommit.selectorFormatter,
@@ -264,11 +260,12 @@ end
 
 function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
-	currentRun.absPath = a.nvim_buf_get_name(0)
+	state.absPath = a.nvim_buf_get_name(0)
+	state.ft = vim.bo.filetype
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
-		currentRun.query = query
+		state.query = query
 		-- without argument, search all commits that touched the current file
 		local args = query == ""
 				and {
@@ -278,7 +275,7 @@ function M.searchFileHistory()
 					"--follow", -- follow file renamings
 					"--name-only", -- add filenames to display renamed files
 					"--",
-					currentRun.absPath,
+					state.absPath,
 				}
 			or {
 				"git",
@@ -289,7 +286,7 @@ function M.searchFileHistory()
 				"--follow", -- follow file renamings
 				"--name-only", -- add filenames to display renamed files
 				"--",
-				currentRun.absPath,
+				state.absPath,
 			}
 		local result = vim.system(args):wait()
 		if u.nonZeroExit(result) then return end
@@ -307,7 +304,7 @@ function M.functionHistory()
 			"git",
 			"log",
 			"--format=" .. selectCommit.gitlogFormat,
-			("-L:%s:%s"):format(funcname, currentRun.absPath),
+			("-L:%s:%s"):format(funcname, state.absPath),
 			"--no-patch",
 		}):wait()
 		if u.nonZeroExit(result) then return end
@@ -321,7 +318,8 @@ function M.functionHistory()
 		return
 	end
 
-	currentRun.absPath = a.nvim_buf_get_name(0)
+	state.absPath = a.nvim_buf_get_name(0)
+	state.ft = vim.bo.filetype
 
 	-- TODO figure out how to query treesitter for function names, and use
 	-- treesitter instead?
@@ -360,7 +358,7 @@ function M.functionHistory()
 					funcNames,
 					{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
 					function(funcname)
-						currentRun.query = funcname
+						state.query = funcname
 						selectFromFunctionHistory(funcname)
 					end
 				)
@@ -368,7 +366,7 @@ function M.functionHistory()
 		}
 	else
 		vim.ui.input({ prompt = "󰊢 Search History of Function named:" }, function(funcname)
-			currentRun.query = funcname
+			state.query = funcname
 			selectFromFunctionHistory(funcname)
 		end)
 	end
