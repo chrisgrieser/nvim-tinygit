@@ -17,9 +17,7 @@ function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig) e
 --------------------------------------------------------------------------------
 -- COMMIT
 ---@param userOpts? { forcePushIfDiverged?: boolean }
-function M.amendNoEdit(userOpts)
-	require("tinygit.commands.commit-and-amend").amendNoEdit(userOpts)
-end
+function M.amendNoEdit(userOpts) require("tinygit.commands.commit-and-amend").amendNoEdit(userOpts) end
 
 ---@param userOpts? { forcePushIfDiverged?: boolean }
 function M.amendOnlyMsg(userOpts)
@@ -27,14 +25,10 @@ function M.amendOnlyMsg(userOpts)
 end
 
 ---@param userOpts? { pushIfClean?: boolean }
-function M.smartCommit(userOpts)
-	require("tinygit.commands.commit-and-amend").smartCommit(userOpts)
-end
+function M.smartCommit(userOpts) require("tinygit.commands.commit-and-amend").smartCommit(userOpts) end
 
 ---@param userOpts? { selectFromLastXCommits?: number, squashInstead?: boolean, autoRebase?: boolean }
-function M.fixupCommit(userOpts)
-	require("tinygit.commands.commit-and-amend").fixupCommit(userOpts)
-end
+function M.fixupCommit(userOpts) require("tinygit.commands.commit-and-amend").fixupCommit(userOpts) end
 
 --------------------------------------------------------------------------------
 -- GITHUB
