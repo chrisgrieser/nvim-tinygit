@@ -1,7 +1,7 @@
 local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.commitMsg
-local push = require("tinygit.commands.push").push
+local push = require("tinygit.commands.push-pull").push
 
 local M = {}
 local fn = vim.fn
