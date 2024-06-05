@@ -5,10 +5,10 @@ local config = require("tinygit.config").config.push
 local createGitHubPr = require("tinygit.commands.github").createGitHubPr
 --------------------------------------------------------------------------------
 
----@param userOpts { pullBefore: boolean, forceWithLease: boolean, createGitHubPr?: boolean }
-local function pushCmd(userOpts)
+---@param opts { pullBefore?: boolean|nil, forceWithLease?: boolean, createGitHubPr?: boolean }
+local function pushCmd(opts)
 	local cmd = { "git", "push" }
-	if userOpts.forceWithLease then table.insert(cmd, "--force-with-lease") end
+	if opts.forceWithLease then table.insert(cmd, "--force-with-lease") end
 
 	vim.system(
 		cmd,
@@ -27,17 +27,16 @@ local function pushCmd(userOpts)
 			end
 
 			-- post-push actions
-			if userOpts.createGitHubPr then createGitHubPr() end
+			if opts.createGitHubPr then createGitHubPr() end
 			u.updateStatuslineComponents()
 		end)
 	)
 end
 --------------------------------------------------------------------------------
 
--- pull before to avoid conflicts
----@param userOpts { pullBefore: boolean, forceWithLease: boolean, createGitHubPr?: boolean }
+---@param opts? { pullBefore?: boolean, forceWithLease?: boolean, createGitHubPr?: boolean }
 ---@param calledByUser? boolean
-function M.push(userOpts, calledByUser)
+function M.push(opts, calledByUser)
 	-- GUARD
 	if u.notInGitRepo() then return end
 	if config.preventPushingFixupOrSquashCommits then
@@ -49,17 +48,18 @@ function M.push(userOpts, calledByUser)
 			return
 		end
 	end
+	if not opts then opts = {} end
 
 	-- extra notification when called by user
 	if calledByUser then
-		local title = userOpts.forceWithLease and "Force Push" or "Push"
-		if userOpts.pullBefore then title = "Pull & " .. title end
+		local title = opts.forceWithLease and "Force Push" or "Push"
+		if opts.pullBefore then title = "Pull & " .. title end
 		u.notify(title .. "…", "info")
 	end
 
 	-- Only Push
-	if not userOpts.pullBefore then
-		pushCmd(userOpts)
+	if not opts.pullBefore then
+		pushCmd(opts)
 		return
 	end
 
@@ -83,7 +83,7 @@ function M.push(userOpts, calledByUser)
 			vim.cmd.checktime()
 
 			-- only push if pull was successful
-			if result.code == 0 then pushCmd(userOpts) end
+			if result.code == 0 then pushCmd(opts) end
 		end)
 	)
 end

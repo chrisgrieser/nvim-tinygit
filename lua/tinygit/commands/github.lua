@@ -120,15 +120,14 @@ end
 
 ---Choose a GitHub issue/PR from the current repo to open in the browser.
 ---CAVEAT Due to GitHub API limitations, only the last 100 issues are shown.
----@param userOpts { state?: string, type?: string }
-function M.issuesAndPrs(userOpts)
+---@param opts? { state?: string, type?: string }
+function M.issuesAndPrs(opts)
 	if u.notInGitRepo() then return end
-
 	local defaultOpts = {
 		state = "all",
 		type = "all",
 	}
-	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts)
+	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	local repo = getGithubRepo()
 	if not repo then return end

@@ -113,9 +113,9 @@ local defaultConfig = {
 
 M.config = defaultConfig -- in case user does not call `setup`
 
----@param userConfig pluginConfig
+---@param userConfig? pluginConfig
 function M.setupPlugin(userConfig)
-	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig)
+	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig or {})
 end
 
 --------------------------------------------------------------------------------

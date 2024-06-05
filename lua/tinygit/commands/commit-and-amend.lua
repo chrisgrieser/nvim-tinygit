@@ -347,7 +347,6 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 		u.notify("Aborting: There are staged changes.", "warn", "Amend Only Msg")
 		return
 	end
-
 	if not opts then opts = {} end
 
 	if not msgNeedsFixing then
@@ -384,17 +383,16 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	)
 end
 
----@param userOpts { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
-function M.fixupCommit(userOpts)
+---@param opts? { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
+function M.fixupCommit(opts)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
-
 	local defaultOpts = {
 		selectFromLastXCommits = 15,
 		squashInstead = false,
 		autoRebase = false,
 	}
-	local opts = vim.tbl_deep_extend("force", defaultOpts, userOpts or {})
+	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	-- get commits
 	local result = vim.system({
