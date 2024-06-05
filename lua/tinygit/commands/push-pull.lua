@@ -69,11 +69,12 @@ function M.push(opts, calledByUser)
 		{ detach = true, text = true },
 		vim.schedule_wrap(function(result)
 			-- Git messaging is weird and sometimes puts normal messages into
-			-- stderr. Thus we print all messages and silence some of them.
+			-- stderr, thus we need to merge stdout and stderr.
 			local out = (result.stdout or "") .. (result.stderr or "")
+
 			local silenceMsg = out:find("Current branch .* is up to date")
 				or out:find("Already up to date")
-				or out:find("Successfully rebased and updated refs/heads/")
+				or out:find("Successfully rebased and updated")
 			if not silenceMsg then
 				local severity = result.code == 0 and "info" or "error"
 				u.notify(out, severity, "Pull")
