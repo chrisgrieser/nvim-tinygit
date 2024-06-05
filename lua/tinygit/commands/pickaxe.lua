@@ -134,6 +134,11 @@ local function showDiff(commitIdx, type)
 	-- Highlighting
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
 	a.nvim_set_option_value("filetype", state.ft, { buf = bufnr })
+
+	-- some LSPs attach to the buffer
+	vim.diagnostic.enable(false, { buf = bufnr })
+	vim.diagnostic.reset()
+
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
 	end
