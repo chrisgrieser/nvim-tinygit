@@ -149,13 +149,14 @@ local function showDiff(commitIdx, type)
 	end
 
 	-- search for the query
+	local ignoreCaseBefore = vim.o.ignorecase
+	local smartCaseBefore = vim.o.smartcase
 	if query ~= "" and type == "file" then
-		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
-
 		-- consistent with git's `--regexp-ignore-case`
-		a.nvim_set_option_value("ignorecase", true, { win = winnr })
-		a.nvim_set_option_value("smartcase", false, { win = winnr })
+		vim.o.ignorecase = true
+		vim.o.smartcase = false
 
+		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 		vim.fn.setreg("/", query) -- so `n` searches directly
 		pcall(vim.cmd.normal, { "n", bang = true }) -- move to first match
 		-- (pcall to prevent error when query cannot found, due to non-equivalent
@@ -168,6 +169,8 @@ local function showDiff(commitIdx, type)
 	local function closePopup()
 		if a.nvim_win_is_valid(winnr) then a.nvim_win_close(winnr, true) end
 		if a.nvim_buf_is_valid(bufnr) then a.nvim_buf_delete(bufnr, { force = true }) end
+		vim.o.ignorecase = ignoreCaseBefore
+		vim.o.smartcase = smartCaseBefore
 	end
 	keymap("n", "q", closePopup, opts)
 
