@@ -137,7 +137,7 @@ local function showDiff(commitIdx, type)
 
 	-- some LSPs attach to the buffer
 	vim.diagnostic.enable(false, { buf = bufnr })
-	vim.diagnostic.reset()
+	vim.diagnostic.reset(ns, bufnr)
 
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
