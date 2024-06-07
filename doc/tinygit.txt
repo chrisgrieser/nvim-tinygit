@@ -57,19 +57,8 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
 - Highlighting improvements for interactive **rebasing** when using nvim as sequence
     editor.
 
-  -----------------------------------------------------------------------
-  Commit Message Input                 Commit Notification
-  ------------------------------------ ----------------------------------
-                                       
 
-  -----------------------------------------------------------------------
-  -----------------------------------------------------------------------
-  Select From Commit History (“git     File History Diff Popup
-  pickaxe”)                            
-  ------------------------------------ ----------------------------------
-                                       
 
-  -----------------------------------------------------------------------
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
 
