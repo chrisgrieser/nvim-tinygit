@@ -62,6 +62,9 @@ end
 
 ---@param commitType? "smartCommit"
 local function setupInputField(commitType)
+	local commitMaxLen = 72 -- hard git limit
+	local commitOverflowLen = 50 -- limit used by treesitter gitcommit parser
+
 	-- CUSTOM HIGHLIGHTING
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = "DressingInput",
@@ -69,9 +72,6 @@ local function setupInputField(commitType)
 		callback = function(ctx)
 			local ns = vim.api.nvim_create_namespace("tinygit.inputField")
 			vim.api.nvim_win_set_hl_ns(0, ns)
-
-			local commitMaxLen = 72 -- hard git limit
-			local commitOverflowLen = 50 -- limit set by treesitter gitcommit parser
 
 			-- INFO the order the highlights are added matters, later has priority
 			fn.matchadd("issueNumber", [[#\d\+]])
@@ -132,18 +132,28 @@ local function setupInputField(commitType)
 		})
 	end
 
-	vim.api.nvim_create_autocmd("WinClosed", {
+	-- UPDATE INPUT FOOTER TEXT WITH MESSAGE LENGTH
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = "DressingInput",
+		once = true, -- do not affect other DressingInputs
 		callback = function(ctx)
-			local ft = vim.api.nvim_get_option_value("filetype", { buf = ctx.buf })
-			if not (ft == "gitcommit" or ft == "DressingInput") then return end
-
-			abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
-			vim.defer_fn(function() abortedCommitMsg = nil end, 1000 * config.keepAbortedMsgSecs)
-
-			-- Disables this autocmd. Cannot use `once = true`, as things like
-			-- closed notification windows would still trigger it which would false
-			-- trigger and disable this autocmd then.
-			return true
+			local winid = vim.api.nvim_get_current_win()
+			vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+				buffer = ctx.buf,
+				callback = function()
+					local charCount = #vim.api.nvim_get_current_line()
+					local hl = "Comment"
+					if charCount > commitOverflowLen then hl = "WarningMsg" end
+					if charCount > commitMaxLen then hl = "ErrorMsg" end
+					vim.api.nvim_win_set_config(winid, {
+						footer = {
+							{ " " .. charCount, hl },
+							{ ("/%s "):format(commitMaxLen), "Comment" },
+						},
+						footer_pos = "right",
+					})
+				end,
+			})
 		end,
 	})
 end
