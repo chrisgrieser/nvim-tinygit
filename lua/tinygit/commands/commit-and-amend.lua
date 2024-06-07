@@ -96,20 +96,41 @@ local function setupInputField(commitType)
 
 			-- activates styling for statusline plugins (e.g., filename icons)
 			vim.api.nvim_buf_set_name(ctx.buf, "COMMIT_EDITMSG")
+		end,
+	})
 
-			-- spellcheck
-			if config.spellcheck then
+	-- SPELLCHECK
+	if config.spellcheck then
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = "DressingInput",
+			once = true, -- do not affect other DressingInputs
+			callback = function()
 				vim.opt_local.spell = true
 				vim.opt_local.spelloptions = "camel"
 				vim.opt_local.spellcapcheck = ""
-			end
-		end,
-	})
+			end,
+		})
+	end
 
 	-- SETUP BRIEFLY SAVING MESSAGE WHEN ABORTING COMMIT
 	-- Only relevant for smartCommit, since amendNoEdit has no commitMsg and
 	-- amendOnlyMsg uses different prefilled message.
-	if commitType ~= "smartCommit" then return end
+	if commitType == "smartCommit" then
+		vim.api.nvim_create_autocmd("WinClosed", {
+			callback = function(ctx)
+				local ft = vim.api.nvim_get_option_value("filetype", { buf = ctx.buf })
+				if not (ft == "gitcommit" or ft == "DressingInput") then return end
+
+				abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
+				vim.defer_fn(function() abortedCommitMsg = nil end, 1000 * config.keepAbortedMsgSecs)
+
+				-- Disables this autocmd. Cannot use `once = true`, as things like
+				-- closed notification windows would still trigger it which would false
+				-- trigger and disable this autocmd then.
+				return true
+			end,
+		})
+	end
 
 	vim.api.nvim_create_autocmd("WinClosed", {
 		callback = function(ctx)
