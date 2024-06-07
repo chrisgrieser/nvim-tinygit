@@ -271,7 +271,7 @@ end
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
 ---@param msgNeedsFixing? string used internally when calling this function recursively due to corrected commit message
----@param opts? { pushIfClean?: boolean }
+---@param opts? { pushIfClean?: boolean, pullBeforePush?: boolean }
 function M.smartCommit(opts, msgNeedsFixing)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
@@ -328,7 +328,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 		postCommitNotif("Smart Commit", doStageAllChanges, processedMsg, extra)
 
 		-- push
-		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = true } end
+		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = opts.pullBeforePush } end
 
 		openReferencedIssue(processedMsg)
 		u.updateStatuslineComponents()

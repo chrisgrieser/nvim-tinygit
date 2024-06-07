@@ -24,7 +24,7 @@ function M.amendOnlyMsg(userOpts)
 	require("tinygit.commands.commit-and-amend").amendOnlyMsg(userOpts)
 end
 
----@param userOpts? { pushIfClean?: boolean }
+---@param userOpts? { pushIfClean?: boolean, pullBeforePush?: boolean }
 function M.smartCommit(userOpts) require("tinygit.commands.commit-and-amend").smartCommit(userOpts) end
 
 ---@param userOpts? { selectFromLastXCommits?: number, squashInstead?: boolean, autoRebase?: boolean }
