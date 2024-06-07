@@ -116,12 +116,13 @@ SMART-COMMIT ~
     fix a detail.
 - Optionally run `git push` if the repo is clean after committing.
 - The title of the input field displays what actions are going to be performed.
-    You can see at glance, whether all changes are going to be committed or whether
+    You can see at glance whether all changes are going to be committed, or whether
     there a `git push` is triggered afterward, so there are no surprises.
-- Currently, only supports the commit subject line (no commit body).
+- Only supports the commit subject line (no commit body).
 
 >lua
-    require("tinygit").smartCommit { pushIfClean = false } -- options default to `false`
+    -- options default to `false`
+    require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = false }
 <
 
 **Example Workflow** Assuming these keybindings:
