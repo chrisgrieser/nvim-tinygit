@@ -346,6 +346,7 @@ function M.functionHistory()
 
 	if not lspWithSymbolSupport then
 		vim.ui.input({ prompt = "󰊢 Search History of Function named:" }, function(funcname)
+			if not funcname then return end -- aborted
 			state.query = funcname
 			selectFromFunctionHistory(funcname)
 		end)
@@ -377,6 +378,7 @@ function M.functionHistory()
 				funcNames,
 				{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
 				function(funcname)
+					if not funcname then return end -- aborted
 					state.query = funcname
 					selectFromFunctionHistory(funcname)
 				end
