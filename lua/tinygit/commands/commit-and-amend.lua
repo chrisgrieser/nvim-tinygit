@@ -82,7 +82,7 @@ local function setupInputField(commitType)
 
 			-- INFO no need to highlight between 50-72, since the treesitter parser
 			-- for gitcommit already does this now
-			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen - 1))
+			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen))
 			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
 
 			-- colorcolumn as extra indicators of overLength
