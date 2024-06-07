@@ -45,13 +45,9 @@ operations.
 - Highlighting improvements for interactive **rebasing** when using nvim as sequence
   editor.
 
-| Commit Message Input   | Commit Notification   |
-|--------------- | -------------- |
-| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/009d9139-f429-49e2-a244-15396fb13d7a" alt="showcase 1">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/de3049b4-68fc-4362-99ff-e8a6e09e1af7" alt="showcase 2">   |
-
-| Select From Commit History ("git pickaxe")   | File History Diff Popup   |
-|--------------- | -------------- |
-| <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/a8a775bf-f7ce-4730-83e3-a91563481d35" alt="showcase 3">   | <img src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/99cc8def-760a-4cdd-9aea-fbd1fb3d1ecb" alt="showcase 4">   |
+<img alt="Showcase" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/f09dba0b-a81e-4973-897a-20605f4c29db">
+<img alt="Showcase" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/34161d44-02eb-4340-a7ea-d18d436b4ab4">
+<img alt="Showcase" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
 
 ## Installation
 At least version 0.10 of nvim is required for this plugin.
