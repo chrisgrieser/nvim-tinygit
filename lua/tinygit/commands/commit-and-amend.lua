@@ -86,7 +86,7 @@ local function setupInputField(commitType)
 			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
 
 			-- colorcolumn as extra indicators of overLength
-			vim.opt_local.colorcolumn = { commitOverflowLen, commitMaxLen }
+			vim.opt_local.colorcolumn = { commitOverflowLen + 1, commitMaxLen + 1 }
 
 			-- treesitter highlighting
 			vim.bo.filetype = "gitcommit"
