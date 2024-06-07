@@ -13,19 +13,30 @@ local selectCommit = require("tinygit.shared.select-commit")
 ---@field absPath string
 ---@field query string search query pickaxed for
 ---@field ft string
-local state = { hashList = {}, absPath = "", query = "", ft = "" }
+---@field unshallowingRunning boolean
+local state = {
+	hashList = {},
+	absPath = "",
+	query = "",
+	ft = "",
+	unshallowingRunning = false,
+}
 
 ---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
 ---@return boolean -- whether the repo is shallow
 local function repoIsShallow()
+	if state.unshallowingRunning then return false end
 	if not u.inShallowRepo() then return false end
 
 	if config.autoUnshallowIfNeeded then
-		u.notify("Auto-Unshallowing repo…", "info", "History Search", {
-			animate = false, -- since unshallowing is blocking
-		})
-		-- delayed, so notification shows up before `vim.system` blocks execution
-		vim.defer_fn(function() vim.system({ "git", "fetch", "--unshallow" }):wait() end, 150)
+		u.notify("Auto-Unshallowing repo…", "info", "History Search")
+		state.unshallowingRunning = true
+
+		-- run async, to allow user input while waiting for the command
+		vim.system({ "git", "fetch", "--unshallow" }, {}, function()
+			state.unshallowingRunning = false
+			u.notify("Auto-Unshallowing done.", "info", "History Search")
+		end)
 		return false
 	else
 		local msg = "Aborting: Repository is shallow.\nRun `git fetch --unshallow`."
@@ -226,9 +237,8 @@ local function selectFromCommits(commitList, type)
 
 	-- INFO due to `git log --name-only`, information on one commit is split across
 	-- three lines (1: info, 2: blank, 3: filename). This loop merges them into one.
-	-- CAVEAT This only compares basenames, file movements are not accounted
-	-- for, however this is for display purposes only, so this caveat is not
-	-- a big issue.
+	-- This only compares basenames, file movements are not accounted
+	-- for, however this is for display purposes only, so this is not a problem.
 	local commits = {}
 	if type == "file" then
 		local oneCommitPer3Lines = vim.split(commitList, "\n")
@@ -277,6 +287,14 @@ function M.searchFileHistory()
 
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
+
+		-- GUARD loop back when unshallowing is still running
+		if state.unshallowingRunning then
+			u.notify("Unshallowing still running. Please wait a moment.", "warn", "History Search")
+			M.searchFileHistory()
+			return
+		end
+
 		state.query = query
 		-- without argument, search all commits that touched the current file
 		local args = query == ""
@@ -347,6 +365,14 @@ function M.functionHistory()
 	if not lspWithSymbolSupport then
 		vim.ui.input({ prompt = "󰊢 Search History of Function named:" }, function(funcname)
 			if not funcname then return end -- aborted
+
+			-- GUARD loop back when unshallowing is still running
+			if state.unshallowingRunning then
+				u.notify("Unshallowing still running. Please wait a moment.", "warn", "History Search")
+				M.functionHistory()
+				return
+			end
+
 			state.query = funcname
 			selectFromFunctionHistory(funcname)
 		end)
@@ -379,6 +405,14 @@ function M.functionHistory()
 				{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
 				function(funcname)
 					if not funcname then return end -- aborted
+
+					-- GUARD loop back when unshallowing is still running
+					if state.unshallowingRunning then
+						u.notify("Unshallowing still running. Please wait.", "warn", "History Search")
+						M.searchFileHistory()
+						return
+					end
+
 					state.query = funcname
 					selectFromFunctionHistory(funcname)
 				end
