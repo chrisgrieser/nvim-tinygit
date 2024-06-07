@@ -236,6 +236,7 @@ local function showCommitPreview()
 	-- send notification
 	u.notify(changes, "info", title, {
 		timeout = false, -- keep shown, remove when input window closed
+		animate = false,
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(bufnr, function()
