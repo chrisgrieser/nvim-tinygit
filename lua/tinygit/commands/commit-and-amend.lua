@@ -270,14 +270,14 @@ end
 
 ---If there are staged changes, commit them.
 ---If there aren't, add all changes (`git add -A`) and then commit.
----@param msgNeedingFixing? string used internally when calling this function recursively due to corrected commit message
+---@param msgNeedsFixing? string used internally when calling this function recursively due to corrected commit message
 ---@param opts? { pushIfClean?: boolean }
-function M.smartCommit(opts, msgNeedingFixing)
+function M.smartCommit(opts, msgNeedsFixing)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
 
 	if not opts then opts = {} end
-	local prefillMsg = msgNeedingFixing or abortedCommitMsg or ""
+	local prefillMsg = msgNeedsFixing or abortedCommitMsg or ""
 
 	local doStageAllChanges = hasNoStagedChanges()
 	-- When committing with no staged changes, all changes are staged, resulting
