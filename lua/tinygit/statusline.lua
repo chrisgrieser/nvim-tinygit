@@ -13,6 +13,12 @@ function M.updateAllComponents()
 	if package.loaded["tinygit.statusline.branch-state"] then
 		require("tinygit.statusline.branch-state").refreshBranchState()
 	end
+
+	-- Needs to be triggered manually, since lualine updates the git diff
+	-- component only on BufEnter.
+	if package.loaded["lualine"] then
+		require("lualine.components.diff.git_diff").update_diff_args()
+	end
 end
 
 --------------------------------------------------------------------------------
