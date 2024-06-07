@@ -238,9 +238,7 @@ local function showCommitPreview()
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(bufnr, function()
-				-- INFO using namespace in here does not work, therefore simply
-				-- using `matchadd`, since it is restricted to the current window anyway
-				fn.matchadd("diffAdded", [[ +\+]]) -- color the plus/minus like in the terminal
+				fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
 				fn.matchadd("diffRemoved", [[-\+\s*$]])
 				fn.matchadd("Keyword", [[(new.*)]])
 				fn.matchadd("Keyword", [[(gone.*)]])
