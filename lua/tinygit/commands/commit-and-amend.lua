@@ -211,7 +211,7 @@ local function showCommitPreview()
 	if notifyConfig and notifyConfig.max_width then
 		local max_width = type(notifyConfig.max_width) == "number" and notifyConfig.max_width
 			or notifyConfig.max_width()
-		width = max_width - 2
+		width = max_width - 3
 	end
 
 	-- get changes
