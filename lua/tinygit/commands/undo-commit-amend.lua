@@ -1,5 +1,6 @@
 local M = {}
 local u = require("tinygit.shared.utils")
+local updateStatusline = require("tinygit.statusline").updateAllComponents
 --------------------------------------------------------------------------------
 
 function M.undoLastCommitOrAmend()
@@ -20,7 +21,7 @@ function M.undoLastCommitOrAmend()
 
 	u.notify(infoText, "info", "Undo Last Commit/Amend")
 	vim.cmd.checktime() -- updates the current buffer
-	u.updateStatuslineComponents()
+	updateStatusline()
 end
 
 --------------------------------------------------------------------------------

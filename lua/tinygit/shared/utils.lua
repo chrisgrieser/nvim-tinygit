@@ -48,15 +48,5 @@ function M.syncShellCmd(cmd)
 	return vim.trim(stdout)
 end
 
-function M.updateStatuslineComponents()
-	-- conditions to avoid unnecessarily loading the module(s)
-	if package.loaded["tinygit.statusline.blame"] then
-		require("tinygit.statusline.blame").refreshBlame()
-	end
-	if package.loaded["tinygit.statusline.branch-state"] then
-		require("tinygit.statusline.branch-state").refreshBranchState()
-	end
-end
-
 --------------------------------------------------------------------------------
 return M

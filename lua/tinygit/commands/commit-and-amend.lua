@@ -2,6 +2,7 @@ local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.commitMsg
 local push = require("tinygit.commands.push-pull").push
+local updateStatusline = require("tinygit.statusline").updateAllComponents
 
 local M = {}
 local fn = vim.fn
@@ -331,7 +332,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = opts.pullBeforePush } end
 
 		openReferencedIssue(processedMsg)
-		u.updateStatuslineComponents()
+		updateStatusline()
 	end)
 end
 
@@ -362,8 +363,7 @@ function M.amendNoEdit(opts)
 		push { forceWithLease = true }
 	end
 	postCommitNotif("Amend-No-Edit", doStageAllChanges, lastCommitMsg, extraInfo)
-
-	u.updateStatuslineComponents()
+	updateStatusline()
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
@@ -407,7 +407,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
 
 			openReferencedIssue(processedMsg)
-			u.updateStatuslineComponents()
+			updateStatusline()
 		end
 	)
 end
@@ -477,7 +477,7 @@ function M.fixupCommit(opts)
 			if u.nonZeroExit(_result) then return end
 			u.notify("Auto-rebase applied.", "info", title .. " Commit")
 		end
-		u.updateStatuslineComponents()
+		updateStatusline()
 	end)
 end
 

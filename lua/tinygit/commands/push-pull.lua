@@ -3,6 +3,7 @@ local M = {}
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.push
 local createGitHubPr = require("tinygit.commands.github").createGitHubPr
+local updateStatusline = require("tinygit.statusline").updateAllComponents
 --------------------------------------------------------------------------------
 
 ---@param opts { pullBefore?: boolean|nil, forceWithLease?: boolean, createGitHubPr?: boolean }
@@ -28,7 +29,7 @@ local function pushCmd(opts)
 
 			-- post-push actions
 			if opts.createGitHubPr then createGitHubPr() end
-			u.updateStatuslineComponents()
+			updateStatusline()
 		end)
 	)
 end
