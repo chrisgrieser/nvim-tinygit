@@ -96,8 +96,8 @@ use {
 - Only supports the commit subject line (no commit body).
 
 ```lua
--- options default to `false`
-require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = false }
+-- values shown are the defaults
+require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = true }
 ```
 
 **Example Workflow**

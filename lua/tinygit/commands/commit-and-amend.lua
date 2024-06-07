@@ -278,7 +278,8 @@ function M.smartCommit(opts, msgNeedsFixing)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
 
-	if not opts then opts = {} end
+	local defaultOpts = { pushIfClean = false, pullBeforePush = true }
+	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 	local prefillMsg = msgNeedsFixing or abortedCommitMsg or ""
 
 	local doStageAllChanges = hasNoStagedChanges()
