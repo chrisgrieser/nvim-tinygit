@@ -143,12 +143,10 @@ local function setupInputField(commitType)
 				buffer = ctx.buf,
 				callback = function()
 					local charCount = #vim.api.nvim_get_current_line()
-					local hl = "Comment"
-					if charCount > commitOverflowLen then hl = "WarningMsg" end
-					if charCount > commitMaxLen then hl = "ErrorMsg" end
+					local highlight = charCount <= commitMaxLen and "Comment" or "ErrorMsg"
 					vim.api.nvim_win_set_config(winid, {
 						footer = {
-							{ " " .. charCount, hl },
+							{ " " .. charCount, highlight },
 							{ ("/%s "):format(commitMaxLen), "Comment" },
 						},
 						footer_pos = "right",
