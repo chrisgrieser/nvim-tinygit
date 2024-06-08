@@ -205,6 +205,16 @@ local function showCommitPreview()
 	local notifyInstalled, notifyNvim = pcall(require, "notify")
 	if not (notifyInstalled and config.commitPreview) then return end
 
+	---@param gitStatsArgs string[]
+	local function cleanupStatsOutput(gitStatsArgs)
+		return u
+			.syncShellCmd(gitStatsArgs)
+			:gsub("\n[^\n]*$", "") -- remove summary line (footer)
+			:gsub(" | ", " │ ") -- pipes to full vertical bars
+			:gsub(" Bin ", "    ") -- binary icon
+	end
+	-----------------------------------------------------------------------------
+
 	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
 	-- INFO max_width can be number, nil, or function, see https://github.com/chrisgrieser/nvim-tinygit/issues/6#issuecomment-1999537606
 	local _, notifyConfig = notifyNvim.instance() ---@diagnostic disable-line: missing-parameter
@@ -216,35 +226,46 @@ local function showCommitPreview()
 	end
 
 	-- get changes
-	local diffStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. tostring(width) }
+	local gitStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. tostring(width) }
+	local title = "Commit Preview"
 	local willStageAllChanges = hasNoStagedChanges()
-	local title
+	local changes
+	local specialWhitespace = " " -- HACK to force nvim-notify to keep the blank line
 	if willStageAllChanges then
-		title = "Stage & Commit Preview"
-		-- so new files show up in the diff stats
+		-- include new files in diff stats
 		vim.system({ "git", "add", "--intent-to-add", "--all" }):wait()
+
+		title = title .. " & Commit Preview"
+		changes = cleanupStatsOutput(gitStatsCmd)
 	else
-		title = "Commit Preview"
-		table.insert(diffStatsCmd, "--staged")
+		local unstagedChanges = cleanupStatsOutput(gitStatsCmd)
+		table.insert(gitStatsCmd, "--staged")
+		local stagedChanges = cleanupStatsOutput(gitStatsCmd)
+		changes = table.concat({
+			stagedChanges,
+			specialWhitespace,
+			"unstaged:",
+			unstagedChanges,
+		}, "\n")
 	end
-	local changes = u
-		.syncShellCmd(diffStatsCmd)
-		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
-		:gsub(" | ", " │ ") -- pipes to full vertical bars
-		:gsub(" Bin ", "    ") -- binary icon
 
 	-- send notification
 	u.notify(changes, "info", title, {
-		timeout = false, -- keep shown, remove when input window closed
+		timeout = false, -- keep shown, only remove when input window closed
 		animate = false,
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(bufnr, function()
 				fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
-				fn.matchadd("diffRemoved", [[-\+\s*$]])
+				fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
 				fn.matchadd("Keyword", [[(new.*)]])
 				fn.matchadd("Keyword", [[(gone.*)]])
 				fn.matchadd("Comment", "│")
+
+				if not willStageAllChanges then
+					-- `\_.` matches any char, including newline
+					fn.matchadd("Comment", specialWhitespace .. [[\_.*]])
+				end
 			end)
 		end,
 	})
