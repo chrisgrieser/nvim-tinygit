@@ -238,11 +238,11 @@ local function showCommitPreview()
 		title = title .. " & Commit Preview"
 		changes = cleanupStatsOutput(gitStatsCmd)
 	else
-		local unstagedChanges = cleanupStatsOutput(gitStatsCmd)
+		local notStaged = cleanupStatsOutput(gitStatsCmd)
 		table.insert(gitStatsCmd, "--staged")
-		local stagedChanges = cleanupStatsOutput(gitStatsCmd)
-		changes = unstagedChanges == "" and stagedChanges
-			or table.concat({ unstagedChanges, specialWhitespace, "unstaged:", stagedChanges }, "\n")
+		local staged = cleanupStatsOutput(gitStatsCmd)
+		changes = notStaged == "" and staged
+			or table.concat({ staged, specialWhitespace, "not staged:", notStaged }, "\n")
 	end
 
 	-- send notification
