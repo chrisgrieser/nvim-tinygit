@@ -142,12 +142,14 @@ local function setupInputField(commitType)
 			vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
 				buffer = ctx.buf,
 				callback = function()
+					local neutralColor = "FloatBorder"
 					local charCount = #vim.api.nvim_get_current_line()
-					local highlight = charCount <= commitMaxLen and "Comment" or "ErrorMsg"
+					local countHighlight = charCount <= commitMaxLen and neutralColor or "ErrorMsg"
 					vim.api.nvim_win_set_config(winid, {
 						footer = {
-							{ " " .. charCount, highlight },
-							{ ("/%s "):format(commitMaxLen), "Comment" },
+							{ " ", neutralColor },
+							{ tostring(charCount), countHighlight },
+							{ ("/%s "):format(commitMaxLen), neutralColor },
 						},
 						footer_pos = "right",
 					})
