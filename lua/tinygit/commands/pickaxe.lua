@@ -138,7 +138,7 @@ local function showDiff(commitIdx, type)
 		title_pos = "center",
 		border = config.diffPopup.border,
 		style = "minimal",
-		footer = { { " " .. footerText .. " ", "Comment" } },
+		footer = { { " " .. footerText .. " ", "FloatBorder" } },
 		zindex = 1, -- below nvim-notify floats
 	})
 
