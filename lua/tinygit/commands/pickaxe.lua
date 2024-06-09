@@ -57,8 +57,8 @@ local function showDiff(commitIdx, type)
 	local hash = hashList[commitIdx]
 	local query = state.query
 	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%cr", hash }
-	local shortCommitMsg =
-		u.syncShellCmd({ "git", "log", "--max-count=1", "--format=%s", hash }):sub(1, 50)
+	local shortCommitMsg = u.syncShellCmd({ "git", "log", "--max-count=1", "--format=%s", hash })
+		:sub(1, 50)
 
 	-- determine filename in case of renaming
 	local filenameInPresent = state.absPath
