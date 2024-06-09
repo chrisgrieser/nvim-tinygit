@@ -22,6 +22,8 @@ local state = {
 	unshallowingRunning = false,
 }
 
+--------------------------------------------------------------------------------
+
 ---if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
 ---@return boolean -- whether the repo is shallow
 local function repoIsShallow()
@@ -55,7 +57,7 @@ local function showDiff(commitIdx, type)
 	local hash = hashList[commitIdx]
 	local query = state.query
 	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%cr", hash }
-	local shortMsg =
+	local shortCommitMsg =
 		u.syncShellCmd({ "git", "log", "--max-count=1", "--format=%s", hash }):sub(1, 50)
 
 	-- determine filename in case of renaming
@@ -122,19 +124,24 @@ local function showDiff(commitIdx, type)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	a.nvim_set_option_value("modifiable", false, { buf = bufnr })
 
+	-- footer
+	local footerText = "q: close   (⇧)↹ : next/prev commit   yh: yank hash"
+	if type == "file" then footerText = footerText .. "   n/N: next/prev occurrence" end
+
 	-- open new win for the buf
-	local footerText = "<[S-]Tab>: prev/next commit  q: close  yh: yank hash"
-	if type == "file" then footerText = footerText .. "  n/N: next/prev occurrence" end
-	local width = math.min(config.diffPopup.width, 0.99)
-	local height = math.min(config.diffPopup.height, 0.99)
+	local width = math.min(config.diffPopup.width, 1)
+	local height = math.min(config.diffPopup.height, 1)
+	local vimWidth = vim.o.columns - 2
+	local vimHeight = vim.o.lines - 2
 	local winnr = a.nvim_open_win(bufnr, true, {
-		relative = "win",
-		-- center of current win
-		width = math.floor(width * a.nvim_win_get_width(0)),
-		height = math.floor(height * a.nvim_win_get_height(0)),
-		row = math.floor((1 - height) * a.nvim_win_get_height(0) / 2),
-		col = math.floor((1 - width) * a.nvim_win_get_width(0) / 2),
-		title = (" %s (%s) "):format(shortMsg, date),
+		-- center of the editor
+		relative = "editor",
+		width = math.floor(width * vimWidth),
+		height = math.floor(height * vimHeight),
+		row = math.floor((1 - height) * vimHeight / 2),
+		col = math.floor((1 - width) * vimWidth / 2),
+
+		title = (" %s (%s) "):format(shortCommitMsg, date),
 		title_pos = "center",
 		border = config.diffPopup.border,
 		style = "minimal",
