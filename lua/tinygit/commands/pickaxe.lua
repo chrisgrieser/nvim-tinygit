@@ -118,17 +118,20 @@ local function showDiff(commitIdx, type)
 		diffLines[i] = diffLines[i]:sub(2)
 	end
 
-	-- create new buf with diff
+	-- BUFFER
 	local bufnr = a.nvim_create_buf(false, true)
 	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	a.nvim_set_option_value("modifiable", false, { buf = bufnr })
+	-- some LSPs attach to the buffer, so we disable diagnostics here
+	vim.diagnostic.enable(false, { buf = bufnr })
+	vim.diagnostic.reset(ns, bufnr)
 
 	-- footer
 	local footerText = "q: close   (⇧)↹ : next/prev commit   yh: yank hash"
 	if type == "file" then footerText = footerText .. "   n/N: next/prev occurrence" end
 
-	-- open new win for the buf
+	-- WINDOW
 	local width = math.min(config.diffPopup.width, 1)
 	local height = math.min(config.diffPopup.height, 1)
 	local vimWidth = vim.o.columns - 2
@@ -149,13 +152,9 @@ local function showDiff(commitIdx, type)
 		zindex = 1, -- below nvim-notify floats
 	})
 
-	-- Highlighting
+	-- HIGHLIGHTING
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
 	a.nvim_set_option_value("filetype", state.ft, { buf = bufnr })
-
-	-- some LSPs attach to the buffer
-	vim.diagnostic.enable(false, { buf = bufnr })
-	vim.diagnostic.reset(ns, bufnr)
 
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
@@ -186,6 +185,7 @@ local function showDiff(commitIdx, type)
 		-- case-sensitivity with git, because of git-regex, or due to file renamings)
 	end
 
+	-- KEYMAPS
 	-- keymaps: closing
 	local keymap = vim.keymap.set
 	local opts = { buffer = bufnr, nowait = true }
