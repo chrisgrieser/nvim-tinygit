@@ -123,9 +123,6 @@ local function showDiff(commitIdx, type)
 	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	a.nvim_set_option_value("modifiable", false, { buf = bufnr })
-	-- some LSPs attach to the buffer, so we disable diagnostics here
-	vim.diagnostic.enable(false, { buf = bufnr })
-	vim.diagnostic.reset(ns, bufnr)
 
 	-- footer
 	local footerText = "q: close   (⇧)↹ : next/prev commit   yh: yank hash"
@@ -154,7 +151,11 @@ local function showDiff(commitIdx, type)
 
 	-- HIGHLIGHTING
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
-	a.nvim_set_option_value("filetype", state.ft, { buf = bufnr })
+	-- prefer only starting treesitter as opposed to setting the buffer filetype,
+	-- as this avoid triggering the filetype plugin, which can sometimes entail
+	-- undesired effects like LSPs attaching
+	local hasTsParser = pcall(vim.treesitter.start, bufnr, state.ft)
+	if not hasTsParser then a.nvim_set_option_value("filetype", state.ft, { buf = bufnr }) end
 
 	for _, ln in pairs(diffAddLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
