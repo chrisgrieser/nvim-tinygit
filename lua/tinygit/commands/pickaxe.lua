@@ -129,17 +129,18 @@ local function showDiff(commitIdx, type)
 	if type == "file" then footerText = footerText .. "   n/N: next/prev occurrence" end
 
 	-- WINDOW
-	local width = math.min(config.diffPopup.width, 1)
-	local height = math.min(config.diffPopup.height, 1)
+	local relWidth = math.min(config.diffPopup.width, 1)
+	local relHeight = math.min(config.diffPopup.height, 1)
 	local vimWidth = vim.o.columns - 2
 	local vimHeight = vim.o.lines - 2
+	local absWidth = math.floor(relWidth * vimWidth)
 	local winnr = a.nvim_open_win(bufnr, true, {
 		-- center of the editor
 		relative = "editor",
-		width = math.floor(width * vimWidth),
-		height = math.floor(height * vimHeight),
-		row = math.floor((1 - height) * vimHeight / 2),
-		col = math.floor((1 - width) * vimWidth / 2),
+		width = absWidth,
+		height = math.floor(relHeight * vimHeight),
+		row = math.floor((1 - relHeight) * vimHeight / 2),
+		col = math.floor((1 - relWidth) * vimWidth / 2),
 
 		title = (" %s (%s) "):format(shortCommitMsg, date),
 		title_pos = "center",
@@ -165,11 +166,26 @@ local function showDiff(commitIdx, type)
 	end
 	for ln, preprocInfo in pairs(diffHunkHeaderLines) do
 		a.nvim_buf_add_highlight(bufnr, ns, "DiffText", ln, 0, -1)
+
+		-- add preproc info
 		a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
 			virt_text = { { preprocInfo .. " ", "DiffText" } },
 			virt_text_pos = "inline",
 		})
+
+		-- separator between hunks
+		if ln > 1 then
+			a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
+				virt_lines = { { { ("═"):rep(absWidth), "FloatBorder" } } },
+				virt_lines_above = true,
+			})
+		end
 	end
+	-- separator below last hunk for clarity
+	a.nvim_buf_set_extmark(bufnr, ns, #diffLines, 0, {
+		virt_lines = { { { ("═"):rep(absWidth), "FloatBorder" } } },
+		virt_lines_above = true,
+	})
 
 	-- search for the query
 	local ignoreCaseBefore = vim.o.ignorecase
