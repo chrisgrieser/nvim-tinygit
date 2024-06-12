@@ -171,16 +171,13 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 
 	u.notify(text, "info", title, {
 		on_open = function(win)
-			local ns = vim.api.nvim_create_namespace("tinygit.commitNotification")
 			local bufnr = vim.api.nvim_win_get_buf(win)
-
-			-- commented info lines
-			local lastLine = vim.api.nvim_buf_line_count(bufnr) - 1
-			if stagedAllChanges then vim.api.nvim_buf_add_highlight(bufnr, ns, "Comment", 1, 0, -1) end
-			if extraInfo then vim.api.nvim_buf_add_highlight(bufnr, ns, "Comment", lastLine, 0, -1) end
 
 			-- commit msg custom highlights
 			vim.api.nvim_buf_call(bufnr, function()
+				if stagedAllChanges then fn.matchadd("Comment", "Staged all changes.") end
+				if extraInfo then fn.matchadd("Comment", extraInfo) end
+
 				-- INFO using namespace in here does not work, therefore simply
 				-- using `matchadd`, since it is restricted to the current window anyway
 				-- INFO the order the highlights are added matters, later has priority
