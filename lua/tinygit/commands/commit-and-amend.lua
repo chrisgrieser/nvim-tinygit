@@ -1,6 +1,5 @@
 local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
-local config = require("tinygit.config").config.commitMsg
 local push = require("tinygit.commands.push-pull").push
 local updateStatusline = require("tinygit.statusline").updateAllComponents
 
@@ -37,6 +36,7 @@ end
 ---@return boolean -- is the commit message valid?
 ---@return string -- the (modified) commit message
 local function processCommitMsg(commitMsg)
+	local config = require("tinygit.config").config.commitMsg
 	commitMsg = vim.trim(commitMsg)
 	local commitMaxLen = 72
 
@@ -63,6 +63,7 @@ end
 
 ---@param commitType? "smartCommit"
 local function setupInputField(commitType)
+	local config = require("tinygit.config").config.commitMsg
 	local commitMaxLen = 72 -- hard git limit
 	local commitOverflowLen = 50 -- limit used by treesitter gitcommit parser
 
@@ -164,8 +165,10 @@ end
 ---@param commitMsg string
 ---@param extraInfo? string extra lines to display
 local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
+	local config = require("tinygit.config").config.commitMsg
+	local stageAllText = "Staged all changes."
 	local lines = { commitMsg }
-	if stagedAllChanges then table.insert(lines, 1, "Staged all changes.") end
+	if stagedAllChanges then table.insert(lines, 1, stageAllText) end
 	if extraInfo then table.insert(lines, extraInfo) end
 	local text = table.concat(lines, "\n")
 
@@ -175,7 +178,7 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 
 			-- commit msg custom highlights
 			vim.api.nvim_buf_call(bufnr, function()
-				if stagedAllChanges then fn.matchadd("Comment", "Staged all changes.") end
+				if stagedAllChanges then fn.matchadd("Comment", stageAllText) end
 				if extraInfo then fn.matchadd("Comment", extraInfo) end
 
 				-- INFO using namespace in here does not work, therefore simply
@@ -185,10 +188,8 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 				fn.matchadd("@markup.raw.markdown_inline", [[`.\{-}`]]) -- inline code (.\{-} = non-greedy quantifier)
 				-- setting the filetype to "gitcommit" does not work well with
 				-- nvim-notify, therefore manually highlighting conventional commits
-				fn.matchadd(
-					"Title",
-					[[\v(feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(.{-})?\ze:]]
-				)
+				local cc = config.conventionalCommits.keywords
+				fn.matchadd("Title", [[\v(]] .. table.concat(cc, "|") .. [[)(.{-})?\ze: ]])
 			end)
 		end,
 	})
@@ -199,6 +200,7 @@ end
 ---message in the terminal.)
 ---@return number|nil -- nil if no notification is shown
 local function showCommitPreview()
+	local config = require("tinygit.config").config.commitMsg
 	local notifyInstalled, notifyNvim = pcall(require, "notify")
 	if not (notifyInstalled and config.commitPreview) then return end
 
@@ -270,6 +272,7 @@ local function showCommitPreview()
 end
 
 local function closeCommitPreview()
+	local config = require("tinygit.config").config.commitMsg
 	if package.loaded["notify"] and config.commitPreview then
 		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
 		require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
@@ -278,6 +281,7 @@ end
 
 ---@param processedMsg string
 local function openReferencedIssue(processedMsg)
+	local config = require("tinygit.config").config.commitMsg
 	local issueReferenced = processedMsg:match("#(%d+)")
 	if config.openReferencedIssue and issueReferenced then
 		local repo = u.getGithubRemote()
