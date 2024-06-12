@@ -34,16 +34,14 @@ operations.
 ## Features Overview
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
   commit preview, and overlength indicators. If there are no staged
-  changed, stages all changes before doing so (`git add -A`). Optionally trigger
+  changes, stages all changes before doing so (`git add -A`). Optionally trigger
   a `git push` afterward.
 - Quick commands for amend, stash, fixup, and squash commits.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
-- Open the **GitHub URL** of the current file or selection.
-- **Search the file history** for a string ("git pickaxe"), show results in a diff
-  with filetype syntax highlighting, correctly following file renamings.
+- Open the **GitHub URL** of the current line or selection.
+- **Search the file history** for a string ("git pickaxe"), show results in a diff view
+  with syntax highlighting, correctly following file renamings.
 - **Statusline Components:** `git blame` and branch state.
-- Highlighting improvements for interactive **rebasing** when using nvim as sequence
-  editor.
   
 <p align="center">
 <img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/f09dba0b-a81e-4973-897a-20605f4c29db">
@@ -203,9 +201,9 @@ require("tinygit").createGitHubPr()
 Search the git history. Select from the matching commits to open a popup with a
 diff of the changes.
 
-- Search the git **history of the current file for a term** (`git log -G`).
+- Search the git **history of the current file** (`git log -G`).
 	* The search is case-insensitive and supports regex.
-	* Correctly follows file renamings, display past file names in the commit
+	* Correctly follows file renamings, and displays past file names in the commit
 	  selection.
 - Explore the **history of a function in the current file** (`git log -L`).
 	* The search is literal.
