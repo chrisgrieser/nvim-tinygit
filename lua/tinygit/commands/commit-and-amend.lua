@@ -235,7 +235,7 @@ local function showCommitPreview()
 		-- include new files in diff stats
 		vim.system({ "git", "add", "--intent-to-add", "--all" }):wait()
 
-		title = title .. " & Commit Preview"
+		title = "Stage & " .. title
 		changes = cleanupStatsOutput(gitStatsCmd)
 	else
 		local notStaged = cleanupStatsOutput(gitStatsCmd)
