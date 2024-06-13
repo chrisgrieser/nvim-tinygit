@@ -48,45 +48,43 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
     commit preview, and overlength indicators. If there are no staged
     changes, stages all changes before doing so (`git add -A`). Optionally trigger
     a `git push` afterward.
-- Quick commands for amend, stash, fixup, and squash commits.
+- Quick commands for amend, stash, fixup, or undoing commits.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Search the file history** for a string ("git pickaxe"), show results in a diff view
     with syntax highlighting, correctly following file renamings.
-- **Statusline Components:** `git blame` and branch state.
+- **Statusline components:** `git blame` and branch state.
+- **Streamlined workflow:** operations are smartly combined to minimize
+    friction. For instance, the smart-commit command combines staging, committing,
+    and pushing, and searching the file history combines unshallowing, searching,
+    and navigating diffs.
 
 
 
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
 
-At least version 0.10 of nvim is required for this plugin.
+**Hard Requirements** - nvim 0.10 or higher - `dressing.nvim`
 
-Install the Treesitter parser for git filetypes: `TSInstall gitcommit
-git_rebase`
+**Optional/Recommended Requirements** - Treesitter parsers for git filetypes:
+`TSInstall gitcommit git_rebase` - `nvim-notify` for the commit preview &
+various notifications - telescope.nvim
+<https://github.com/nvim-telescope/telescope.nvim> or fzf-lua
+<https://github.com/ibhagwan/fzf-lua> for better selectors when selecting
+commits or issues/PRs.
 
 >lua
     -- lazy.nvim
     {
         "chrisgrieser/nvim-tinygit",
-        ft = { "git_rebase", "gitcommit" }, -- so ftplugins are loaded
-        dependencies = {
-            "stevearc/dressing.nvim",
-            "nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
-            -- "ibhagwan/fzf-lua",
-            "rcarriga/nvim-notify", -- optional, but will lack some features without it
-        },
+        ft = "git_rebase", -- so ftplugin is loaded
+        dependencies = "stevearc/dressing.nvim",
     },
     
     -- packer
     use {
         "chrisgrieser/nvim-tinygit",
-        requires = {
-            "stevearc/dressing.nvim",
-            "nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
-            -- "ibhagwan/fzf-lua",
-            "rcarriga/nvim-notify", -- optional, but will lack some features without it
-        },
+        requires = "stevearc/dressing.nvim",
     }
 <
 
@@ -402,11 +400,12 @@ COMPARISON TO EXISTING GIT PLUGINS*tinygit-nvim-tinygit-comparison-to-existing-g
 - `gitsigns.nvim`No feature overlap. `tinygit` rather complements `gitsigns`
     as the latter is used to stage changes (`:GitSigns stage_hunk`) quickly, and
     the former allows you to commit (and push) those changes quickly.
-- `Neogit` / `Fugitive`These two probably cover every feature `tinygit` has,
-    but with much more configuration options. The benefit of `tinygit` is that it
-    is more lightweight and aims to streamline common actions by smartly combining
-    operations. For instance, the smart-commit command combines staging,
-    committing, and pushing.
+- `Neogit` / `Fugitive`These two probably cover much more features than
+    `tinygit` has, but with much more configuration options. The benefit of
+    `tinygit` is that it is more lightweight and aims to streamline common actions
+    by smartly combining operations. For instance, the smart-commit command
+    combines staging, committing, and pushing. As such, `tinygit` is mostly for
+    those people that do want a more nimble and lightweight git integration.
 - `diffview.nvim`No overlap, except for the command to search the file history.
     `tinygit`’s version of file history search should be easier to use and has a few
     more quality-of-life features, such as automatically jumping to occurrences of
