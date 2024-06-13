@@ -149,6 +149,7 @@ local function showDiff(commitIdx, type)
 		footer = { { " " .. footerText .. " ", "FloatBorder" } },
 		zindex = 1, -- below nvim-notify floats
 	})
+	a.nvim_set_option_value("winfixbuf", true, { win = winnr })
 
 	-- HIGHLIGHTING
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
