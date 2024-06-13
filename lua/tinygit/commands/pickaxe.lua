@@ -31,7 +31,7 @@ local function repoIsShallow()
 	if not u.inShallowRepo() then return false end
 
 	if config.autoUnshallowIfNeeded then
-		u.notify("Auto-Unshallowing repo…", "info", "History Search")
+		u.notify("Auto-Unshallowing repo: Fetching…", "info", "History Search")
 		state.unshallowingRunning = true
 
 		-- run async, to allow user input while waiting for the command
@@ -177,14 +177,14 @@ local function showDiff(commitIdx, type)
 		-- separator between hunks
 		if ln > 1 then
 			a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
-				virt_lines = { { { ("═"):rep(absWidth), "FloatBorder" } } },
+				virt_lines = { { { ("─"):rep(absWidth), "FloatBorder" } } },
 				virt_lines_above = true,
 			})
 		end
 	end
 	-- separator below last hunk for clarity
 	a.nvim_buf_set_extmark(bufnr, ns, #diffLines, 0, {
-		virt_lines = { { { ("═"):rep(absWidth), "FloatBorder" } } },
+		virt_lines = { { { ("─"):rep(absWidth), "FloatBorder" } } },
 		virt_lines_above = true,
 	})
 
@@ -296,7 +296,7 @@ local function selectFromCommits(commitList, type)
 	vim.ui.select(commits, {
 		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
 		format_item = selectCommit.selectorFormatter,
-		kind = "tinygit.pickaxeDiff",
+		kind = "tinygit.diffview",
 	}, function(_, commitIdx)
 		a.nvim_del_autocmd(autocmdId)
 		if commitIdx then showDiff(commitIdx, type) end
@@ -433,7 +433,7 @@ function M.functionHistory()
 
 					-- GUARD loop back when unshallowing is still running
 					if state.unshallowingRunning then
-						u.notify("Unshallowing still running. Please wait.", "warn", "History Search")
+						u.notify("Still unshallowing. Please wait.", "warn", "History Search")
 						M.searchFileHistory()
 						return
 					end
