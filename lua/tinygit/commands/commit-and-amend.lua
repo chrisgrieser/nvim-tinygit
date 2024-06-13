@@ -67,13 +67,13 @@ local function setupInputField(commitType)
 	local commitMaxLen = 72 -- hard git limit
 	local commitOverflowLen = 50 -- limit used by treesitter gitcommit parser
 
-	local function setInputFieldWidth(winid)
+	local function overwriteDressingWidth(winid)
 		if not config.inputFieldWidth then return end -- keep dressings default
 		local width = math.max(config.inputFieldWidth, 20)
 		vim.api.nvim_win_set_config(winid, {
 			relative = "editor",
 			width = width,
-			row = vim.api.nvim_win_get_config(winid).row,
+			row = math.floor(vim.o.lines / 2),
 			col = math.floor((vim.o.columns - width) / 2),
 		})
 	end
@@ -130,7 +130,7 @@ local function setupInputField(commitType)
 			local winid = vim.api.nvim_get_current_win()
 			local bufnr = ctx.buf
 
-			setInputFieldWidth(winid)
+			overwriteDressingWidth(winid)
 			setupHighlighting(winid)
 			charCountInFooter(bufnr, winid)
 
