@@ -36,18 +36,20 @@ operations.
   commit preview, and overlength indicators. If there are no staged
   changes, stages all changes before doing so (`git add -A`). Optionally trigger
   a `git push` afterward.
-- Quick commands for amend, stash, fixup, and squash commits.
+- Quick commands for amend, stash, fixup, or undoing commits.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Search the file history** for a string ("git pickaxe"), show results in a diff view
   with syntax highlighting, correctly following file renamings.
-- **Statusline Components:** `git blame` and branch state.
-  
-<p align="center">
+- **Statusline components:** `git blame` and branch state.
+- **Streamlined workflow:** operations are smartly combined to minimize
+  friction. For instance, the smart-commit command combines staging, committing,
+  and pushing, and searching the file history combines unshallowing, searching,
+  and navigating diffs.
+
 <img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/f09dba0b-a81e-4973-897a-20605f4c29db">
 <img alt="Showcase diffview" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/34161d44-02eb-4340-a7ea-d18d436b4ab4">
 <img alt="Showcase statusline components" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
-</p>
 
 ## Installation
 At least version 0.10 of nvim is required for this plugin.
@@ -371,11 +373,12 @@ require("notify").setup {
 - `gitsigns.nvim`: No feature overlap. `tinygit` rather complements `gitsigns`
   as the latter is used to stage changes (`:GitSigns stage_hunk`) quickly, and
   the former allows you to commit (and push) those changes quickly.
-- `Neogit` / `Fugitive`: These two probably cover every feature `tinygit` has,
-  but with much more configuration options. The benefit of `tinygit` is that it
-  is more lightweight and aims to streamline common actions by smartly combining
-  operations. For instance, the smart-commit command combines staging,
-  committing, and pushing.
+- `Neogit` / `Fugitive`: These two probably cover much more features than
+  `tinygit` has, but with much more configuration options. The benefit of
+  `tinygit` is that it is more lightweight and aims to streamline common actions
+  by smartly combining operations. For instance, the smart-commit command
+  combines staging, committing, and pushing. As such, `tinygit` is mostly for
+  those people that do want a more nimble and lightweight git integration.
 - `diffview.nvim`: No overlap, except for the command to search the file history.
   `tinygit`'s version of file history search should be easier to use and has a few
   more quality-of-life features, such as automatically jumping to occurrences of
