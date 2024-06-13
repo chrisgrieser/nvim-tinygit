@@ -21,6 +21,7 @@ local M = {}
 ---@field openReferencedIssue boolean
 ---@field commitPreview boolean
 ---@field keepAbortedMsgSecs number
+---@field inputFieldWidth number
 
 ---@class historySearchConfig
 ---@field diffPopup { width: number, height: number, border: "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]}
@@ -45,7 +46,7 @@ local M = {}
 local defaultConfig = {
 	commitMsg = {
 		-- Shows diffstats of the changes that are going to be committed.
-		-- (requires nvim-notify)
+		-- Requires nvim-notify.
 		commitPreview = true,
 
 		conventionalCommits = {
@@ -61,11 +62,14 @@ local defaultConfig = {
 		-- (configured to ignore capitalization and correctly consider camelCase)
 		spellcheck = false,
 
-		-- if commit message references issue/PR, open it in the browser
+		-- if message references issue/PR, open it in the browser after commit
 		openReferencedIssue = false,
 
 		-- how long to remember the state of the message input field when aborting
 		keepAbortedMsgSecs = 300,
+
+		-- if `false`, will use the width set in the dressing.nvim config
+		inputFieldWidth = 73,
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,

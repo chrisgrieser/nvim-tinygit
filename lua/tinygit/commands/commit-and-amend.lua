@@ -67,6 +67,23 @@ local function setupInputField(commitType)
 	local commitMaxLen = 72 -- hard git limit
 	local commitOverflowLen = 50 -- limit used by treesitter gitcommit parser
 
+	-- UPDATE INPUT FOOTER TEXT WITH MESSAGE LENGTH
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = "DressingInput",
+		once = true, -- do not affect other DressingInputs
+		callback = function()
+			if not config.inputFieldWidth then return end -- keep dressings default
+			local winid = vim.api.nvim_get_current_win()
+			local width = math.max(config.inputFieldWidth, 20)
+			vim.api.nvim_win_set_config(winid, {
+				relative = "editor",
+				width = width,
+				row = vim.api.nvim_win_get_config(winid).row,
+				col = math.floor((vim.o.columns - width) / 2),
+			})
+		end,
+	})
+
 	-- CUSTOM HIGHLIGHTING
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = "DressingInput",
