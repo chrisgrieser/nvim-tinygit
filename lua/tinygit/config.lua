@@ -120,6 +120,14 @@ M.config = defaultConfig -- in case user does not call `setup`
 ---@param userConfig? pluginConfig
 function M.setupPlugin(userConfig)
 	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig or {})
+
+	-- VALIDATE border `none` does not work with and title/footer used by this plugin
+	if M.config.historySearch.diffPopup.border == "none" then
+		local fallback = defaultConfig.historySearch.diffPopup.border
+		M.config.historySearch.diffPopup.border = fallback
+		local msg = ('Border type "none" is not supported, falling back to %q.'):format(fallback)
+		require("tinygit.shared.utils").notify(msg, "warn")
+	end
 end
 
 --------------------------------------------------------------------------------
