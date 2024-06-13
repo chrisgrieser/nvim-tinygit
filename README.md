@@ -52,32 +52,29 @@ operations.
 <img alt="Showcase statusline components" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
 
 ## Installation
-At least version 0.10 of nvim is required for this plugin.
+**Hard Requirements**  
+- nvim 0.10 or higher
+- `dressing.nvim`
 
-Install the Treesitter parser for git filetypes: `TSInstall gitcommit git_rebase`
+**Optional/Recommended Requirements**
+- Treesitter parsers for git filetypes: `TSInstall gitcommit git_rebase`
+- `nvim-notify` for the commit preview & various notifications
+- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) or
+  [fzf-lua](https://github.com/ibhagwan/fzf-lua) for better selectors when
+  selecting commits or issues/PRs.
 
 ```lua
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	ft = { "git_rebase", "gitcommit" }, -- so ftplugins are loaded
-	dependencies = {
-		"stevearc/dressing.nvim",
-		"nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
-		-- "ibhagwan/fzf-lua",
-		"rcarriga/nvim-notify", -- optional, but will lack some features without it
-	},
+	ft = "git_rebase", -- so ftplugin is loaded
+	dependencies = "stevearc/dressing.nvim",
 },
 
 -- packer
 use {
 	"chrisgrieser/nvim-tinygit",
-	requires = {
-		"stevearc/dressing.nvim",
-		"nvim-telescope/telescope.nvim", -- either telescope or fzf-lua
-		-- "ibhagwan/fzf-lua",
-		"rcarriga/nvim-notify", -- optional, but will lack some features without it
-	},
+	requires = "stevearc/dressing.nvim",
 }
 ```
 
