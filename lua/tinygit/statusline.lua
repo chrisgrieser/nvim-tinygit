@@ -18,6 +18,7 @@ function M.updateAllComponents()
 	-- component only on BufEnter.
 	if package.loaded["lualine"] then
 		require("lualine.components.diff.git_diff").update_diff_args()
+		require('lualine').refresh()
 	end
 end
 
