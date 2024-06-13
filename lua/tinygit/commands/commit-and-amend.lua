@@ -67,69 +67,82 @@ local function setupInputField(commitType)
 	local commitMaxLen = 72 -- hard git limit
 	local commitOverflowLen = 50 -- limit used by treesitter gitcommit parser
 
-	-- UPDATE INPUT FOOTER TEXT WITH MESSAGE LENGTH
-	vim.api.nvim_create_autocmd("FileType", {
-		pattern = "DressingInput",
-		once = true, -- do not affect other DressingInputs
-		callback = function()
-			if not config.inputFieldWidth then return end -- keep dressings default
-			local winid = vim.api.nvim_get_current_win()
-			local width = math.max(config.inputFieldWidth, 20)
-			vim.api.nvim_win_set_config(winid, {
-				relative = "editor",
-				width = width,
-				row = vim.api.nvim_win_get_config(winid).row,
-				col = math.floor((vim.o.columns - width) / 2),
-			})
-		end,
-	})
+	local function setInputFieldWidth(winid)
+		if not config.inputFieldWidth then return end -- keep dressings default
+		local width = math.max(config.inputFieldWidth, 20)
+		vim.api.nvim_win_set_config(winid, {
+			relative = "editor",
+			width = width,
+			row = vim.api.nvim_win_get_config(winid).row,
+			col = math.floor((vim.o.columns - width) / 2),
+		})
+	end
 
-	-- CUSTOM HIGHLIGHTING
+	local function setupHighlighting(winid)
+		local ns = vim.api.nvim_create_namespace("tinygit.inputField")
+		vim.api.nvim_win_set_hl_ns(winid, ns)
+
+		-- INFO the order the highlights are added matters, later has priority
+		fn.matchadd("issueNumber", [[#\d\+]])
+		vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
+
+		fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
+		vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@markup.raw.markdown_inline" })
+
+		-- INFO no need to highlight between 50-72, since the treesitter parser
+		-- for gitcommit already does this now
+		fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen))
+		vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
+
+		-- colorcolumn as extra indicators of overLength
+		vim.opt_local.colorcolumn = { commitOverflowLen + 1, commitMaxLen + 1 }
+
+		-- treesitter highlighting
+		vim.bo.filetype = "gitcommit"
+		vim.api.nvim_set_hl(ns, "@markup.heading.gitcommit", { link = "Normal" })
+		-- prevent auto-wrapping due to filetype "gitcommit" being set
+		vim.opt_local.formatoptions:remove("t")
+	end
+
+	local function charCountInFooter(bufnr, winid)
+		vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+			buffer = bufnr,
+			callback = function()
+				local neutralColor = "FloatBorder"
+				local charCount = #vim.api.nvim_get_current_line()
+				local countHighlight = charCount <= commitMaxLen and neutralColor or "ErrorMsg"
+				vim.api.nvim_win_set_config(winid, {
+					footer = {
+						{ " ", neutralColor },
+						{ tostring(charCount), countHighlight },
+						{ ("/%s "):format(commitMaxLen), neutralColor },
+					},
+					footer_pos = "right",
+				})
+			end,
+		})
+	end
+
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = "DressingInput",
 		once = true, -- do not affect other DressingInputs
 		callback = function(ctx)
-			local ns = vim.api.nvim_create_namespace("tinygit.inputField")
-			vim.api.nvim_win_set_hl_ns(0, ns)
+			local winid = vim.api.nvim_get_current_win()
+			local bufnr = ctx.buf
 
-			-- INFO the order the highlights are added matters, later has priority
-			fn.matchadd("issueNumber", [[#\d\+]])
-			vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
-
-			fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-			vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@markup.raw.markdown_inline" })
-
-			-- INFO no need to highlight between 50-72, since the treesitter parser
-			-- for gitcommit already does this now
-			fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen))
-			vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
-
-			-- colorcolumn as extra indicators of overLength
-			vim.opt_local.colorcolumn = { commitOverflowLen + 1, commitMaxLen + 1 }
-
-			-- treesitter highlighting
-			vim.bo.filetype = "gitcommit"
-			vim.api.nvim_set_hl(ns, "@markup.heading.gitcommit", { link = "Normal" })
-			-- prevent auto-wrapping due to filetype "gitcommit" being set
-			vim.opt_local.formatoptions:remove("t")
+			setInputFieldWidth(winid)
+			setupHighlighting(winid)
+			charCountInFooter(bufnr, winid)
 
 			-- activates styling for statusline plugins (e.g., filename icons)
-			vim.api.nvim_buf_set_name(ctx.buf, "COMMIT_EDITMSG")
+			vim.api.nvim_buf_set_name(bufnr, "COMMIT_EDITMSG")
+
+			-- spellcheck
+			vim.opt_local.spell = true
+			vim.opt_local.spelloptions = "camel"
+			vim.opt_local.spellcapcheck = ""
 		end,
 	})
-
-	-- SPELLCHECK
-	if config.spellcheck then
-		vim.api.nvim_create_autocmd("FileType", {
-			pattern = "DressingInput",
-			once = true, -- do not affect other DressingInputs
-			callback = function()
-				vim.opt_local.spell = true
-				vim.opt_local.spelloptions = "camel"
-				vim.opt_local.spellcapcheck = ""
-			end,
-		})
-	end
 
 	-- SETUP BRIEFLY SAVING MESSAGE WHEN ABORTING COMMIT
 	-- Only relevant for smartCommit, since amendNoEdit has no commitMsg and
@@ -150,31 +163,6 @@ local function setupInputField(commitType)
 			end,
 		})
 	end
-
-	-- UPDATE INPUT FOOTER TEXT WITH MESSAGE LENGTH
-	vim.api.nvim_create_autocmd("FileType", {
-		pattern = "DressingInput",
-		once = true, -- do not affect other DressingInputs
-		callback = function(ctx)
-			local winid = vim.api.nvim_get_current_win()
-			vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
-				buffer = ctx.buf,
-				callback = function()
-					local neutralColor = "FloatBorder"
-					local charCount = #vim.api.nvim_get_current_line()
-					local countHighlight = charCount <= commitMaxLen and neutralColor or "ErrorMsg"
-					vim.api.nvim_win_set_config(winid, {
-						footer = {
-							{ " ", neutralColor },
-							{ tostring(charCount), countHighlight },
-							{ ("/%s "):format(commitMaxLen), neutralColor },
-						},
-						footer_pos = "right",
-					})
-				end,
-			})
-		end,
-	})
 end
 
 ---@param title string title for nvim-notify
