@@ -47,8 +47,8 @@ function M.createGitHubPr() require("tinygit.commands.github").createGitHubPr() 
 ---@param userOpts? { pullBefore?: boolean, forceWithLease?: boolean, createGitHubPr?: boolean }
 function M.push(userOpts) require("tinygit.commands.push-pull").push(userOpts, true) end
 
-function M.searchFileHistory() require("tinygit.commands.pickaxe").searchFileHistory() end
-function M.functionHistory() require("tinygit.commands.pickaxe").functionHistory() end
+function M.searchFileHistory() require("tinygit.commands.diffview").searchFileHistory() end
+function M.functionHistory() require("tinygit.commands.diffview").functionHistory() end
 
 function M.stashPop() require("tinygit.commands.stash").stashPop() end
 function M.stashPush() require("tinygit.commands.stash").stashPush() end

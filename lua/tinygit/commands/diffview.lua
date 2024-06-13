@@ -8,7 +8,7 @@ local config = require("tinygit.config").config.historySearch
 local selectCommit = require("tinygit.shared.select-commit")
 --------------------------------------------------------------------------------
 
----@class (exact) pickaxeState
+---@class (exact) diffviewState
 ---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field absPath string
 ---@field query string search query pickaxed for
@@ -52,7 +52,7 @@ end
 ---@param commitIdx number index of the selected commit in the list of commits
 ---@param type "file"|"function"
 local function showDiff(commitIdx, type)
-	local ns = a.nvim_create_namespace("tinygit.pickaxe_diff")
+	local ns = a.nvim_create_namespace("tinygit.diffview")
 	local hashList = state.hashList
 	local hash = hashList[commitIdx]
 	local query = state.query
