@@ -126,7 +126,9 @@ local function showDiff(commitIdx, type)
 
 	-- footer
 	local footerText = "q: close   (⇧)↹ : next/prev commit   yh: yank hash"
-	if type == "file" then footerText = footerText .. "   n/N: next/prev occurrence" end
+	if query ~= "" and type == "file" then
+		footerText = footerText .. "   n/N: next/prev occurrence"
+	end
 
 	-- WINDOW
 	local relWidth = math.min(config.diffPopup.width, 1)
