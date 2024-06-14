@@ -18,22 +18,26 @@ setmetatable(M, {
 				return
 			end
 
-			local module
-			-- stylua: ignore
-			local isGithubCmd = vim.tbl_contains( { "githubUrl", "issuesAndPrs", "openIssueUnderCursor", "createGitHubPr" }, key)
-			if isGithubCmd then
-				module = "github"
-			elseif key == "push" then
-				module = "push-pull"
-			elseif key == "searchFileHistory" or key == "functionHistory" then
-				module = "diffview"
-			elseif key == "stashPop" or key == "stashPush" then
-				module = "stash"
-			elseif key == "diffview" then
-				module = "diffview"
-			else
-				module = "commit-and-amend"
-			end
+			local cmdToModuleMap = {
+				smartCommit = "commit-and-amend",
+				fixupCommit = "commit-and-amend",
+				amendOnlyMsg = "commit-and-amend",
+				amendNoEdit = "undo-commit-amend",
+				undoLastCommitOrAmend = "undo-commit-amend",
+				diffview = "diffview",
+				stashPop = "stash",
+				stashPush = "stash",
+				push = "push-pull",
+				githubUrl = "github",
+				issuesAndPrs = "github",
+				openIssueUnderCursor = "github",
+				createGitHubPr = "github",
+				searchFileHistory = "diffview",
+				functionHistory = "diffview",
+				lineHistory = "diffview",
+			}
+
+			local module = cmdToModuleMap[key]
 			require("tinygit.commands." .. module)[key](...)
 		end
 	end,
