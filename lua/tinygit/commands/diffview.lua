@@ -80,14 +80,13 @@ local function showDiff(commitIdx, type)
 
 	-- get diff
 	local diffCmd = { "git", "-C", gitroot }
+	local args = {}
 	if type == "file" then
-		diffCmd = vim.list_extend(diffCmd, { "show", "--format=", hash, "--", nameAtCommit })
+		args = { "show", "--format=", hash, "--", nameAtCommit }
 	elseif type == "function" then
-		diffCmd = vim.list_extend(
-			diffCmd,
-			{ "log", "--format=", "--max-count=1", ("-L:%s:%s"):format(query, nameAtCommit) }
-		)
+		args = { "log", "--format=", "--max-count=1", ("-L:%s:%s"):format(query, nameAtCommit), hash }
 	end
+	diffCmd = vim.list_extend(diffCmd, args)
 	local diffResult = vim.system(diffCmd):wait()
 	if u.nonZeroExit(diffResult) then return end -- GUARD
 	local diff = diffResult.stdout or ""
