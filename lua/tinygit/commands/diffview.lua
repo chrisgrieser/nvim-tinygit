@@ -14,6 +14,8 @@ local selectCommit = require("tinygit.shared.select-commit")
 ---@field query string search query pickaxed for
 ---@field ft string
 ---@field unshallowingRunning boolean
+---@field lnum? number only for line history
+---@field offset? number only for line history
 local state = {
 	hashList = {},
 	absPath = "",
@@ -50,15 +52,14 @@ end
 --------------------------------------------------------------------------------
 
 ---@param commitIdx number index of the selected commit in the list of commits
----@param type "file"|"function"
+---@param type "file"|"function"|"line"
 local function showDiff(commitIdx, type)
 	local ns = a.nvim_create_namespace("tinygit.diffview")
 	local hashList = state.hashList
 	local hash = hashList[commitIdx]
 	local query = state.query
-	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%cr", hash }
-	local shortCommitMsg = u.syncShellCmd({ "git", "log", "--max-count=1", "--format=%s", hash })
-		:sub(1, 50)
+	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=(%cr)", hash }
+	local commitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%s", hash }
 
 	-- determine filename in case of renaming
 	local filenameInPresent = state.absPath
@@ -78,18 +79,20 @@ local function showDiff(commitIdx, type)
 	local nameHistory = u.syncShellCmd(logCmd)
 	local nameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 
-	-- get diff
+	-- DIFF COMMAND
 	local diffCmd = { "git", "-C", gitroot }
 	local args = {}
 	if type == "file" then
 		args = { "show", "--format=", hash, "--", nameAtCommit }
-	elseif type == "function" then
-		args = { "log", "--format=", "--max-count=1", ("-L:%s:%s"):format(query, nameAtCommit), hash }
+	elseif type == "function" or type == "line" then
+		args = { "log", "--format=", "--max-count=1", hash }
+		local extra = type == "function" and ("-L:%s:%s"):format(query, nameAtCommit)
+			or ("-L%d,+%d:%s"):format(state.lnum, state.offset, nameAtCommit)
+		table.insert(args, extra)
 	end
-	diffCmd = vim.list_extend(diffCmd, args)
-	local diffResult = vim.system(diffCmd):wait()
-	if u.nonZeroExit(diffResult) then return end -- GUARD
-	local diff = diffResult.stdout or ""
+	local diffResult = vim.system(vim.list_extend(diffCmd, args)):wait()
+	if u.nonZeroExit(diffResult) then return end
+	local diff = assert(diffResult.stdout, "No diff output.")
 
 	local diffLines = vim.split(vim.trim(diff), "\n")
 	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
@@ -123,18 +126,22 @@ local function showDiff(commitIdx, type)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	a.nvim_set_option_value("modifiable", false, { buf = bufnr })
 
-	-- footer
-	local footerText = "q: close   (⇧)↹ : next/prev commit   yh: yank hash"
-	if query ~= "" and type == "file" then
-		footerText = footerText .. "   n/N: next/prev occurrence"
-	end
-
-	-- WINDOW
+	-- WINDOW STATS
 	local relWidth = math.min(config.diffPopup.width, 1)
 	local relHeight = math.min(config.diffPopup.height, 1)
 	local vimWidth = vim.o.columns - 2
 	local vimHeight = vim.o.lines - 2
 	local absWidth = math.floor(relWidth * vimWidth)
+
+	-- FOOTER & TITLE
+	local footerText = "q: close   (⇧)↹ : next/prev commit   yh: yank hash"
+	if query ~= "" and type == "file" then
+		footerText = footerText .. "   n/N: next/prev occurrence"
+	end
+	local maxMsgLen = absWidth - #date - 3
+	commitMsg = commitMsg:sub(1, maxMsgLen)
+	local title = (" %s %s "):format(commitMsg, date)
+
 	local winnr = a.nvim_open_win(bufnr, true, {
 		-- center of the editor
 		relative = "editor",
@@ -143,7 +150,7 @@ local function showDiff(commitIdx, type)
 		row = math.floor((1 - relHeight) * vimHeight / 2),
 		col = math.floor((1 - relWidth) * vimWidth / 2),
 
-		title = (" %s (%s) "):format(shortCommitMsg, date),
+		title = title,
 		title_pos = "center",
 		border = config.diffPopup.border,
 		style = "minimal",
@@ -252,7 +259,7 @@ end
 
 ---Given a list of commits, prompt user to select one
 ---@param commitList string raw response from `git log`
----@param type "file"|"function"
+---@param type "file"|"function"|"line"
 local function selectFromCommits(commitList, type)
 	-- GUARD
 	commitList = vim.trim(commitList or "")
@@ -281,7 +288,7 @@ local function selectFromCommits(commitList, type)
 
 	-- CAVEAT `git log -L` does not support `--follow` and `--name-only`, so we
 	-- cannot add the name here
-	elseif type == "function" then
+	elseif type == "function" or type == "line" then
 		commits = vim.split(commitList, "\n")
 	end
 
@@ -434,7 +441,11 @@ function M.functionHistory()
 
 					-- GUARD loop back when unshallowing is still running
 					if state.unshallowingRunning then
-						u.notify("Still unshallowing. Please wait.", "warn", "History Search")
+						u.notify(
+							"Unshallowing still running. Please wait a moment.",
+							"warn",
+							"History Search"
+						)
 						M.searchFileHistory()
 						return
 					end
@@ -445,6 +456,42 @@ function M.functionHistory()
 			)
 		end,
 	}
+end
+
+function M.lineHistory()
+	if u.notInGitRepo() or repoIsShallow() then return end
+
+	local lnum, offset
+	local mode = vim.fn.mode()
+	if mode == "n" then
+		lnum = vim.api.nvim_win_get_cursor(0)[1]
+		offset = 1
+		state.query = "Line " .. lnum
+	elseif mode:find("[Vv]") then
+		vim.cmd.normal { mode, bang = true } -- leave visual so marks are set
+		local startOfVisual = vim.api.nvim_buf_get_mark(0, "<")[1]
+		local endOfVisual = vim.api.nvim_buf_get_mark(0, ">")[1]
+		lnum = startOfVisual
+		offset = endOfVisual - startOfVisual + 1
+		state.query = ("L%d-L%d"):format(startOfVisual, endOfVisual)
+	end
+
+	state.absPath = a.nvim_buf_get_name(0)
+	state.ft = vim.bo.filetype
+	state.lnum = lnum
+	state.offset = offset
+
+	local result = vim.system({
+		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
+		"git",
+		"log",
+		"--format=" .. selectCommit.gitlogFormat,
+		("-L%d,+%d:%s"):format(lnum, offset, state.absPath),
+		"--no-patch",
+	}):wait()
+	if u.nonZeroExit(result) then return end
+
+	selectFromCommits(result.stdout, "line")
 end
 
 --------------------------------------------------------------------------------

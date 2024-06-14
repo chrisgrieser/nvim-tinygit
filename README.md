@@ -18,7 +18,7 @@ operations.
 	* [Undo Last Commit/Amend](#undo-last-commitamend)
 	* [GitHub Interaction](#github-interaction)
 	* [Push & PR](#push--pr)
-	* [Search File/Function History ("git pickaxe")](#search-filefunction-history-git-pickaxe)
+	* [Search File/Function/Line History ("git pickaxe")](#search-filefunctionline-history-git-pickaxe)
 	* [Stash](#stash)
 - [Status Line Components](#status-line-components)
 	* [Git Blame](#git-blame)
@@ -196,7 +196,7 @@ require("tinygit").push {
 require("tinygit").createGitHubPr()
 ```
 
-### Search File/Function History ("git pickaxe")
+### Explore the History of a File, Function, or Line ("git pickaxe")
 Search the git history. Select from the matching commits to open a popup with a
 diff of the changes.
 
@@ -212,18 +212,25 @@ diff of the changes.
 	* Note that [`git` uses heuristics to determine the enclosing function of a
 	  change](https://news.ycombinator.com/item?id=38153309), so this is not
 	  100% perfect and has varying reliability across languages.
+- Go through the **history of the current line (range)** (`git log -L`).
+	* In normal mode, searches the history of the line under the cursor.
+	* When called in visual mode, searches the history of the selected line
+	  range.
 
 **Keymaps in the diff popup**
-- `<Tab>`/`<S-Tab>`: cycle through the commits.
-- `yh`: yank the commit hash to the system clipboard.
-- `n`/`N` (file history): go to the next/previous occurrence of the query.
+- `<Tab>`: show older commit
+- `<S-Tab>`: show newer commit
+- `yh`: yank the commit hash to the system clipboard
+- `n`/`N`: go to the next/previous occurrence of the query (only file history)
 
 ```lua
 require("tinygit").searchFileHistory()
 require("tinygit").functionHistory()
+require("tinygit").lineHistory()
 ```
 
 ### Stash
+Simple wrappers around `git stash push` and `git stash pop`.
 
 ```lua
 require("tinygit").stashPush()
