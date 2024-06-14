@@ -17,7 +17,7 @@ end
 function M.stashPop()
 	if u.notInGitRepo() then return end
 
-	local result = vim.system({ "git", "stash", "push" }):wait()
+	local result = vim.system({ "git", "stash", "pop" }):wait()
 	if u.nonZeroExit(result) then return end
 	local infoText = vim.trim(result.stdout)
 
