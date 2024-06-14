@@ -26,9 +26,14 @@ local state = {
 
 --------------------------------------------------------------------------------
 
----if `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow`
----@return boolean -- whether the repo is shallow
-local function repoIsShallow()
+---If `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow` and
+---and also returns `false` then. This is so the caller can check whether the
+---function should be aborted. However, if called with callback, and
+---auto-unshallowing is enabled, will return `true`, since the function can be
+---the original call can be aborted due to the use of the callback.
+---@param callback? function called when auto-unshallowing is done
+---@return boolean whether the repo is shallow
+local function repoIsShallow(callback)
 	if state.unshallowingRunning then return false end
 	if not u.inShallowRepo() then return false end
 
@@ -40,7 +45,9 @@ local function repoIsShallow()
 		vim.system({ "git", "fetch", "--unshallow" }, {}, function()
 			state.unshallowingRunning = false
 			u.notify("Auto-Unshallowing done.", "info", "History Search")
+			if callback then callback() end
 		end)
+		if callback then return true end -- do not pass the check, if we have a callback
 		return false
 	else
 		local msg = "Aborting: Repository is shallow.\nRun `git fetch --unshallow`."
@@ -48,8 +55,6 @@ local function repoIsShallow()
 		return true
 	end
 end
-
---------------------------------------------------------------------------------
 
 ---@param commitIdx number index of the selected commit in the list of commits
 ---@param type "file"|"function"|"line"
@@ -255,8 +260,6 @@ local function showDiff(commitIdx, type)
 	end, opts)
 end
 
---------------------------------------------------------------------------------
-
 ---Given a list of commits, prompt user to select one
 ---@param commitList string raw response from `git log`
 ---@param type "file"|"function"|"line"
@@ -459,7 +462,13 @@ function M.functionHistory()
 end
 
 function M.lineHistory()
-	if u.notInGitRepo() or repoIsShallow() then return end
+	if u.notInGitRepo() then return end
+
+	-- GUARD in case of auto-unshallowing, will recursively call itself once done
+	-- As opposed to function and file history, no further input is needed by the
+	-- user, so that we have to abort here, and do a callback to this function
+	-- once the auto-unshallowing is done.
+	if repoIsShallow(M.lineHistory) then return end
 
 	local lnum, offset
 	local mode = vim.fn.mode()
@@ -468,7 +477,7 @@ function M.lineHistory()
 		offset = 1
 		state.query = "Line " .. lnum
 	elseif mode:find("[Vv]") then
-		vim.cmd.normal { mode, bang = true } -- leave visual so marks are set
+		vim.cmd.normal { mode, bang = true } -- leave visual mode so marks are set
 		local startOfVisual = vim.api.nvim_buf_get_mark(0, "<")[1]
 		local endOfVisual = vim.api.nvim_buf_get_mark(0, ">")[1]
 		lnum = startOfVisual
