@@ -26,6 +26,10 @@ local state = {
 
 --------------------------------------------------------------------------------
 
+---@param msg string
+---@param level? "info"|"trace"|"debug"|"warn"|"error"
+local function notify(msg, level) u.notify(msg, level, "Git History") end
+
 ---If `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow` and
 ---and also returns `false` then. This is so the caller can check whether the
 ---function should be aborted. However, if called with callback, and
@@ -38,20 +42,20 @@ local function repoIsShallow(callback)
 	if not u.inShallowRepo() then return false end
 
 	if config.autoUnshallowIfNeeded then
-		u.notify("Auto-Unshallowing repo: Fetching…", "info", "History Search")
+		notify("Auto-unshallowing: fetching repo history…")
 		state.unshallowingRunning = true
 
 		-- run async, to allow user input while waiting for the command
 		vim.system({ "git", "fetch", "--unshallow" }, {}, function()
 			state.unshallowingRunning = false
-			u.notify("Auto-Unshallowing done.", "info", "History Search")
+			notify("Auto-unshallowing done.")
 			if callback then callback() end
 		end)
 		if callback then return true end -- do not pass the check, if we have a callback
 		return false
 	else
 		local msg = "Aborting: Repository is shallow.\nRun `git fetch --unshallow`."
-		u.notify(msg, "warn", "History Search")
+		notify(msg, "warn")
 		return true
 	end
 end
@@ -238,7 +242,7 @@ local function showDiff(commitIdx, type)
 	-- keymaps: next/prev commit
 	keymap("n", "<Tab>", function()
 		if commitIdx == #hashList then
-			u.notify("Already on last commit", "warn")
+			notify("Already on last commit.", "warn")
 			return
 		end
 		closePopup()
@@ -246,7 +250,7 @@ local function showDiff(commitIdx, type)
 	end, opts)
 	keymap("n", "<S-Tab>", function()
 		if commitIdx == 1 then
-			u.notify("Already on first commit", "warn")
+			notify("Already on first commit.", "warn")
 			return
 		end
 		closePopup()
@@ -256,7 +260,7 @@ local function showDiff(commitIdx, type)
 	-- keymaps: yank hash
 	keymap("n", "yh", function()
 		vim.fn.setreg("+", hash)
-		u.notify("Copied hash: " .. hash)
+		notify("Copied hash: " .. hash)
 	end, opts)
 end
 
@@ -267,7 +271,7 @@ local function selectFromCommits(commitList, type)
 	-- GUARD
 	commitList = vim.trim(commitList or "")
 	if commitList == "" then
-		u.notify(("No commits found where %q was changed."):format(state.query))
+		notify(("No commits found where %q was changed."):format(state.query), "warn")
 		return
 	end
 
@@ -326,7 +330,7 @@ function M.searchFileHistory()
 
 		-- GUARD loop back when unshallowing is still running
 		if state.unshallowingRunning then
-			u.notify("Unshallowing still running. Please wait a moment.", "warn", "History Search")
+			notify("Unshallowing still running. Please wait a moment.", "warn")
 			M.searchFileHistory()
 			return
 		end
@@ -380,7 +384,7 @@ function M.functionHistory()
 	-- GUARD
 	if u.notInGitRepo() or repoIsShallow() then return end
 	if vim.tbl_contains({ "json", "yaml", "toml", "css" }, vim.bo.ft) then
-		u.notify(vim.bo.ft .. " does not have any functions.", "warn")
+		notify(vim.bo.ft .. " does not have any functions.", "warn")
 		return
 	end
 
@@ -404,7 +408,7 @@ function M.functionHistory()
 
 			-- GUARD loop back when unshallowing is still running
 			if state.unshallowingRunning then
-				u.notify("Unshallowing still running. Please wait a moment.", "warn", "History Search")
+				notify("Unshallowing still running. Please wait a moment.", "warn")
 				M.functionHistory()
 				return
 			end
@@ -424,7 +428,7 @@ function M.functionHistory()
 			)
 			if #funcsObjs == 0 then
 				local client = vim.lsp.get_client_by_id(response.context.client_id)
-				u.notify(("LSP (%s) could not find any functions."):format(client), "warn")
+				notify(("LSP (%s) could not find any functions."):format(client), "warn")
 			end
 
 			local funcNames = vim.tbl_map(function(item)
@@ -444,11 +448,7 @@ function M.functionHistory()
 
 					-- GUARD loop back when unshallowing is still running
 					if state.unshallowingRunning then
-						u.notify(
-							"Unshallowing still running. Please wait a moment.",
-							"warn",
-							"History Search"
-						)
+						notify("Unshallowing still running. Please wait a moment.", "warn")
 						M.searchFileHistory()
 						return
 					end
