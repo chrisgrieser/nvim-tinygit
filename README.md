@@ -198,12 +198,14 @@ require("tinygit").createGitHubPr()
 
 ### Explore the History of a File, Function, or Line ("git pickaxe")
 Search the git history. Select from the matching commits to open a popup with a
-diff of the changes.
+diffview of the changes.
 
 - Search the git **history of the current file** (`git log -G`).
 	* The search is case-insensitive and supports regex.
 	* Correctly follows file renamings, and displays past file names in the commit
 	  selection.
+	* Leave the input field empty to display *all* commits that changed the
+	  current file.
 - Explore the **history of a function in the current file** (`git log -L`).
 	* The search is literal.
 	* If the current buffer has an LSP with support for document symbols

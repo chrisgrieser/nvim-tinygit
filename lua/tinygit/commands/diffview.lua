@@ -325,6 +325,19 @@ function M.searchFileHistory()
 	state.absPath = a.nvim_buf_get_name(0)
 	state.ft = vim.bo.filetype
 
+	vim.api.nvim_create_autocmd("FileType", {
+		once = true,
+		pattern = "DressingInput",
+		callback = function()
+			local winid = vim.api.nvim_get_current_win()
+			local footerText = "empty = all commits that changed file"
+			vim.api.nvim_win_set_config(winid, {
+				footer = { { " " .. footerText .. " ", "FloatBorder" } },
+				footer_pos = "right",
+			})
+		end,
+	})
+
 	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
 		if not query then return end -- aborted
 
@@ -337,27 +350,20 @@ function M.searchFileHistory()
 
 		state.query = query
 		-- without argument, search all commits that touched the current file
-		local args = query == ""
-				and {
-					"git",
-					"log",
-					"--format=" .. selectCommit.gitlogFormat,
-					"--follow", -- follow file renamings
-					"--name-only", -- add filenames to display renamed files
-					"--",
-					state.absPath,
-				}
-			or {
-				"git",
-				"log",
-				"--format=" .. selectCommit.gitlogFormat,
-				"--regexp-ignore-case",
-				"-G" .. query,
-				"--follow", -- follow file renamings
-				"--name-only", -- add filenames to display renamed files
-				"--",
-				state.absPath,
-			}
+		local args = {
+			"git",
+			"log",
+			"--format=" .. selectCommit.gitlogFormat,
+			"--follow", -- follow file renamings
+			"--name-only", -- add filenames to display renamed files
+			"--",
+			state.absPath,
+		}
+		if query ~= "" then
+			local posBeforeDashDash = #args - 2
+			table.insert(args, posBeforeDashDash, "--regexp-ignore-case")
+			table.insert(args, posBeforeDashDash, "-G" .. query)
+		end
 		local result = vim.system(args):wait()
 		if u.nonZeroExit(result) then return end
 		selectFromCommits(result.stdout, "file")
