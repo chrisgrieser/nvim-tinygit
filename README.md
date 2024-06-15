@@ -18,7 +18,7 @@ operations.
 	* [Undo Last Commit/Amend](#undo-last-commitamend)
 	* [GitHub Interaction](#github-interaction)
 	* [Push & PR](#push--pr)
-	* [Search File/Function/Line History ("git pickaxe")](#search-filefunctionline-history-git-pickaxe)
+	* [Explore the History of a File, Function, or Line ("git pickaxe")](#explore-the-history-of-a-file-function-or-line-git-pickaxe)
 	* [Stash](#stash)
 - [Status Line Components](#status-line-components)
 	* [Git Blame](#git-blame)
