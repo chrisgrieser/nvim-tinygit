@@ -30,7 +30,7 @@ operations.
     - |tinygit-undo-last-commit/amend|
     - |tinygit-github-interaction|
     - |tinygit-push-&-pr|
-    - |tinygit-search-file/function/line-history-("git-pickaxe")|
+    - |tinygit-explore-the-history-of-a-file,-function,-or-line-("git-pickaxe")|
     - |tinygit-stash|
 - |tinygit-status-line-components|
     - |tinygit-git-blame|
