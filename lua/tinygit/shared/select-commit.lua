@@ -24,16 +24,10 @@ function M.setupAppearance()
 		once = true, -- to not affect other selectors
 		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
 		callback = function()
-			local ns = vim.api.nvim_create_namespace("tinygit.selector")
-			vim.api.nvim_win_set_hl_ns(0, ns)
+			require("tinygit.shared.utils").commitMsgHighlighting()
 
-			vim.fn.matchadd("Number", [[#\d\+]])
-			vim.fn.matchadd("Comment", [[\t.*$]]) -- date
-			vim.fn.matchadd("@markup.raw.markdown_inline", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-
-			local config = require("tinygit.config").config.commitMsg
-			local cc = config.conventionalCommits.keywords
-			vim.fn.matchadd("Title", [[\v(]] .. table.concat(cc, "|") .. [[)(.{-})?\ze: ]])
+			-- detects date due to `M.gitlogFormat`
+			vim.fn.matchadd("Comment", [[\t.*$]])
 		end,
 	})
 	return autocmdId

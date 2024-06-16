@@ -78,30 +78,30 @@ local function setupInputField(commitType)
 		})
 	end
 
+	-- the order the highlights are added matters, later has priority
 	local function setupHighlighting(winid)
-		local ns = vim.api.nvim_create_namespace("tinygit.inputField")
-		vim.api.nvim_win_set_hl_ns(winid, ns)
-
-		-- INFO the order the highlights are added matters, later has priority
-		fn.matchadd("issueNumber", [[#\d\+]])
-		vim.api.nvim_set_hl(ns, "issueNumber", { link = "Number" })
-
-		fn.matchadd("mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-		vim.api.nvim_set_hl(ns, "mdInlineCode", { link = "@markup.raw.markdown_inline" })
+		-- only-markup, since stuff like conventional commits keywords are done by
+		-- the treesitter parser
+		u.commitMsgHighlighting("only-markup")
 
 		-- INFO no need to highlight between 50-72, since the treesitter parser
 		-- for gitcommit already does this now
-		fn.matchadd("overLength", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen))
-		vim.api.nvim_set_hl(ns, "overLength", { link = "ErrorMsg" })
+		fn.matchadd("ErrorMsg", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen))
 
 		-- colorcolumn as extra indicators of overLength
 		vim.opt_local.colorcolumn = { commitOverflowLen + 1, commitMaxLen + 1 }
 
-		-- treesitter highlighting
+		-- treesitter highlighting & ftplugin
 		vim.bo.filetype = "gitcommit"
-		vim.api.nvim_set_hl(ns, "@markup.heading.gitcommit", { link = "Normal" })
+
 		-- prevent auto-wrapping due to filetype "gitcommit" being set
 		vim.opt_local.formatoptions:remove("t")
+
+		-- treesitter parser makes first line bold, but since we have only one
+		-- line, we do not need to bold everything in it
+		local ns = vim.api.nvim_create_namespace("tinygit.inputField")
+		vim.api.nvim_win_set_hl_ns(winid, ns)
+		vim.api.nvim_set_hl(ns, "@markup.heading.gitcommit", {}) -- = clear
 	end
 
 	local function charCountInFooter(bufnr, winid)
@@ -170,7 +170,6 @@ end
 ---@param commitMsg string
 ---@param extraInfo? string extra lines to display
 local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
-	local config = require("tinygit.config").config.commitMsg
 	local stageAllText = "Staged all changes."
 	local lines = { commitMsg }
 	if stagedAllChanges then table.insert(lines, 1, stageAllText) end
@@ -183,18 +182,9 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 
 			-- commit msg custom highlights
 			vim.api.nvim_buf_call(bufnr, function()
+				u.commitMsgHighlighting()
 				if stagedAllChanges then fn.matchadd("Comment", stageAllText) end
 				if extraInfo then fn.matchadd("Comment", extraInfo) end
-
-				-- INFO using namespace in here does not work, therefore simply
-				-- using `matchadd`, since it is restricted to the current window anyway
-				-- INFO the order the highlights are added matters, later has priority
-				fn.matchadd("Number", [[#\d\+]]) -- issues number
-				fn.matchadd("@markup.raw.markdown_inline", [[`.\{-}`]]) -- inline code (.\{-} = non-greedy quantifier)
-				-- setting the filetype to "gitcommit" does not work well with
-				-- nvim-notify, therefore manually highlighting conventional commits
-				local cc = config.conventionalCommits.keywords
-				fn.matchadd("Title", [[\v(]] .. table.concat(cc, "|") .. [[)(.{-})?\ze: ]])
 			end)
 		end,
 	})
