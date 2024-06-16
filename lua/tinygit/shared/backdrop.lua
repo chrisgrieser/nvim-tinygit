@@ -1,14 +1,14 @@
 local M = {}
 --------------------------------------------------------------------------------
 
+local backdropName = "TinygitBackdrop"
+
 ---@param referenceBuf number Reference buffer, when that buffer is closed, the backdrop will be closed too
 ---@param referenceZindex? number zindex of the reference window, where the backdrop should be placed below
 function M.new(referenceBuf, referenceZindex)
 	local config = require("tinygit.config").config
 	if not config.backdrop.enabled then return end
-
 	local blend = config.backdrop.blend
-	local backdropBane = "TinygitBackdrop"
 
 	-- `DressingInput` has a zindex of 49: https://github.com/stevearc/dressing.nvim/blob/e3714c8049b2243e792492c4149e4cc395c68eb9/lua/dressing/input.lua#L369
 	-- `DressingSelect` has a zindex of 150: https://github.com/stevearc/dressing.nvim/blob/e3714c8049b2243e792492c4149e4cc395c68eb9/lua/dressing/select/builtin.lua#L96
@@ -25,17 +25,17 @@ function M.new(referenceBuf, referenceZindex)
 		height = vim.o.lines,
 		focusable = false,
 		style = "minimal",
-		zindex = referenceZindex - 1, -- ensure below it's below the reference window
+		zindex = referenceZindex - 1, -- ensure it's below the reference window
 	})
-	vim.api.nvim_set_hl(0, backdropBane, { bg = "#000000", default = true })
-	vim.wo[winnr].winhighlight = "Normal:" .. backdropBane
+	vim.api.nvim_set_hl(0, backdropName, { bg = "#000000", default = true })
+	vim.wo[winnr].winhighlight = "Normal:" .. backdropName
 	vim.wo[winnr].winblend = blend
 	vim.bo[bufnr].buftype = "nofile"
-	vim.bo[bufnr].filetype = backdropBane
+	vim.bo[bufnr].filetype = backdropName
 
 	-- close backdrop when the reference buffer is closed
 	vim.api.nvim_create_autocmd({ "WinClosed", "BufLeave" }, {
-		group = vim.api.nvim_create_augroup(backdropBane, { clear = true }),
+		group = vim.api.nvim_create_augroup(backdropName, { clear = true }),
 		once = true,
 		buffer = referenceBuf,
 		callback = function()
