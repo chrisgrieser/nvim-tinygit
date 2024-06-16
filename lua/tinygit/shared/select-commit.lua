@@ -27,24 +27,13 @@ function M.setupAppearance()
 			local ns = vim.api.nvim_create_namespace("tinygit.selector")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 
-			vim.fn.matchadd("tinygit_selector_issueNumber", [[#\d\+]])
-			vim.api.nvim_set_hl(ns, "tinygit_selector_issueNumber", { link = "Number" })
+			vim.fn.matchadd("Number", [[#\d\+]])
+			vim.fn.matchadd("Comment", [[\t.*$]]) -- date
+			vim.fn.matchadd("@markup.raw.markdown_inline", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
 
-			vim.fn.matchadd("tinygit_selector_date", [[\t.*$]])
-			vim.api.nvim_set_hl(ns, "tinygit_selector_date", { link = "Comment" })
-
-			vim.fn.matchadd("tinygit_selector_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-			vim.api.nvim_set_hl(
-				ns,
-				"tinygit_selector_mdInlineCode",
-				{ link = "@markup.raw.markdown_inline" }
-			)
-
-			vim.fn.matchadd(
-				"tinygit_selector_conventionalCommit",
-				[[\v^ *(feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
-			)
-			vim.api.nvim_set_hl(ns, "tinygit_selector_conventionalCommit", { link = "Title" })
+			local config = require("tinygit.config").config.commitMsg
+			local cc = config.conventionalCommits.keywords
+			vim.fn.matchadd("Title", [[\v(]] .. table.concat(cc, "|") .. [[)(.{-})?\ze: ]])
 		end,
 	})
 	return autocmdId
