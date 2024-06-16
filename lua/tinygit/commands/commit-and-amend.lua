@@ -130,6 +130,7 @@ local function setupInputField(commitType)
 			local winid = vim.api.nvim_get_current_win()
 			local bufnr = ctx.buf
 
+			require("tinygit.shared.backdrop").new(bufnr)
 			overwriteDressingWidth(winid)
 			setupHighlighting(winid)
 			charCountInFooter(bufnr, winid)

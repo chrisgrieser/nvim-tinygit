@@ -6,6 +6,7 @@ local basename = vim.fs.basename
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.historySearch
 local selectCommit = require("tinygit.shared.select-commit")
+local backdrop = require("tinygit.shared.backdrop")
 --------------------------------------------------------------------------------
 
 ---@class (exact) diffviewState
@@ -151,6 +152,8 @@ local function showDiff(commitIdx, type)
 	commitMsg = commitMsg:sub(1, maxMsgLen)
 	local title = (" %s %s "):format(commitMsg, date)
 
+	-- CREATE WINDOW
+	local diffviewZindex = 40 -- below nvim-notify, which has 50
 	local winnr = a.nvim_open_win(bufnr, true, {
 		-- center of the editor
 		relative = "editor",
@@ -164,9 +167,10 @@ local function showDiff(commitIdx, type)
 		border = config.diffPopup.border,
 		style = "minimal",
 		footer = { { " " .. footerText .. " ", "FloatBorder" } },
-		zindex = 1, -- below nvim-notify floats
+		zindex = diffviewZindex,
 	})
 	a.nvim_set_option_value("winfixbuf", true, { win = winnr })
+	backdrop.new(bufnr, diffviewZindex)
 
 	-- HIGHLIGHTING
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
@@ -328,7 +332,8 @@ function M.searchFileHistory()
 	vim.api.nvim_create_autocmd("FileType", {
 		once = true,
 		pattern = "DressingInput",
-		callback = function()
+		callback = function(ctx)
+			backdrop.new(ctx.buf)
 			local winid = vim.api.nvim_get_current_win()
 			local footerText = "empty = all commits that changed file"
 			vim.api.nvim_win_set_config(winid, {

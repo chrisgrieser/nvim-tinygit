@@ -46,7 +46,7 @@ local M = {}
 local defaultConfig = {
 	commitMsg = {
 		-- Shows diffstats of the changes that are going to be committed.
-		-- Requires nvim-notify.
+		-- (requires nvim-notify)
 		commitPreview = true,
 
 		conventionalCommits = {
@@ -69,7 +69,11 @@ local defaultConfig = {
 		keepAbortedMsgSecs = 300,
 
 		-- if `false`, will use the width set in the dressing.nvim config
-		inputFieldWidth = 73,
+		inputFieldWidth = 72,
+	},
+	backdrop = {
+		enabled = true,
+		blend = 60, -- 0-100
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
@@ -100,7 +104,7 @@ local defaultConfig = {
 			-- show component, but leave out names (useful for your own name)
 			hideAuthorNames = {},
 
-			maxMsgLen = 35,
+			maxMsgLen = 40,
 			icon = "ﰖ ",
 		},
 		branchState = {

@@ -91,7 +91,9 @@ local function issueListAppearance()
 	local autocmdId = vim.api.nvim_create_autocmd("FileType", {
 		once = true, -- to not affect other selectors
 		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
-		callback = function()
+		callback = function(ctx)
+			require("tinygit.shared.backdrop").new(ctx.buf)
+
 			local ns = vim.api.nvim_create_namespace("tinygit.issueList")
 			vim.api.nvim_win_set_hl_ns(0, ns)
 

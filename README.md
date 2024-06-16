@@ -305,11 +305,18 @@ local defaultConfig = {
 		-- (configured to ignore capitalization and correctly consider camelCase)
 		spellcheck = false,
 
-		-- if commit message references issue/PR, open it in the browser
+		-- if message references issue/PR, open it in the browser after commit
 		openReferencedIssue = false,
 
 		-- how long to remember the state of the message input field when aborting
 		keepAbortedMsgSecs = 300,
+
+		-- if `false`, will use the width set in the dressing.nvim config
+		inputFieldWidth = 72,
+	},
+	backdrop = {
+		enabled = true,
+		blend = 60, -- 0-100
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
@@ -340,10 +347,9 @@ local defaultConfig = {
 			-- show component, but leave out names (useful for your own name)
 			hideAuthorNames = {},
 
-			maxMsgLen = 35,
+			maxMsgLen = 40,
 			icon = "ﰖ ",
 		},
-
 		branchState = {
 			icons = {
 				ahead = "󰶣",
