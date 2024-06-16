@@ -5,8 +5,8 @@ local basename = vim.fs.basename
 
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.historySearch
-local selectCommit = require("tinygit.shared.select-commit")
 local backdrop = require("tinygit.shared.backdrop")
+local selectCommit = require("tinygit.shared.select-commit")
 --------------------------------------------------------------------------------
 
 ---@class (exact) diffviewState
