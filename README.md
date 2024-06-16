@@ -1,35 +1,13 @@
 <!-- LTeX: enabled=false -->
 # nvim-tinygit
 <!-- LTeX: enabled=true -->
-<a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
-<img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield"/></a>
 
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
-<!-- toc -->
-
-- [Features Overview](#features-overview)
-- [Installation](#installation)
-- [Commands](#commands)
-	* [Smart-Commit](#smart-commit)
-	* [Amend](#amend)
-	* [Fixup & Squash Commits](#fixup--squash-commits)
-	* [Undo Last Commit/Amend](#undo-last-commitamend)
-	* [GitHub Interaction](#github-interaction)
-	* [Push & PR](#push--pr)
-	* [Explore the History of a File, Function, or Line ("git pickaxe")](#explore-the-history-of-a-file-function-or-line-git-pickaxe)
-	* [Stash](#stash)
-- [Status Line Components](#status-line-components)
-	* [Git Blame](#git-blame)
-	* [Branch State](#branch-state)
-- [Other Features](#other-features)
-	* [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
-- [Configuration](#configuration)
-- [Comparison to existing git plugins](#comparison-to-existing-git-plugins)
-- [Credits](#credits)
-
-<!-- tocstop -->
+<img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/f09dba0b-a81e-4973-897a-20605f4c29db">
+<img alt="Showcase diffview" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/34161d44-02eb-4340-a7ea-d18d436b4ab4">
+<img alt="Showcase statusline components" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
 
 ## Features Overview
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
@@ -47,9 +25,28 @@ operations.
   and pushing, and searching the file history combines unshallowing, searching,
   and navigating diffs.
 
-<img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/f09dba0b-a81e-4973-897a-20605f4c29db">
-<img alt="Showcase diffview" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/34161d44-02eb-4340-a7ea-d18d436b4ab4">
-<img alt="Showcase statusline components" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
+<!-- toc -->
+
+- [Installation](#installation)
+- [Commands](#commands)
+	* [Smart-Commit](#smart-commit)
+	* [Amend](#amend)
+	* [Fixup & Squash Commits](#fixup--squash-commits)
+	* [Undo Last Commit/Amend](#undo-last-commitamend)
+	* [GitHub Interaction](#github-interaction)
+	* [Push & PR](#push--pr)
+	* [Explore the History of a File, Function, or Line ("git pickaxe")](#explore-the-history-of-a-file-function-or-line-git-pickaxe)
+	* [Stash](#stash)
+- [Status Line Components](#status-line-components)
+	* [Git Blame](#git-blame)
+	* [Branch State](#branch-state)
+- [Other Features](#other-features)
+	* [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
+- [Configuration](#configuration)
+- [Comparison to existing git plugins](#comparison-to-existing-git-plugins)
+- [About me](#about-me)
+
+<!-- tocstop -->
 
 ## Installation
 **Hard Requirements**  
@@ -398,7 +395,7 @@ require("notify").setup {
   side-by-side-diff, but in a unified view.
 
 <!-- vale Google.FirstPerson = NO -->
-## Credits
+## About me
 In my day job, I am a sociologist studying the social mechanisms underlying the
 digital economy. For my PhD project, I investigate the governance of the app
 economy and how software ecosystems manage the tension between innovation and
