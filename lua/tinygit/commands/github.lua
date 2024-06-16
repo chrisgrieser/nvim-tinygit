@@ -94,27 +94,9 @@ local function issueListAppearance()
 		callback = function(ctx)
 			require("tinygit.shared.backdrop").new(ctx.buf)
 
-			local ns = vim.api.nvim_create_namespace("tinygit.issueList")
-			vim.api.nvim_win_set_hl_ns(0, ns)
-
-			vim.fn.matchadd("tinygit_issueList_bugs", [[\v[Bb]ug]])
-			vim.api.nvim_set_hl(ns, "tinygit_issueList_bugs", { link = "DiagnosticError" })
-
-			vim.fn.matchadd("tinygit_issueList_featureRequests", [[\v[Ff]eature [Rr]equest|FR]]) -- codespell-ignore
-			vim.api.nvim_set_hl(ns, "tinygit_issueList_featureRequests", { link = "DiagnosticInfo" })
-
-			vim.fn.matchadd("tinygit_issueList_issueNumber", [[#\d\+]])
-			vim.api.nvim_set_hl(ns, "tinygit_issueList_issueNumber", { link = "Number" })
-
-			vim.fn.matchadd("tinygit_issueList_mdInlineCode", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
-			vim.api.nvim_set_hl(ns, "tinygit_issueList_mdInlineCode", { link = "@text.literal" })
-
-			-- conventional commit keywords for PRs
-			vim.fn.matchadd(
-				"tinygit_issueList_conventionalCommit",
-				[[\v (feat|fix|test|perf|build|ci|revert|refactor|chore|docs|break|improv|style)(!|(.{-}))?\ze:]]
-			)
-			vim.api.nvim_set_hl(ns, "tinygit_issueList_conventionalCommit", { link = "Title" })
+			u.commitMsgHighlighting() -- for PRs
+			vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
+			vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
 		end,
 	})
 	return autocmdId
@@ -125,24 +107,19 @@ end
 ---@param opts? { state?: string, type?: string }
 function M.issuesAndPrs(opts)
 	if u.notInGitRepo() then return end
-	local defaultOpts = {
-		state = "all",
-		type = "all",
-	}
+	local defaultOpts = { state = "all", type = "all" }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	local repo = getGithubRepo()
 	if not repo then return end
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
-	local rawJsonUrl = ("https://api.github.com/repos/%s/issues?per_page=100&state=%s&sort=updated"):format(
-		repo,
-		opts.state
-	)
+	local baseUrl = ("https://api.github.com/repos/%s/issues"):format(repo)
+	local rawJsonUrl = baseUrl .. ("?per_page=100&state=%s&sort=updated"):format(opts.state)
 	local rawJSON = vim.system({ "curl", "-sL", rawJsonUrl }):wait().stdout or ""
 	local issues = vim.json.decode(rawJSON)
 	if not issues then
-		u.notify("Failed to fetch issues.", "warn")
+		u.notify("Failed to fetch issues.", "error")
 		return
 	end
 	if issues and opts.type ~= "all" then
