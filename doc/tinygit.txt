@@ -11,35 +11,15 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Other Features                       |tinygit-nvim-tinygit-other-features|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
   - Comparison to existing git plugins|tinygit-nvim-tinygit-comparison-to-existing-git-plugins|
-  - Credits                                     |tinygit-nvim-tinygit-credits|
+  - About me                                   |tinygit-nvim-tinygit-about-me|
 
 ==============================================================================
 1. nvim-tinygit                                         *tinygit-nvim-tinygit*
 
-
-
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
-- |tinygit-features-overview|
-- |tinygit-installation|
-- |tinygit-commands|
-    - |tinygit-smart-commit|
-    - |tinygit-amend|
-    - |tinygit-fixup-&-squash-commits|
-    - |tinygit-undo-last-commit/amend|
-    - |tinygit-github-interaction|
-    - |tinygit-push-&-pr|
-    - |tinygit-explore-the-history-of-a-file,-function,-or-line-("git-pickaxe")|
-    - |tinygit-stash|
-- |tinygit-status-line-components|
-    - |tinygit-git-blame|
-    - |tinygit-branch-state|
-- |tinygit-other-features|
-    - |tinygit-improved-highlighting-of-interactive-rebase|
-- |tinygit-configuration|
-- |tinygit-comparison-to-existing-git-plugins|
-- |tinygit-credits|
+
 
 
 FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
@@ -59,7 +39,24 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
     and pushing, and searching the file history combines unshallowing, searching,
     and navigating diffs.
 
-
+- |tinygit-installation|
+- |tinygit-commands|
+    - |tinygit-smart-commit|
+    - |tinygit-amend|
+    - |tinygit-fixup-&-squash-commits|
+    - |tinygit-undo-last-commit/amend|
+    - |tinygit-github-interaction|
+    - |tinygit-push-&-pr|
+    - |tinygit-explore-the-history-of-a-file,-function,-or-line-("git-pickaxe")|
+    - |tinygit-stash|
+- |tinygit-status-line-components|
+    - |tinygit-git-blame|
+    - |tinygit-branch-state|
+- |tinygit-other-features|
+    - |tinygit-improved-highlighting-of-interactive-rebase|
+- |tinygit-configuration|
+- |tinygit-comparison-to-existing-git-plugins|
+- |tinygit-about-me|
 
 
 INSTALLATION                               *tinygit-nvim-tinygit-installation*
@@ -333,11 +330,18 @@ The `setup` call is optional. These are the default settings:
             -- (configured to ignore capitalization and correctly consider camelCase)
             spellcheck = false,
     
-            -- if commit message references issue/PR, open it in the browser
+            -- if message references issue/PR, open it in the browser after commit
             openReferencedIssue = false,
     
             -- how long to remember the state of the message input field when aborting
             keepAbortedMsgSecs = 300,
+    
+            -- if `false`, will use the width set in the dressing.nvim config
+            inputFieldWidth = 72,
+        },
+        backdrop = {
+            enabled = true,
+            blend = 60, -- 0-100
         },
         push = {
             preventPushingFixupOrSquashCommits = true,
@@ -368,10 +372,9 @@ The `setup` call is optional. These are the default settings:
                 -- show component, but leave out names (useful for your own name)
                 hideAuthorNames = {},
     
-                maxMsgLen = 35,
+                maxMsgLen = 40,
                 icon = "ﰖ ",
             },
-    
             branchState = {
                 icons = {
                     ahead = "󰶣",
@@ -422,7 +425,7 @@ COMPARISON TO EXISTING GIT PLUGINS*tinygit-nvim-tinygit-comparison-to-existing-g
     side-by-side-diff, but in a unified view.
 
 
-CREDITS                                         *tinygit-nvim-tinygit-credits*
+ABOUT ME                                       *tinygit-nvim-tinygit-about-me*
 
 In my day job, I am a sociologist studying the social mechanisms underlying the
 digital economy. For my PhD project, I investigate the governance of the app
