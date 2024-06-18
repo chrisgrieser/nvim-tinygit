@@ -5,7 +5,11 @@ local updateStatusline = require("tinygit.statusline").updateAllComponents
 
 local M = {}
 local fn = vim.fn
-local abortedCommitMsg
+
+local state = {
+	abortedCommitMsg = nil,
+	openIssues = {},
+}
 --------------------------------------------------------------------------------
 
 ---@nodiscard
@@ -154,8 +158,11 @@ local function setupInputField(commitType)
 				local ft = vim.api.nvim_get_option_value("filetype", { buf = ctx.buf })
 				if not (ft == "gitcommit" or ft == "DressingInput") then return end
 
-				abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
-				vim.defer_fn(function() abortedCommitMsg = nil end, 1000 * config.keepAbortedMsgSecs)
+				state.abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
+				vim.defer_fn(
+					function() state.abortedCommitMsg = nil end,
+					1000 * config.keepAbortedMsgSecs
+				)
 
 				-- Disables this autocmd. Cannot use `once = true`, as things like
 				-- closed notification windows would still trigger it which would false
@@ -280,7 +287,7 @@ local function openReferencedIssue(processedMsg)
 	local config = require("tinygit.config").config.commitMsg
 	local issueReferenced = processedMsg:match("#(%d+)")
 	if config.openReferencedIssue and issueReferenced then
-		local repo = u.getGithubRemote()
+		local repo = u.getGithubRemote("silent")
 		if not repo then return end
 		local url = ("https://github.com/%s/issues/%s"):format(repo, issueReferenced)
 		vim.ui.open(url)
@@ -299,7 +306,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 
 	local defaultOpts = { pushIfClean = false, pullBeforePush = true }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
-	local prefillMsg = msgNeedsFixing or abortedCommitMsg or ""
+	local prefillMsg = msgNeedsFixing or state.abortedCommitMsg or ""
 
 	local doStageAllChanges = hasNoStagedChanges()
 	-- When committing with no staged changes, all changes are staged, resulting
@@ -321,7 +328,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 		-- abort
 		local aborted = not commitMsg
 		if aborted then return end
-		if not aborted then abortedCommitMsg = nil end
+		if not aborted then state.abortedCommitMsg = nil end
 
 		-- validate
 		local validMsg, processedMsg = processCommitMsg(commitMsg)

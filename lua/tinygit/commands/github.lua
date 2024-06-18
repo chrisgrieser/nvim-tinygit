@@ -5,12 +5,15 @@ local config = require("tinygit.config").config
 --------------------------------------------------------------------------------
 
 ---@return string? "user/name" of repo, without the trailing ".git"
+---@param silent? "silent"
 ---@nodiscard
-local function getGithubRepo()
+local function getGithubRepo(silent)
 	local remotes = vim.system({ "git", "remote", "--verbose" }):wait().stdout or ""
 	local githubRemote = remotes:match("github%.com[/:](%S+)")
 	if not githubRemote then
-		M.notify("Remote does not appear to be at GitHub: " .. githubRemote, "warn")
+		if not silent then
+			M.notify("Remote does not appear to be at GitHub: " .. githubRemote, "warn")
+		end
 		return
 	end
 	githubRemote = githubRemote:gsub("%.git$", "")
