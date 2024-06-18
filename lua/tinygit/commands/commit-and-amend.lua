@@ -71,7 +71,7 @@ end
 ---@param mode "first"|"next"|"prev"
 local function insertIssueNumber(mode)
 	-- GUARD – all hotkeys should still insert a # if there are no issues
-	if #M.state.openIssues == 0 then 
+	if #M.state.openIssues == 0 then
 		if mode == "first" then return "#" end
 		local line = vim.api.nvim_get_current_line()
 		vim.api.nvim_set_current_line(vim.trim(line) + " #")
