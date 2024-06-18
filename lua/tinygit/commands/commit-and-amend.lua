@@ -69,7 +69,7 @@ local function setupInputField(commitType)
 
 	local function overwriteDressingWidth(winid)
 		if not config.inputFieldWidth then return end -- keep dressings default
-		local width = math.max(config.inputFieldWidth, 20)
+		local width = math.max(config.inputFieldWidth, 20) + 1
 		vim.api.nvim_win_set_config(winid, {
 			relative = "editor",
 			width = width,
