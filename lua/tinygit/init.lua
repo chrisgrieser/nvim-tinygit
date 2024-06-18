@@ -23,7 +23,7 @@ setmetatable(M, {
 				fixupCommit = "commit-and-amend",
 				amendOnlyMsg = "commit-and-amend",
 				amendNoEdit = "commit-and-amend",
-				undoLastCommitOrAmend = "undo-commit-amend",
+				undoLastCommitOrAmend = "undo",
 				diffview = "diffview",
 				stashPop = "stash",
 				stashPush = "stash",
