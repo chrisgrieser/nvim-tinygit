@@ -46,35 +46,22 @@ local M = {}
 ---@type pluginConfig
 local defaultConfig = {
 	commitMsg = {
-		-- Shows diffstats of the changes that are going to be committed.
-		-- (requires nvim-notify)
-		commitPreview = true,
-
+		commitPreview = true, -- requires nvim-notify
+		spellcheck = false,
+		keepAbortedMsgSecs = 300,
+		inputFieldWidth = 72, -- `false` to use dressing.nvim config
 		conventionalCommits = {
-			enforce = false, -- disallow commit messages without a keyword
+			enforce = false,
 			-- stylua: ignore
 			keywords = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",
 				"perf", "style", "revert", "ci", "break", "improv",
 			},
 		},
-
-		-- enable vim's builtin spellcheck for the commit message input field.
-		-- (configured to ignore capitalization and correctly consider camelCase)
-		spellcheck = false,
-
-		-- if message references issue/PR, open it in the browser after commit
-		openReferencedIssue = false,
-
-		-- how long to remember the state of the message input field when aborting
-		keepAbortedMsgSecs = 300,
-
-		-- if `false`, will use the width set in the dressing.nvim config
-		inputFieldWidth = 72,
-
-		-- Experimental. Typing `#` will insert the most recent open issue.
-		-- Requires nvim-notify.
+		openReferencedIssue = false, -- if message has issue/PR, open in browser afterwards
 		insertIssuesOnHash = {
+			-- Experimental. Typing `#` will insert the most recent open issue.
+			-- Requires nvim-notify.
 			enabled = false,
 			next = "<Tab>", -- insert & normal mode
 			prev = "<S-Tab>",
@@ -102,18 +89,12 @@ local defaultConfig = {
 			height = 0.8,
 			border = "single",
 		},
-		-- if trying to call `git log` on a shallow repository, automatically
-		-- unshallow the repo by running `git fetch --unshallow`
 		autoUnshallowIfNeeded = false,
 	},
 	statusline = {
 		blame = {
-			-- Any of these authors and the component is not shown (useful for bots)
-			ignoreAuthors = {},
-
-			-- show component, but leave out names (useful for your own name)
-			hideAuthorNames = {},
-
+			ignoreAuthors = {}, -- hide component if these authors (useful for bots)
+			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
 			maxMsgLen = 40,
 			icon = "ﰖ ",
 		},
