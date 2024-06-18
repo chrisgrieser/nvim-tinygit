@@ -1,16 +1,19 @@
+local M = {}
+
 local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 local push = require("tinygit.commands.push-pull").push
 local updateStatusline = require("tinygit.statusline").updateAllComponents
-
-local M = {}
 local fn = vim.fn
 
-local state = {
+--------------------------------------------------------------------------------
+
+M.state = {
 	abortedCommitMsg = nil,
 	openIssues = {},
+	curIssue = nil,
+	issueNotif = nil,
 }
---------------------------------------------------------------------------------
 
 ---@nodiscard
 ---@return boolean
@@ -65,15 +68,66 @@ local function processCommitMsg(commitMsg)
 	return true, commitMsg
 end
 
+---@param mode "first"|"next"
+local function insertIssueNumber(mode)
+	if #M.state.openIssues == 0 then
+		if mode == "first" then return "#" end
+		return
+	end
+
+	M.state.curIssue = M.state.curIssue + 1
+	if M.state.curIssue > #M.state.openIssues then M.state.curIssue = 1 end
+	local issue = M.state.openIssues[M.state.curIssue]
+	local msg = string.format("#%d %s", issue.number, issue.title)
+
+	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
+		timeout = false,
+		replace = M.state.issueNotif and M.state.issueNotif.id, ---@diagnostic disable-line: undefined-field
+		on_open = function(win)
+			local buf = vim.api.nvim_win_get_buf(win)
+			vim.api.nvim_buf_call(buf, u.issueTextHighlighting)
+		end,
+	})
+
+	if mode == "first" then
+		return "#" .. issue.number -- keymap needs `expr = true`
+	elseif mode == "next" then
+		local line = vim.api.nvim_get_current_line()
+		local updatedLine, found = line:gsub("#%d+", "#" .. issue.number, 1)
+		if found == 0 then updatedLine = line .. " #" .. issue.number end
+		vim.api.nvim_set_current_line(updatedLine)
+	end
+end
+
+---@param bufnr number
+local function setupIssueInsertion(bufnr)
+	local opts = require("tinygit.config").config.commitMsg
+	M.state.curIssue = 0
+	M.state.openIssues = {}
+	M.state.openIssues = require("tinygit.commands.github").getOpenIssuesAsync() or {}
+	vim.keymap.set(
+		"i",
+		"#",
+		function() return insertIssueNumber("first") end,
+		{ buffer = bufnr, expr = true }
+	)
+	vim.keymap.set(
+		{ "n", "i" },
+		opts.insertIssuesOnHash.cycleIssuesKey,
+		function() insertIssueNumber("next") end,
+		{ buffer = bufnr }
+	)
+end
+
 ---@param commitType? "smartCommit"
 local function setupInputField(commitType)
-	local config = require("tinygit.config").config.commitMsg
+	local opts = require("tinygit.config").config.commitMsg
 	local commitMaxLen = 72 -- hard git limit
 	local commitOverflowLen = 50 -- limit used by treesitter gitcommit parser
 
 	local function overwriteDressingWidth(winid)
-		if not config.inputFieldWidth then return end -- keep dressings default
-		local width = math.max(config.inputFieldWidth, 20) + 1
+		if not opts.inputFieldWidth then return end -- keep dressings default
+		local width = math.max(opts.inputFieldWidth, 20) + 1
 		vim.api.nvim_win_set_config(winid, {
 			relative = "editor",
 			width = width,
@@ -139,6 +193,11 @@ local function setupInputField(commitType)
 			setupHighlighting(winid)
 			charCountInFooter(bufnr, winid)
 
+			-- fetch the issues now, so they are later available when typing `#`
+			if opts.insertIssuesOnHash.enabled and package.loaded["notify"] then
+				setupIssueInsertion(bufnr)
+			end
+
 			-- activates styling for statusline plugins (e.g., filename icons)
 			vim.api.nvim_buf_set_name(bufnr, "COMMIT_EDITMSG")
 
@@ -158,10 +217,10 @@ local function setupInputField(commitType)
 				local ft = vim.api.nvim_get_option_value("filetype", { buf = ctx.buf })
 				if not (ft == "gitcommit" or ft == "DressingInput") then return end
 
-				state.abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
+				M.state.abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
 				vim.defer_fn(
-					function() state.abortedCommitMsg = nil end,
-					1000 * config.keepAbortedMsgSecs
+					function() M.state.abortedCommitMsg = nil end,
+					1000 * opts.keepAbortedMsgSecs
 				)
 
 				-- Disables this autocmd. Cannot use `once = true`, as things like
@@ -274,11 +333,12 @@ local function showCommitPreview()
 	})
 end
 
-local function closeCommitPreview()
-	local config = require("tinygit.config").config.commitMsg
-	if package.loaded["notify"] and config.commitPreview then
+local function closeNotifications()
+	local opts = require("tinygit.config").config.commitMsg
+	if package.loaded["notify"] and (opts.commitPreview or M.state.issueNotif) then
 		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
 		require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
+		M.state.issueNotif = nil
 	end
 end
 
@@ -306,7 +366,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 
 	local defaultOpts = { pushIfClean = false, pullBeforePush = true }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
-	local prefillMsg = msgNeedsFixing or state.abortedCommitMsg or ""
+	local prefillMsg = msgNeedsFixing or M.state.abortedCommitMsg or ""
 
 	local doStageAllChanges = hasNoStagedChanges()
 	-- When committing with no staged changes, all changes are staged, resulting
@@ -323,12 +383,12 @@ function M.smartCommit(opts, msgNeedsFixing)
 	setupInputField("smartCommit")
 
 	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
-		closeCommitPreview()
+		closeNotifications()
 
 		-- abort
 		local aborted = not commitMsg
 		if aborted then return end
-		if not aborted then state.abortedCommitMsg = nil end
+		if not aborted then M.state.abortedCommitMsg = nil end
 
 		-- validate
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
@@ -470,7 +530,7 @@ function M.fixupCommit(opts)
 		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)
-		closeCommitPreview()
+		closeNotifications()
 
 		vim.api.nvim_del_autocmd(autocmdId)
 		if not commit then return end

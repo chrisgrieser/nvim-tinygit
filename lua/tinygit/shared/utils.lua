@@ -13,7 +13,7 @@ function M.notify(body, level, title, extraOpts)
 
 	local baseOpts = { title = notifyTitle }
 	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
-	vim.notify(vim.trim(body), notifyLevel, opts)
+	return vim.notify(vim.trim(body), notifyLevel, opts)
 end
 
 ---checks if last command was successful, if not, notify
@@ -48,24 +48,36 @@ function M.syncShellCmd(cmd)
 	return vim.trim(stdout)
 end
 
----@param mode? "only-markup"
-function M.commitMsgHighlighting(mode)
-	-- INFO using namespace in here does not work, therefore simply
-	-- using `matchadd`, since it is restricted to the current window anyway
-	-- INFO the order the highlights are added matters, later has priority
+--------------------------------------------------------------------------------
+
+-- INFO using namespace in here does not work, therefore simply
+-- using `matchadd`, since it is restricted to the current window anyway
+-- INFO the order the highlights are added matters, later has priority
+
+local function markupHighlights()
 	vim.fn.matchadd("Number", [[#\d\+]]) -- issue number
 	vim.fn.matchadd("@markup.raw.markdown_inline", [[`.\{-}`]]) -- .\{-} = non-greedy quantifier
+end
 
-	if mode ~= "only-markup" then
-		---Event though there is a `gitcommit` treesitter parser, we still need to
-		---manually mark conventional commits keywords, the parser assume the keyword to
-		---be the first word in the buffer, while we want to highlight it in lists of
-		---commits or in buffers where the commit message is placee somewhere else.
-		local cc = require("tinygit.config").config.commitMsg.conventionalCommits.keywords
-		vim.fn.matchadd("Title", [[\v(]] .. table.concat(cc, "|") .. [[)(.{-})?\ze: ]])
+---@param mode? "only-markup"
+function M.commitMsgHighlighting(mode)
+	markupHighlights()
+	if mode == "only-markup" then return end
 
-		vim.fn.matchadd("WarningMsg", [[\v(fixup|squash)!]])
-	end
+	---Event though there is a `gitcommit` treesitter parser, we still need to
+	---manually mark conventional commits keywords, the parser assume the keyword to
+	---be the first word in the buffer, while we want to highlight it in lists of
+	---commits or in buffers where the commit message is placee somewhere else.
+	local cc = require("tinygit.config").config.commitMsg.conventionalCommits.keywords
+	vim.fn.matchadd("Title", [[\v(]] .. table.concat(cc, "|") .. [[)(.{-})?\ze: ]])
+
+	vim.fn.matchadd("WarningMsg", [[\v(fixup|squash)!]])
+end
+
+function M.issueTextHighlighting()
+	markupHighlights()
+	vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
+	vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
 end
 
 --------------------------------------------------------------------------------

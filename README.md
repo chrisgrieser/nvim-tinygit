@@ -310,6 +310,14 @@ local defaultConfig = {
 
 		-- if `false`, will use the width set in the dressing.nvim config
 		inputFieldWidth = 72,
+
+		-- Experimental. Typing `#` will insert the most recent issue number.
+		-- Requires nvim-notify.
+		insertIssuesOnHash = {
+			enabled = false,
+			cycleIssuesKey = "<Tab>",
+			issuesToFetch = 20,
+		},
 	},
 	backdrop = {
 		enabled = true,

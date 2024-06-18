@@ -22,6 +22,7 @@ local M = {}
 ---@field commitPreview boolean
 ---@field keepAbortedMsgSecs number
 ---@field inputFieldWidth number
+---@field insertIssuesOnHash { enabled: boolean, cycleIssuesKey: string, issuesToFetch: number }
 
 ---@class historySearchConfig
 ---@field diffPopup { width: number, height: number, border: "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]}
@@ -70,6 +71,14 @@ local defaultConfig = {
 
 		-- if `false`, will use the width set in the dressing.nvim config
 		inputFieldWidth = 72,
+
+		-- Experimental. Typing `#` will insert the most recent issue number.
+		-- Requires nvim-notify.
+		insertIssuesOnHash = {
+			enabled = false,
+			cycleIssuesKey = "<Tab>",
+			issuesToFetch = 20,
+		},
 	},
 	backdrop = {
 		enabled = true,

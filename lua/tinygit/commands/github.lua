@@ -96,10 +96,8 @@ local function issueListAppearance()
 		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
 		callback = function(ctx)
 			require("tinygit.shared.backdrop").new(ctx.buf)
-
 			u.commitMsgHighlighting() -- for PRs
-			vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
-			vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
+			u.issueTextHighlighting()
 		end,
 	})
 	return autocmdId
@@ -179,6 +177,23 @@ function M.createGitHubPr()
 	if not repo then return end
 	local prUrl = ("https://github.com/%s/pull/new/%s"):format(repo, branchName)
 	vim.ui.open(prUrl)
+end
+
+--------------------------------------------------------------------------------
+
+---@async
+function M.getOpenIssuesAsync()
+	local repo = getGithubRepo("silent")
+	local numberToFetch = require("tinygit.config").config.commitMsg.insertIssuesOnHash.issuesToFetch
+
+	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
+	local baseUrl = ("https://api.github.com/repos/%s/issues"):format(repo)
+	local rawJsonUrl = baseUrl .. ("?per_page=%d&state=open&sort=updated"):format(numberToFetch)
+	vim.system({ "curl", "-sL", rawJsonUrl }, {}, function(out)
+		if out.code ~= 0 then return end
+		local issues = vim.json.decode(out.stdout)
+		require("tinygit.commands.commit-and-amend").state.openIssues = issues
+	end)
 end
 
 --------------------------------------------------------------------------------
