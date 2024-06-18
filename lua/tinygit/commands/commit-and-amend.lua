@@ -75,7 +75,9 @@ local function insertIssueNumber(mode)
 		return
 	end
 
-	M.state.curIssue = M.state.curIssue + (mode == "next" and 1 or -1)
+	if mode == "next" or mode == "prev" then
+		M.state.curIssue = M.state.curIssue + (mode == "next" and 1 or -1)
+	end
 	if M.state.curIssue == 0 then M.state.curIssue = #M.state.openIssues end
 	if M.state.curIssue > #M.state.openIssues then M.state.curIssue = 1 end
 	local issue = M.state.openIssues[M.state.curIssue]
@@ -92,7 +94,7 @@ local function insertIssueNumber(mode)
 
 	if mode == "first" then
 		return "#" .. issue.number -- keymap needs `expr = true`
-	elseif mode == "next" then
+	else
 		local line = vim.api.nvim_get_current_line()
 		local updatedLine, found = line:gsub("#%d+", "#" .. issue.number, 1)
 		if found == 0 then updatedLine = line .. " #" .. issue.number end
