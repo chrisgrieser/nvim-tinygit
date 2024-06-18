@@ -78,6 +78,7 @@ function M.issueTextHighlighting()
 	markupHighlights()
 	vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
 	vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
+	vim.fn.matchadd("Comment", [[\vby \w+\s*$]]) -- `\s*` as nvim-notify sometimes adds padding
 end
 
 --------------------------------------------------------------------------------

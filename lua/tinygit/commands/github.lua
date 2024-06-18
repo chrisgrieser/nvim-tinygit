@@ -85,7 +85,7 @@ local function issueListFormatter(issue)
 		icon = config.issueIcons.openIssue
 	end
 
-	return icon .. " #" .. issue.number .. " " .. issue.title
+	return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
 end
 
 ---sets the appearance for TelescopeResults or DressingSelect

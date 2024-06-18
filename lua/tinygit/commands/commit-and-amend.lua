@@ -81,7 +81,7 @@ local function insertIssueNumber(mode)
 	if M.state.curIssue == 0 then M.state.curIssue = #M.state.openIssues end
 	if M.state.curIssue > #M.state.openIssues then M.state.curIssue = 1 end
 	local issue = M.state.openIssues[M.state.curIssue]
-	local msg = string.format("#%d %s", issue.number, issue.title)
+	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
 
 	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
 		timeout = false,
