@@ -68,14 +68,15 @@ local function processCommitMsg(commitMsg)
 	return true, commitMsg
 end
 
----@param mode "first"|"next"
+---@param mode "first"|"next"|"prev"
 local function insertIssueNumber(mode)
 	if #M.state.openIssues == 0 then
 		if mode == "first" then return "#" end
 		return
 	end
 
-	M.state.curIssue = M.state.curIssue + 1
+	M.state.curIssue = M.state.curIssue + (mode == "next" and 1 or -1)
+	if M.state.curIssue == 0 then M.state.curIssue = #M.state.openIssues end
 	if M.state.curIssue > #M.state.openIssues then M.state.curIssue = 1 end
 	local issue = M.state.openIssues[M.state.curIssue]
 	local msg = string.format("#%d %s", issue.number, issue.title)
@@ -113,8 +114,14 @@ local function setupIssueInsertion(bufnr)
 	)
 	vim.keymap.set(
 		{ "n", "i" },
-		opts.insertIssuesOnHash.cycleIssuesKey,
+		opts.insertIssuesOnHash.next,
 		function() insertIssueNumber("next") end,
+		{ buffer = bufnr }
+	)
+	vim.keymap.set(
+		{ "n", "i" },
+		opts.insertIssuesOnHash.prev,
+		function() insertIssueNumber("prev") end,
 		{ buffer = bufnr }
 	)
 end
