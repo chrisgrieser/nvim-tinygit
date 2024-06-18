@@ -41,8 +41,6 @@ operations.
 - [Statusline Components](#statusline-components)
 	* [Git Blame](#git-blame)
 	* [Branch State](#branch-state)
-- [Other Features](#other-features)
-	* [Improved Highlighting of Interactive Rebase](#improved-highlighting-of-interactive-rebase)
 - [Configuration](#configuration)
 - [Comparison to existing git plugins](#comparison-to-existing-git-plugins)
 - [About me](#about-me)
@@ -55,8 +53,8 @@ operations.
 - `dressing.nvim`
 
 **Optional/Recommended Requirements**
-- Treesitter parsers for git filetypes: `TSInstall gitcommit git_rebase`
-- `nvim-notify` for the commit preview, issue number insertion, & various
+- Treesitter parser for syntax highlighting: `TSInstall gitcommit`
+- `nvim-notify` for the commit preview, issue number insertion, and various
   notifications
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) or
   [fzf-lua](https://github.com/ibhagwan/fzf-lua) for better UI when selecting
@@ -66,7 +64,6 @@ operations.
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	ft = "git_rebase", -- so ftplugin is loaded
 	dependencies = "stevearc/dressing.nvim",
 },
 
@@ -266,22 +263,6 @@ the information may not be up-to-date with remote changes.)
 
 ```lua
 require("tinygit.statusline").branchState()
-```
-
-## Other Features
-
-### Improved Highlighting of Interactive Rebase
-`tinygit` also comes with some highlighting improvements for interactive
-rebasing (`git rebase -i`).
-
-> [!NOTE]
-> This requires `nvim` as your git editor (or sequence editor).
-> You can do so by running `git config --global core.editor "nvim"`.
-
-If you want to disable the modifications by `tinygit`, add this to your config:
-
-```lua
-vim.g.tinygit_no_rebase_ftplugin = true
 ```
 
 ## Configuration
