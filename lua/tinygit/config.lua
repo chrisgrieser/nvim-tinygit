@@ -22,7 +22,7 @@ local M = {}
 ---@field commitPreview boolean
 ---@field keepAbortedMsgSecs number
 ---@field inputFieldWidth number
----@field insertIssuesOnHash { enabled: boolean, cycleIssuesKey: string, issuesToFetch: number }
+---@field insertIssuesOnHash { enabled: boolean, next: string, prev: string, issuesToFetch: number }
 
 ---@class historySearchConfig
 ---@field diffPopup { width: number, height: number, border: "single"|"double"|"rounded"|"solid"|"none"|"shadow"|string[]}

@@ -104,10 +104,11 @@ end
 
 ---@param bufnr number
 local function setupIssueInsertion(bufnr)
-	local opts = require("tinygit.config").config.commitMsg
+	local opts = require("tinygit.config").config.commitMsg.insertIssuesOnHash
 	M.state.curIssue = 0
 	M.state.openIssues = {}
-	M.state.openIssues = require("tinygit.commands.github").getOpenIssuesAsync() or {}
+	require("tinygit.commands.github").getOpenIssuesAsync()
+
 	vim.keymap.set(
 		"i",
 		"#",
@@ -116,13 +117,13 @@ local function setupIssueInsertion(bufnr)
 	)
 	vim.keymap.set(
 		{ "n", "i" },
-		opts.insertIssuesOnHash.next,
+		opts.next,
 		function() insertIssueNumber("next") end,
 		{ buffer = bufnr }
 	)
 	vim.keymap.set(
 		{ "n", "i" },
-		opts.insertIssuesOnHash.prev,
+		opts.prev,
 		function() insertIssueNumber("prev") end,
 		{ buffer = bufnr }
 	)
