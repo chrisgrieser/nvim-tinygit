@@ -11,13 +11,14 @@ operations.
 
 ## Features Overview
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
-  commit preview, and overlength indicators. If there are no staged
-  changes, stages all changes before doing so (`git add -A`). Optionally trigger
-  a `git push` afterward.
+  commit preview, automatic issue number insertion, and overlength indicators.
+  If there are no staged changes, stages all changes before doing so (`git add
+  -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
-- **Search the file history** for a string ("git pickaxe"), show results in a diff view
+- **Explore the git history**: Search the file for a string ("git pickaxe"), or
+  examine a function's or line's history. Displays the results in a diff view
   with syntax highlighting, correctly following file renamings.
 - **Statusline components:** `git blame` and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
@@ -37,7 +38,7 @@ operations.
 	* [Push & PR](#push--pr)
 	* [Explore the History of a File, Function, or Line ("git pickaxe")](#explore-the-history-of-a-file-function-or-line-git-pickaxe)
 	* [Stash](#stash)
-- [Status Line Components](#status-line-components)
+- [Statusline Components](#statusline-components)
 	* [Git Blame](#git-blame)
 	* [Branch State](#branch-state)
 - [Other Features](#other-features)
@@ -55,10 +56,11 @@ operations.
 
 **Optional/Recommended Requirements**
 - Treesitter parsers for git filetypes: `TSInstall gitcommit git_rebase`
-- `nvim-notify` for the commit preview & various notifications
+- `nvim-notify` for the commit preview, issue number insertion, & various
+  notifications
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) or
-  [fzf-lua](https://github.com/ibhagwan/fzf-lua) for better selectors when
-  selecting commits or issues/PRs.
+  [fzf-lua](https://github.com/ibhagwan/fzf-lua) for better UI when selecting
+  commits or issues/PRs.
 
 ```lua
 -- lazy.nvim
@@ -87,6 +89,8 @@ use {
 - The title of the input field displays what actions are going to be performed.
   You can see at glance whether all changes are going to be committed, or whether
   there a `git push` is triggered afterward, so there are no surprises.
+- Typing `#` inserts the most recent issue number, `<Tab>` cycles through the
+  issues (currently opt-in, see plugin configuration).
 - Only supports the commit subject line (no commit body).
 
 ```lua
@@ -152,11 +156,12 @@ require("tinygit").undoLastCommitOrAmend()
 
 - Changes in the working directory are kept, but unstaged. (In the background,
   this uses `git reset --mixed`.)
-- Any `push` operation done as a followup (such as `.smartCommit {
-  pushIfClean = false }`) is not undone.
+- If there was a `push` operation done as a followup (such as `.smartCommit {
+  pushIfClean = false }`), the last commit is not undone.
 
 ### GitHub Interaction
-- Search issues & PRs. (Requires `curl`.)
+- Search issues & PRs.
+- Requires `curl`.
 
 ```lua
 -- state: all|closed|open (default: all)
@@ -236,7 +241,7 @@ require("tinygit").stashPush()
 require("tinygit").stashPop()
 ```
 
-## Status Line Components
+## Statusline Components
 
 ### Git Blame
 Shows the message and date (`git blame`) of the last commit that changed the
