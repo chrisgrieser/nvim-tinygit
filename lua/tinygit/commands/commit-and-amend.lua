@@ -74,7 +74,7 @@ local function insertIssueNumber(mode)
 	if #M.state.openIssues == 0 then
 		if mode == "first" then return "#" end
 		local line = vim.api.nvim_get_current_line()
-		vim.api.nvim_set_current_line(vim.trim(line) + " #")
+		vim.api.nvim_set_current_line(vim.trim(line) .. " #")
 		return
 	end
 
