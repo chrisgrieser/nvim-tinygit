@@ -8,7 +8,6 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Commands                                   |tinygit-nvim-tinygit-commands|
   - Statusline Components         |tinygit-nvim-tinygit-statusline-components|
-  - Other Features                       |tinygit-nvim-tinygit-other-features|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
   - Comparison to existing git plugins|tinygit-nvim-tinygit-comparison-to-existing-git-plugins|
   - About me                                   |tinygit-nvim-tinygit-about-me|
@@ -52,8 +51,6 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
 - |tinygit-statusline-components|
     - |tinygit-git-blame|
     - |tinygit-branch-state|
-- |tinygit-other-features|
-    - |tinygit-improved-highlighting-of-interactive-rebase|
 - |tinygit-configuration|
 - |tinygit-comparison-to-existing-git-plugins|
 - |tinygit-about-me|
@@ -63,9 +60,9 @@ INSTALLATION                               *tinygit-nvim-tinygit-installation*
 
 **Hard Requirements** - nvim 0.10 or higher - `dressing.nvim`
 
-**Optional/Recommended Requirements** - Treesitter parsers for git filetypes:
-`TSInstall gitcommit git_rebase` - `nvim-notify` for the commit preview, issue
-number insertion, & various notifications - telescope.nvim
+**Optional/Recommended Requirements** - Treesitter parser for syntax
+highlighting: `TSInstall gitcommit` - `nvim-notify` for the commit preview,
+issue number insertion, and various notifications - telescope.nvim
 <https://github.com/nvim-telescope/telescope.nvim> or fzf-lua
 <https://github.com/ibhagwan/fzf-lua> for better UI when selecting commits or
 issues/PRs.
@@ -74,7 +71,6 @@ issues/PRs.
     -- lazy.nvim
     {
         "chrisgrieser/nvim-tinygit",
-        ft = "git_rebase", -- so ftplugin is loaded
         dependencies = "stevearc/dressing.nvim",
     },
     
@@ -288,24 +284,6 @@ the information may not be up-to-date with remote changes.)
 
 >lua
     require("tinygit.statusline").branchState()
-<
-
-
-OTHER FEATURES                           *tinygit-nvim-tinygit-other-features*
-
-
-IMPROVED HIGHLIGHTING OF INTERACTIVE REBASE ~
-
-`tinygit` also comes with some highlighting improvements for interactive
-rebasing (`git rebase -i`).
-
-
-  [!NOTE] This requires `nvim` as your git editor (or sequence editor). You can
-  do so by running `git config --global core.editor "nvim"`.
-If you want to disable the modifications by `tinygit`, add this to your config:
-
->lua
-    vim.g.tinygit_no_rebase_ftplugin = true
 <
 
 
