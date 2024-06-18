@@ -70,8 +70,11 @@ end
 
 ---@param mode "first"|"next"|"prev"
 local function insertIssueNumber(mode)
-	if #M.state.openIssues == 0 then
+	-- GUARD – all hotkeys should still insert a # if there are no issues
+	if #M.state.openIssues == 0 then 
 		if mode == "first" then return "#" end
+		local line = vim.api.nvim_get_current_line()
+		vim.api.nvim_set_current_line(vim.trim(line) + " #")
 		return
 	end
 
@@ -96,7 +99,8 @@ local function insertIssueNumber(mode)
 		return "#" .. issue.number -- keymap needs `expr = true`
 	else
 		local line = vim.api.nvim_get_current_line()
-		local updatedLine, found = line:gsub("#%d+", "#" .. issue.number, 1)
+		-- `(.*)` to only updated the last occurrence of `#` in the line
+		local updatedLine, found = line:gsub("(.*)#%d+", "%1#" .. issue.number, 1)
 		if found == 0 then updatedLine = line .. " #" .. issue.number end
 		vim.api.nvim_set_current_line(updatedLine)
 	end
