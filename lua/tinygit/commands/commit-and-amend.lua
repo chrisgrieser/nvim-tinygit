@@ -70,22 +70,31 @@ end
 
 ---@param mode "first"|"next"|"prev"
 local function insertIssueNumber(mode)
-	-- GUARD – all hotkeys should still insert a # if there are no issues
-	if #M.state.openIssues == 0 then
-		if mode == "first" then return "#" end
+	-- cannot use `expr = true`, since it blocks line-editing APIs
+	local function insertText(str)
+		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
 		local line = vim.api.nvim_get_current_line()
-		vim.api.nvim_set_current_line(vim.trim(line) .. " #")
+		vim.api.nvim_set_current_line(line:sub(1, col) .. str .. line:sub(col + 1))
+		vim.api.nvim_win_set_cursor(0, { row, col + #str })
+	end
+
+	-- GUARD all hotkeys should still insert a `#` as fallback if there are no issues
+	if #M.state.openIssues == 0 then
+		insertText("#")
 		return
 	end
 
-	if mode == "next" or mode == "prev" then
-		M.state.curIssue = M.state.curIssue + (mode == "next" and 1 or -1)
-	end
+	-- determine next issue
+	local increment = 0
+	if mode == "next" then increment = 1 end
+	if mode == "prev" then increment = -1 end
+	M.state.curIssue = M.state.curIssue + increment
 	if M.state.curIssue == 0 then M.state.curIssue = #M.state.openIssues end
 	if M.state.curIssue > #M.state.openIssues then M.state.curIssue = 1 end
 	local issue = M.state.openIssues[M.state.curIssue]
-	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
 
+	-- notification
+	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
 	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
 		timeout = false,
 		replace = M.state.issueNotif and M.state.issueNotif.id, ---@diagnostic disable-line: undefined-field
@@ -95,42 +104,28 @@ local function insertIssueNumber(mode)
 		end,
 	})
 
-	if mode == "first" then
-		return "#" .. issue.number -- keymap needs `expr = true`
+	-- update text
+	local line = vim.api.nvim_get_current_line()
+	local updated, found = line:gsub("(.*)#%d+", "%1#" .. issue.number) -- (.*): only last occurrence
+	if found == 0 or mode == "first" then
+		insertText("#" .. issue.number)
 	else
-		local line = vim.api.nvim_get_current_line()
-		-- `(.*)` to only updated the last occurrence of `#` in the line
-		local updatedLine, found = line:gsub("(.*)#%d+", "%1#" .. issue.number, 1)
-		if found == 0 then updatedLine = line .. " #" .. issue.number end
-		vim.api.nvim_set_current_line(updatedLine)
+		vim.api.nvim_set_current_line(updated)
 	end
 end
 
 ---@param bufnr number
 local function setupIssueInsertion(bufnr)
-	local opts = require("tinygit.config").config.commitMsg.insertIssuesOnHash
 	M.state.curIssue = 0
 	M.state.openIssues = {}
 	require("tinygit.commands.github").getOpenIssuesAsync()
 
-	vim.keymap.set(
-		"i",
-		"#",
-		function() return insertIssueNumber("first") end,
-		{ buffer = bufnr, expr = true }
-	)
-	vim.keymap.set(
-		{ "n", "i" },
-		opts.next,
-		function() insertIssueNumber("next") end,
-		{ buffer = bufnr }
-	)
-	vim.keymap.set(
-		{ "n", "i" },
-		opts.prev,
-		function() insertIssueNumber("prev") end,
-		{ buffer = bufnr }
-	)
+	local conf = require("tinygit.config").config.commitMsg.insertIssuesOnHash
+	local keymap = vim.keymap.set
+
+	keymap("i", "#", function() insertIssueNumber("first") end, { buffer = bufnr })
+	keymap({ "n", "i" }, conf.next, function() insertIssueNumber("next") end, { buffer = bufnr })
+	keymap({ "n", "i" }, conf.prev, function() insertIssueNumber("prev") end, { buffer = bufnr })
 end
 
 ---@param commitType? "smartCommit"
