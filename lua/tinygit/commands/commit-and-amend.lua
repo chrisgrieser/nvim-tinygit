@@ -9,7 +9,7 @@ local fn = vim.fn
 --------------------------------------------------------------------------------
 
 M.state = {
-	abortedCommitMsg = nil,
+	abortedCommitMsg = {},
 	openIssues = {},
 	curIssue = nil,
 	issueNotif = nil,
@@ -231,9 +231,10 @@ local function setupInputField(commitType)
 				local ft = vim.api.nvim_get_option_value("filetype", { buf = ctx.buf })
 				if not (ft == "gitcommit" or ft == "DressingInput") then return end
 
-				M.state.abortedCommitMsg = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
+				local cwd = vim.uv.cwd() or ""
+				M.state.abortedCommitMsg[cwd] = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]
 				vim.defer_fn(
-					function() M.state.abortedCommitMsg = nil end,
+					function() M.state.abortedCommitMsg[cwd] = nil end,
 					1000 * opts.keepAbortedMsgSecs
 				)
 
@@ -380,7 +381,8 @@ function M.smartCommit(opts, msgNeedsFixing)
 
 	local defaultOpts = { pushIfClean = false, pullBeforePush = true }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
-	local prefillMsg = msgNeedsFixing or M.state.abortedCommitMsg or ""
+	local cwd = vim.uv.cwd() or ""
+	local prefillMsg = msgNeedsFixing or M.state.abortedCommitMsg[cwd] or ""
 
 	local doStageAllChanges = hasNoStagedChanges()
 	-- When committing with no staged changes, all changes are staged, resulting
@@ -402,7 +404,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 		-- abort
 		local aborted = not commitMsg
 		if aborted then return end
-		if not aborted then M.state.abortedCommitMsg = nil end
+		if not aborted then M.state.abortedCommitMsg[cwd] = nil end
 
 		-- validate
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
