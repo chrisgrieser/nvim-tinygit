@@ -335,7 +335,7 @@ function M.searchFileHistory()
 		callback = function(ctx)
 			backdrop.new(ctx.buf)
 			local winid = vim.api.nvim_get_current_win()
-			local footerText = "empty = all commits that changed file"
+			local footerText = "empty = all commits"
 			vim.api.nvim_win_set_config(winid, {
 				footer = { { " " .. footerText .. " ", "FloatBorder" } },
 				footer_pos = "right",
