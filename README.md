@@ -334,17 +334,7 @@ local defaultConfig = {
 }
 ```
 
-The appearance of the commit message input field and of the selectors is
-configured via [dressing.nvim](https://github.com/stevearc/dressing.nvim). To
-enable normal mode in the input field, use:
-
-```lua
-require("dressing").setup {
-	input = { insert_only = false },
-}
-```
-
-The appearance of the commit preview is determined by
+The appearance of the commit preview and notifications is determined by
 [nvim-notify](https://github.com/rcarriga/nvim-notify). To change for example
 the width of the preview, use:
 
