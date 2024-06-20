@@ -70,7 +70,7 @@ local defaultConfig = {
 	},
 	backdrop = {
 		enabled = true,
-		blend = 60, -- 0-100
+		blend = 50, -- 0-100
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
