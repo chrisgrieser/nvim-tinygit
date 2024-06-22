@@ -236,8 +236,9 @@ diffview of the changes.
         range.
 
 **Keymaps in the diff popup** - `<Tab>`show older commit - `<S-Tab>`show newer
-commit - `yh`yank the commit hash to the system clipboard - `n`/`N`go to the
-next/previous occurrence of the query (only file history)
+commit - `yh`yank the commit hash to the system clipboard - `R`restore file to
+state at commit - `n`/`N`go to the next/previous occurrence of the query (only
+file history)
 
 >lua
     require("tinygit").searchFileHistory()
