@@ -42,7 +42,7 @@ end
 
 ---@nodiscard
 ---@param cmd string[]
----@return string
+---@return string stdout
 function M.syncShellCmd(cmd)
 	local stdout = vim.system(cmd):wait().stdout or ""
 	return vim.trim(stdout)

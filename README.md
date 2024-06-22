@@ -222,6 +222,7 @@ diffview of the changes.
 - `<Tab>`: show older commit
 - `<S-Tab>`: show newer commit
 - `yh`: yank the commit hash to the system clipboard
+- `R`: restore file to state at commit
 - `n`/`N`: go to the next/previous occurrence of the query (only file history)
 
 ```lua

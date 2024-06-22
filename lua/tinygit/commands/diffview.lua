@@ -30,7 +30,11 @@ local state = {
 
 ---@param msg string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
-local function notify(msg, level) u.notify(msg, level, "Git History") end
+---@param extraOpts? { icon?: string, on_open?: function, timeout?: boolean|number, animate?: boolean }
+local function notify(msg, level, extraOpts)
+	---@diagnostic disable-next-line: param-type-mismatch -- wrong diagnostic
+	u.notify(msg, level, "Git History", extraOpts)
+end
 
 ---If `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow` and
 ---and also returns `false` then. This is so the caller can check whether the
@@ -61,6 +65,31 @@ local function repoIsShallow(callback)
 		return true
 	end
 end
+
+---@param hash string
+local function restoreFileToCommit(hash)
+	-- restore
+	local out = vim.system({ "git", "restore", "--source=" .. hash, "--", state.absPath }):wait()
+	if u.nonZeroExit(out) then return end
+
+	-- notification
+	local commitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%s", hash }
+	local restoreText = "Restored file to " .. hash .. ":"
+	notify(restoreText .. "\n" .. commitMsg, "info", {
+		on_open = function(win)
+			local buf = vim.api.nvim_win_get_buf(win)
+			vim.api.nvim_buf_call(buf, function()
+				u.commitMsgHighlighting()
+				vim.fn.matchadd("Comment", restoreText)
+			end)
+		end,
+	})
+
+	-- reload buffer
+	vim.cmd.checktime()
+end
+
+--------------------------------------------------------------------------------
 
 ---@param commitIdx number index of the selected commit in the list of commits
 local function showDiff(commitIdx)
@@ -145,10 +174,15 @@ local function showDiff(commitIdx)
 	local absWidth = math.floor(relWidth * vimWidth)
 
 	-- FOOTER & TITLE
-	local footerText = "q: close   (⇧)↹ : next/prev commit   yh: yank hash"
-	if query ~= "" and type == "file" then
-		footerText = footerText .. "   n/N: next/prev occurrence"
-	end
+	local footer = {
+		"q: close",
+		"(⇧)↹ : next/prev commit",
+		"yh: yank hash",
+		"R: restore to commit",
+	}
+	if query ~= "" and type == "file" then table.insert(footer, "n/N: next/prev occ.") end
+	local footerText = table.concat(footer, "  ")
+
 	local maxMsgLen = absWidth - #date - 3
 	commitMsg = commitMsg:sub(1, maxMsgLen)
 	local title = (" %s %s "):format(commitMsg, date)
@@ -260,6 +294,11 @@ local function showDiff(commitIdx)
 		end
 		closePopup()
 		showDiff(commitIdx - 1)
+	end, opts)
+
+	keymap("n", "R", function()
+		closePopup()
+		restoreFileToCommit(hash)
 	end, opts)
 
 	-- keymaps: yank hash
