@@ -17,6 +17,7 @@ local selectCommit = require("tinygit.shared.select-commit")
 ---@field unshallowingRunning boolean
 ---@field lnum? number only for line history
 ---@field offset? number only for line history
+---@field type? "file"|"function"|"line"
 local state = {
 	hashList = {},
 	absPath = "",
@@ -62,12 +63,12 @@ local function repoIsShallow(callback)
 end
 
 ---@param commitIdx number index of the selected commit in the list of commits
----@param type "file"|"function"|"line"
-local function showDiff(commitIdx, type)
+local function showDiff(commitIdx)
 	local ns = a.nvim_create_namespace("tinygit.diffview")
 	local hashList = state.hashList
 	local hash = hashList[commitIdx]
 	local query = state.query
+	local type = state.type
 	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=(%cr)", hash }
 	local commitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%s", hash }
 
@@ -159,7 +160,7 @@ local function showDiff(commitIdx, type)
 		relative = "editor",
 		width = absWidth,
 		height = math.floor(relHeight * vimHeight),
-		row = math.floor((1 - relHeight) * vimHeight / 2),
+		row = math.ceil((1 - relHeight) * vimHeight / 2),
 		col = math.floor((1 - relWidth) * vimWidth / 2),
 
 		title = title,
@@ -250,7 +251,7 @@ local function showDiff(commitIdx, type)
 			return
 		end
 		closePopup()
-		showDiff(commitIdx + 1, type)
+		showDiff(commitIdx + 1)
 	end, opts)
 	keymap("n", "<S-Tab>", function()
 		if commitIdx == 1 then
@@ -258,7 +259,7 @@ local function showDiff(commitIdx, type)
 			return
 		end
 		closePopup()
-		showDiff(commitIdx - 1, type)
+		showDiff(commitIdx - 1)
 	end, opts)
 
 	-- keymaps: yank hash
@@ -270,8 +271,7 @@ end
 
 ---Given a list of commits, prompt user to select one
 ---@param commitList string raw response from `git log`
----@param type "file"|"function"|"line"
-local function selectFromCommits(commitList, type)
+local function selectFromCommits(commitList)
 	-- GUARD
 	commitList = vim.trim(commitList or "")
 	if commitList == "" then
@@ -284,7 +284,7 @@ local function selectFromCommits(commitList, type)
 	-- This only compares basenames, file movements are not accounted
 	-- for, however this is for display purposes only, so this is not a problem.
 	local commits = {}
-	if type == "file" then
+	if state.type == "file" then
 		local oneCommitPer3Lines = vim.split(commitList, "\n")
 		for i = 1, #oneCommitPer3Lines, 3 do
 			local commitLine = oneCommitPer3Lines[i]
@@ -299,7 +299,7 @@ local function selectFromCommits(commitList, type)
 
 	-- CAVEAT `git log -L` does not support `--follow` and `--name-only`, so we
 	-- cannot add the name here
-	elseif type == "function" or type == "line" then
+	elseif state.type == "function" or state.type == "line" then
 		commits = vim.split(commitList, "\n")
 	end
 
@@ -318,7 +318,7 @@ local function selectFromCommits(commitList, type)
 		kind = "tinygit.diffview",
 	}, function(_, commitIdx)
 		a.nvim_del_autocmd(autocmdId)
-		if commitIdx then showDiff(commitIdx, type) end
+		if commitIdx then showDiff(commitIdx) end
 	end)
 end
 
@@ -328,6 +328,7 @@ function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
 	state.absPath = a.nvim_buf_get_name(0)
 	state.ft = vim.bo.filetype
+	state.type = "file"
 
 	vim.api.nvim_create_autocmd("FileType", {
 		once = true,
@@ -371,7 +372,7 @@ function M.searchFileHistory()
 		end
 		local result = vim.system(args):wait()
 		if u.nonZeroExit(result) then return end
-		selectFromCommits(result.stdout, "file")
+		selectFromCommits(result.stdout)
 	end)
 end
 
@@ -389,7 +390,7 @@ function M.functionHistory()
 			"--no-patch",
 		}):wait()
 		if u.nonZeroExit(result) then return end
-		selectFromCommits(result.stdout, "function")
+		selectFromCommits(result.stdout)
 	end
 
 	-- GUARD
@@ -401,6 +402,7 @@ function M.functionHistory()
 
 	state.absPath = a.nvim_buf_get_name(0)
 	state.ft = vim.bo.filetype
+	state.type = "function"
 
 	-- TODO figure out how to query treesitter for function names, and use
 	-- treesitter instead?
@@ -500,6 +502,7 @@ function M.lineHistory()
 	state.ft = vim.bo.filetype
 	state.lnum = lnum
 	state.offset = offset
+	state.type = "line"
 
 	local result = vim.system({
 		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
@@ -511,7 +514,7 @@ function M.lineHistory()
 	}):wait()
 	if u.nonZeroExit(result) then return end
 
-	selectFromCommits(result.stdout, "line")
+	selectFromCommits(result.stdout)
 end
 
 --------------------------------------------------------------------------------
