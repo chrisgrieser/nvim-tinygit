@@ -304,11 +304,10 @@ local function showCommitPreview()
 	local specialWhitespace = " " -- HACK to force nvim-notify to keep the blank line
 	if willStageAllChanges then
 		-- include new files in diff stats
-		local newFiles = u.syncShellCmd { "git", "ls-files", "--others", "--exclude-standard" }
-		if newFiles ~= "" then
-			for _, file in ipairs(vim.split(newFiles, "\n")) do
-				vim.system({ "git", "add", "--intent-to-add", "--", file }):wait()
-			end
+		local gitLsResponse = u.syncShellCmd { "git", "ls-files", "--others", "--exclude-standard" }
+		local newFiles = gitLsResponse ~= "" and vim.split(gitLsResponse, "\n") or {}
+		for _, file in ipairs(newFiles) do
+			vim.system({ "git", "add", "--intent-to-add", "--", file }):wait()
 		end
 
 		title = "Stage & " .. title
