@@ -189,9 +189,11 @@ function M.getOpenIssuesAsync()
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
 	local baseUrl = ("https://api.github.com/repos/%s/issues"):format(repo)
 	local rawJsonUrl = baseUrl .. ("?per_page=%d&state=open&sort=updated"):format(numberToFetch)
-	vim.system({ "curl", "-sL", rawJsonUrl }, {}, function(out)
+	vim.system({ "curl", "--silent", "--location", rawJsonUrl }, {}, function(out)
 		if out.code ~= 0 then return end
-		local issues = vim.json.decode(out.stdout)
+		local issues = vim.iter(vim.json.decode(out.stdout))
+			:filter(function(issue) return issue.pull_request == nil end)
+			:totable()
 		require("tinygit.commands.commit-and-amend").state.openIssues = issues
 	end)
 end
