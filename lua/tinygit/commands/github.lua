@@ -1,5 +1,4 @@
 local M = {}
-local fn = vim.fn
 local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config
 --------------------------------------------------------------------------------
@@ -39,28 +38,28 @@ function M.githubUrl(justRepo)
 	local hash = u.syncShellCmd { "git", "rev-parse", "HEAD" }
 	local branch = u.syncShellCmd { "git", "branch", "--show-current" }
 
-	local selStart = fn.line("v")
-	local selEnd = fn.line(".")
-	local isVisualMode = fn.mode():find("[Vv]")
-	local isNormalMode = fn.mode() == "n"
+	local mode = vim.fn.mode()
 	local url = "https://github.com/" .. repo
 
-	if not justRepo and isNormalMode then
+	if not justRepo and mode == "n" then
 		url = url .. ("/blob/%s/%s"):format(branch, pathInRepoEncoded)
-	elseif not justRepo and isVisualMode then
+	elseif not justRepo and mode:find("[Vv]") then
+		vim.cmd.normal { "V", bang = true } -- leave visual mode, so marks are set
+		local startLn = vim.api.nvim_buf_get_mark(0, "<")[1]
+		local endLn = vim.api.nvim_buf_get_mark(0, ">")[1]
 		local location
-		if selStart == selEnd then -- one-line-selection
-			location = "#L" .. tostring(selStart)
-		elseif selStart < selEnd then
-			location = "#L" .. tostring(selStart) .. "-L" .. tostring(selEnd)
+		if startLn == endLn then -- one-line-selection
+			location = "#L" .. tostring(startLn)
+		elseif startLn < endLn then
+			location = "#L" .. tostring(startLn) .. "-L" .. tostring(endLn)
 		else
-			location = "#L" .. tostring(selEnd) .. "-L" .. tostring(selStart)
+			location = "#L" .. tostring(endLn) .. "-L" .. tostring(startLn)
 		end
 		url = url .. ("/blob/%s/%s%s"):format(hash, pathInRepoEncoded, location)
 	end
 
 	vim.ui.open(url)
-	fn.setreg("+", url) -- copy to clipboard
+	vim.fn.setreg("+", url) -- copy to clipboard
 end
 
 --------------------------------------------------------------------------------
