@@ -427,7 +427,9 @@ function M.smartCommit(opts, msgNeedsFixing)
 		postCommitNotif("Smart Commit", doStageAllChanges, processedMsg, extra)
 
 		-- push
-		if opts.pushIfClean and cleanAfterCommit then push { pullBefore = opts.pullBeforePush } end
+		if opts.pushIfClean and cleanAfterCommit then
+			push({ pullBefore = opts.pullBeforePush }, true)
+		end
 
 		openReferencedIssue(processedMsg)
 		updateStatusline()
@@ -458,7 +460,7 @@ function M.amendNoEdit(opts)
 	local extraInfo
 	if opts.forcePushIfDiverged and prevCommitWasPushed then
 		extraInfo = "Force Pushing…"
-		push { forceWithLease = true }
+		push({ forceWithLease = true }, true)
 	end
 	postCommitNotif("Amend-No-Edit", doStageAllChanges, lastCommitMsg, extraInfo)
 	updateStatusline()
@@ -502,7 +504,9 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 			local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…"
 				or nil
 			postCommitNotif("Amend only message", false, processedMsg, extra)
-			if opts.forcePushIfDiverged and prevCommitWasPushed then push { forceWithLease = true } end
+			if opts.forcePushIfDiverged and prevCommitWasPushed then
+				push({ forceWithLease = true }, true)
+			end
 
 			openReferencedIssue(processedMsg)
 			updateStatusline()

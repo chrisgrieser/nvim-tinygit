@@ -36,8 +36,8 @@ end
 --------------------------------------------------------------------------------
 
 ---@param opts? { pullBefore?: boolean, forceWithLease?: boolean, createGitHubPr?: boolean }
----@param calledByUser? boolean
-function M.push(opts, calledByUser)
+---@param calledByCommitFunc? boolean
+function M.push(opts, calledByCommitFunc)
 	-- GUARD
 	if u.notInGitRepo() then return end
 	if config.preventPushingFixupOrSquashCommits then
@@ -52,7 +52,7 @@ function M.push(opts, calledByUser)
 	if not opts then opts = {} end
 
 	-- extra notification when called by user
-	if calledByUser then
+	if not calledByCommitFunc then
 		local title = opts.forceWithLease and "Force Push" or "Push"
 		if opts.pullBefore then title = "Pull & " .. title end
 		u.notify(title .. "…", "info")
