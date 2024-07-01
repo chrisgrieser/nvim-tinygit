@@ -69,7 +69,7 @@ function M.commitMsgHighlighting(mode)
 	---be the first word in the buffer, while we want to highlight it in lists of
 	---commits or in buffers where the commit message is placee somewhere else.
 	local cc = require("tinygit.config").config.commitMsg.conventionalCommits.keywords
-	local ccRegex = [[\v(]] .. table.concat(cc, "|") .. [[)(\(.{-}\))?\ze: ]]
+	local ccRegex = [[\v(]] .. table.concat(cc, "|") .. [[)(\(.{-}\))?!?\ze: ]]
 	vim.fn.matchadd("Title", ccRegex)
 
 	vim.fn.matchadd("WarningMsg", [[\v(fixup|squash)!]])
