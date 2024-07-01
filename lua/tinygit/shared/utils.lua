@@ -48,6 +48,29 @@ function M.syncShellCmd(cmd)
 	return vim.trim(stdout)
 end
 
+---@return string? ahead
+---@return string? behind
+function M.getAheadBehind()
+	local cwd = vim.uv.cwd()
+	if not cwd then return nil, nil end
+
+	local allBranchInfo = vim.system({ "git", "-C", cwd, "branch", "--verbose" }):wait()
+	if allBranchInfo.code ~= 0 then return end -- not in git repo
+
+	-- get only line on current branch (starting with `*`)
+	local branches = vim.split(allBranchInfo.stdout, "\n")
+	local currentBranchInfo
+	for _, line in pairs(branches) do
+		currentBranchInfo = line:match("^%* .*")
+		if currentBranchInfo then break end
+	end
+	if not currentBranchInfo then return end -- detached HEAD
+
+	local ahead = currentBranchInfo:match("ahead (%d+)")
+	local behind = currentBranchInfo:match("behind (%d+)")
+	return ahead, behind
+end
+
 --------------------------------------------------------------------------------
 
 -- INFO using namespace in here does not work, therefore simply
