@@ -45,6 +45,5 @@ vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged", "FocusGained" }, {
 })
 M.refreshBranchState() -- initialize in case of lazy-loading
 
-
 --------------------------------------------------------------------------------
 return M
