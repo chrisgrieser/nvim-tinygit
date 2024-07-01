@@ -8,15 +8,22 @@ local updateStatusline = require("tinygit.statusline").updateAllComponents
 
 ---@param opts { pullBefore?: boolean|nil, forceWithLease?: boolean, createGitHubPr?: boolean }
 local function pushCmd(opts)
-	local cmd = { "git", "push" }
-	if opts.forceWithLease then table.insert(cmd, "--force-with-lease") end
+	local gitCommand = { "git", "push" }
+	if opts.forceWithLease then table.insert(gitCommand, "--force-with-lease") end
 
 	vim.system(
-		cmd,
+		gitCommand,
 		{ detach = true, text = true },
 		vim.schedule_wrap(function(result)
+			-- notify
 			local out = (result.stdout or "") .. (result.stderr or "")
 			local severity = result.code == 0 and "info" or "error"
+			if severity == "info" then
+				local commitRange = out:match("%x+%.%.%x+")
+				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
+				local plural = numOfPushedCommits ~= "1" and "s" or ""
+				out = out .. (" (%s commit%s)"):format(numOfPushedCommits, plural)
+			end
 			u.notify(out, severity, "Push")
 
 			-- sound
