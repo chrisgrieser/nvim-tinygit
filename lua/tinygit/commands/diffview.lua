@@ -38,9 +38,9 @@ end
 
 ---If `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow` and
 ---and also returns `false` then. This is so the caller can check whether the
----function should be aborted. However, if called with callback, and
----auto-unshallowing is enabled, will return `true`, since the function can be
----the original call can be aborted due to the use of the callback.
+---function should be aborted. However, if called with callback, will return
+---`true`, since the original call can be aborted, as the callback will be
+---called once the auto-unshallowing is done.
 ---@param callback? function called when auto-unshallowing is done
 ---@return boolean whether the repo is shallow
 local function repoIsShallow(callback)
@@ -52,12 +52,17 @@ local function repoIsShallow(callback)
 		state.unshallowingRunning = true
 
 		-- run async, to allow user input while waiting for the command
-		vim.system({ "git", "fetch", "--unshallow" }, {}, function()
-			state.unshallowingRunning = false
-			notify("Auto-unshallowing done.")
-			if callback then callback() end
-		end)
-		if callback then return true end -- do not pass the check, if we have a callback
+		vim.system(
+			{ "git", "fetch", "--unshallow" },
+			{},
+			vim.schedule_wrap(function(out)
+				if u.nonZeroExit(out) then return end
+				state.unshallowingRunning = false
+				notify("Auto-unshallowing done.")
+				if callback then callback() end
+			end)
+		)
+		if callback then return true end -- original call can be aborting, since callback is called
 		return false
 	else
 		local msg = "Aborting: Repository is shallow.\nRun `git fetch --unshallow`."
