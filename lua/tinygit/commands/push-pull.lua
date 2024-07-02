@@ -18,7 +18,7 @@ local function pushCmd(opts)
 			-- notify
 			local out = (result.stdout or "") .. (result.stderr or "")
 			local severity = result.code == 0 and "info" or "error"
-			if severity == "info" then
+			if severity == "info" and not opts.forceWithLease then
 				local commitRange = out:match("%x+%.%.%x+")
 				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
 				local plural = numOfPushedCommits ~= "1" and "s" or ""
