@@ -539,7 +539,8 @@ function M.lineHistory()
 		local endOfVisual = vim.api.nvim_buf_get_mark(0, ">")[1]
 		lnum = startOfVisual
 		offset = endOfVisual - startOfVisual + 1
-		state.query = ("L%d-L%d"):format(startOfVisual, endOfVisual)
+		local onlyOneLine = endOfVisual == startOfVisual
+		state.query = "L" .. startOfVisual .. (onlyOneLine and "" or "-L" .. endOfVisual)
 	end
 
 	state.absPath = a.nvim_buf_get_name(0)
