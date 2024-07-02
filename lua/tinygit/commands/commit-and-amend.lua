@@ -132,7 +132,6 @@ end
 local function setupInputField(commitType)
 	local opts = require("tinygit.config").config.commitMsg
 	local commitMaxLen = 72 -- hard git limit
-	local commitOverflowLen = 50 -- limit used by treesitter gitcommit parser
 
 	local function overwriteDressingWidth(winid)
 		if not opts.inputFieldWidth then return end -- keep dressings default
@@ -150,25 +149,17 @@ local function setupInputField(commitType)
 		-- only-markup, since stuff like conventional commits keywords are done by
 		-- the treesitter parser
 		u.commitMsgHighlighting("only-markup")
+		vim.bo.filetype = "gitcommit" -- treesitter highlighting & ftplugin
+		vim.opt_local.formatoptions:remove("t") -- prevent auto-wrapping due "gitcommit" filetype
 
-		-- INFO no need to highlight between 50-72, since the treesitter parser
-		-- for gitcommit already does this now
-		fn.matchadd("ErrorMsg", ([[.\{%s}\zs.*\ze]]):format(commitMaxLen))
-
-		-- colorcolumn as extra indicators of overLength
-		vim.opt_local.colorcolumn = { commitOverflowLen + 1, commitMaxLen + 1 }
-
-		-- treesitter highlighting & ftplugin
-		vim.bo.filetype = "gitcommit"
-
-		-- prevent auto-wrapping due to filetype "gitcommit" being set
-		vim.opt_local.formatoptions:remove("t")
+		-- overlength
+		fn.matchadd("ErrorMsg", ([[.\{%s}\zs.*]]):format(commitMaxLen))
 
 		-- treesitter parser makes first line bold, but since we have only one
 		-- line, we do not need to bold everything in it
 		local ns = vim.api.nvim_create_namespace("tinygit.inputField")
 		vim.api.nvim_win_set_hl_ns(winid, ns)
-		vim.api.nvim_set_hl(ns, "@markup.heading.gitcommit", {}) -- = clear
+		vim.api.nvim_set_hl(ns, "@markup.heading.gitcommit", {})
 	end
 
 	local function charCountInFooter(bufnr, winid)
