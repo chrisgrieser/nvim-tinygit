@@ -6,7 +6,7 @@ local config = require("tinygit.config").config
 ---@return string? "user/name" of repo, without the trailing ".git"
 ---@param silent? "silent"
 ---@nodiscard
-local function getGithubRepo(silent)
+function M.getGithubRemote(silent)
 	local remotes = vim.system({ "git", "remote", "--verbose" }):wait().stdout or ""
 	local githubRemote = remotes:match("github%.com[/:](%S+)")
 	if not githubRemote then
@@ -33,7 +33,7 @@ function M.githubUrl(justRepo)
 	local pathInRepo = filepath:sub(#gitroot + 2)
 	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
 
-	local repo = getGithubRepo()
+	local repo = M.getGithubRemote()
 	if not repo then return end
 	local hash = u.syncShellCmd { "git", "rev-parse", "HEAD" }
 	local branch = u.syncShellCmd { "git", "branch", "--show-current" }
@@ -110,7 +110,7 @@ function M.issuesAndPrs(opts)
 	local defaultOpts = { state = "all", type = "all" }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
-	local repo = getGithubRepo()
+	local repo = M.getGithubRemote()
 	if not repo then return end
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
@@ -162,7 +162,7 @@ function M.openIssueUnderCursor()
 	end
 
 	local issue = cword:sub(2) -- remove the `#`
-	local repo = getGithubRepo()
+	local repo = M.getGithubRemote()
 	if not repo then return end
 	local url = ("https://github.com/%s/issues/%s"):format(repo, issue)
 	vim.ui.open(url)
@@ -172,7 +172,7 @@ end
 
 function M.createGitHubPr()
 	local branchName = u.syncShellCmd { "git", "branch", "--show-current" }
-	local repo = getGithubRepo()
+	local repo = M.getGithubRemote()
 	if not repo then return end
 	local prUrl = ("https://github.com/%s/pull/new/%s"):format(repo, branchName)
 	vim.ui.open(prUrl)
@@ -182,7 +182,7 @@ end
 
 ---@async
 function M.getOpenIssuesAsync()
-	local repo = getGithubRepo("silent")
+	local repo = M.getGithubRemote("silent")
 	local numberToFetch = require("tinygit.config").config.commitMsg.insertIssuesOnHash.issuesToFetch
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
