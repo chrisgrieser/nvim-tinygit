@@ -70,6 +70,7 @@ end
 local function issueListFormatter(issue)
 	local isPR = issue.pull_request ~= nil
 	local merged = isPR and issue.pull_request.merged_at ~= nil
+	local reason = issue.state_reason
 
 	local icon
 	if issue.state == "open" and isPR then
@@ -78,8 +79,10 @@ local function issueListFormatter(issue)
 		icon = config.issueIcons.mergedPR
 	elseif issue.state == "closed" and isPR and not merged then
 		icon = config.issueIcons.closedPR
-	elseif issue.state == "closed" and not isPR then
+	elseif issue.state == "closed" and reason == "completed" then
 		icon = config.issueIcons.closedIssue
+	elseif issue.state == "closed" and reason == "not_planned" then
+		icon = config.issueIcons.notPlannedIssue
 	elseif issue.state == "open" and not isPR then
 		icon = config.issueIcons.openIssue
 	end

@@ -10,6 +10,7 @@ local M = {}
 
 ---@class issueIconConfig
 ---@field closedIssue string
+---@field notPlannedIssue string
 ---@field openIssue string
 ---@field openPR string
 ---@field mergedPR string
@@ -79,6 +80,7 @@ local defaultConfig = {
 	issueIcons = {
 		openIssue = "🟢",
 		closedIssue = "🟣",
+		notPlannedIssue = "⚪",
 		openPR = "🟩",
 		mergedPR = "🟪",
 		closedPR = "🟥",
