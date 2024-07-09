@@ -12,6 +12,14 @@ local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@nodiscard
+---@return boolean
+local function hasNoUnstagedChanges()
+	local noChanges = vim.system({ "git", "diff", "--quiet" }):wait().code == 0
+	if noChanges then u.notify("There are no unstaged changes.", "warn") end
+	return noChanges
+end
+
+---@nodiscard
 ---@return Hunk[]?
 local function getHunks()
 	-- CAVEAT for some reason, context=0 results in patches that are not valid.
@@ -81,7 +89,7 @@ local function getHunks()
 end
 
 ---@param hunk Hunk
-local function applyChange(hunk)
+local function stageHunk(hunk)
 	-- use `git apply` to stage only part of a file
 	-- https://stackoverflow.com/a/66618356/22114136
 	vim.system(
@@ -95,7 +103,7 @@ local function applyChange(hunk)
 end
 
 ---@param hunks Hunk[]
-local function pickHunk(hunks)
+local function telescopePickHunk(hunks)
 	local pickers = require("telescope.pickers")
 	local telescopeConf = require("telescope.config").values
 	local actionState = require("telescope.actions.state")
@@ -145,8 +153,7 @@ local function pickHunk(hunks)
 
 			attach_mappings = function(prompt_bufnr, map)
 				map({ "n", "i" }, opts.keymaps.gotoHunk, function()
-					local entry = actionState.get_selected_entry()
-					local hunk = entry.value
+					local hunk = actionState.get_selected_entry().value
 					actions.close(prompt_bufnr)
 					vim.cmd(("edit +%d %s"):format(hunk.lnum, hunk.path))
 				end, { desc = "Goto Hunk" })
@@ -154,10 +161,10 @@ local function pickHunk(hunks)
 				map({ "n", "i" }, opts.keymaps.stageHunk, function()
 					local entry = actionState.get_selected_entry()
 					local hunk = entry.value
-					applyChange(hunk)
+					stageHunk(hunk)
 					table.remove(hunks, entry.index)
 					actions.close(prompt_bufnr)
-					if #hunks > 0 then pickHunk(hunks) end -- select next hunk
+					if #hunks > 0 then telescopePickHunk(hunks) end -- select next hunk
 				end, { desc = "Stage Hunk" })
 
 				return true -- keep default mappings
@@ -170,12 +177,12 @@ end
 
 function M.interactiveStaging()
 	vim.cmd("silent update")
-	if u.notInGitRepo() or u.hasNoChanges() then return end
+	if u.notInGitRepo() or hasNoUnstagedChanges() then return end
 
 	local hunks = getHunks()
 	if not hunks then return end
 
-	pickHunk(hunks)
+	telescopePickHunk(hunks)
 end
 --------------------------------------------------------------------------------
 return M

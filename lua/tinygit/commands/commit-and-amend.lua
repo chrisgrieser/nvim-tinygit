@@ -27,6 +27,14 @@ local function hasNoUnstagedChanges()
 	return vim.system({ "git", "diff", "--quiet" }):wait().code == 0
 end
 
+---@nodiscard
+---@return boolean
+local function hasNoChanges()
+	local noChanges = u.syncShellCmd { "git", "status", "--porcelain" } == ""
+	if noChanges then u.notify("There are no staged or unstaged changes.", "warn") end
+	return noChanges
+end
+
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
@@ -352,7 +360,7 @@ end
 ---@param opts? { pushIfClean?: boolean, pullBeforePush?: boolean }
 function M.smartCommit(opts, msgNeedsFixing)
 	vim.cmd("silent update")
-	if u.notInGitRepo() or u.hasNoChanges() then return end
+	if u.notInGitRepo() or hasNoChanges() then return end
 
 	local defaultOpts = { pushIfClean = false, pullBeforePush = true }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
@@ -420,7 +428,7 @@ end
 ---@param opts? { forcePushIfDiverged?: boolean }
 function M.amendNoEdit(opts)
 	vim.cmd("silent update")
-	if u.notInGitRepo() or u.hasNoChanges() then return end
+	if u.notInGitRepo() or hasNoChanges() then return end
 	if not opts then opts = {} end
 
 	-- stage
@@ -498,7 +506,7 @@ end
 ---@param opts? { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
 function M.fixupCommit(opts)
 	vim.cmd("silent update")
-	if u.notInGitRepo() or u.hasNoChanges() then return end
+	if u.notInGitRepo() or hasNoChanges() then return end
 	local defaultOpts = {
 		selectFromLastXCommits = 15,
 		squashInstead = false,
