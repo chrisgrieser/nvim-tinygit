@@ -302,9 +302,16 @@ local defaultConfig = {
 			issuesToFetch = 20,
 		},
 	},
+	staging = {
+		contextSize = 1, -- must be > 0
+		keymaps = {
+			gotoHunk = "<CR>",
+			stageHunk = "<Space>",
+		}
+	},
 	backdrop = {
 		enabled = true,
-		blend = 60, -- 0-100
+		blend = 50, -- 0-100
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,

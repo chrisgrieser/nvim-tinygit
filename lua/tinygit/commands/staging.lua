@@ -3,26 +3,29 @@ local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@class (exact) Hunk
----@field file string
+---@field path string
 ---@field lnum number
 ---@field displayLong string
 ---@field displayShort string
 ---@field patch string
-
--- CAVEAT for some reason, context=0 results in patches that are not valid.
--- Using context=1 seems to work, but has the downside of merging hunks that
--- are only two line apart. Test it: here 0 fails, but 1 works:
--- `git -c diff.context=0 diff . | git apply --cached --verbose -`
-local contextSize = 1
 
 --------------------------------------------------------------------------------
 
 ---@nodiscard
 ---@return Hunk[]?
 local function getHunks()
+	-- CAVEAT for some reason, context=0 results in patches that are not valid.
+	-- Using context=1 seems to work, but has the downside of merging hunks that
+	-- are only two line apart. Test it: here 0 fails, but 1 works:
+	-- `git -c diff.context=0 diff . | git apply --cached --verbose -`
+	local contextSize = require("tinygit.config").config.staging.contextSize
+	if contextSize < 1 then contextSize = 0 end
+
 	local out =
 		vim.system({ "git", "-c", "diff.context=" .. contextSize, "diff", "--diff-filter=M" }):wait()
 	if u.nonZeroExit(out) then return end
+
+	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 
 	local changesPerFile = vim.split(out.stdout, "diff --git a/", { plain = true })
 	table.remove(changesPerFile, 1) -- first item is always an empty string
@@ -38,6 +41,7 @@ local function getHunks()
 		file = "diff --git a/" .. file -- re-add, since needed to make patches valid
 		local diffLines = vim.split(file, "\n")
 		local relPath = diffLines[3]:sub(7)
+		local absPath = gitroot .. "/" .. relPath
 		local diffHeader = table.concat(vim.list_slice(diffLines, 1, 4), "\n")
 
 		-- split output into hunks
@@ -64,7 +68,7 @@ local function getHunks()
 
 			---@type Hunk
 			local hunkObj = {
-				file = relPath,
+				path = absPath,
 				lnum = newLnum,
 				displayLong = ("%s:%s %s"):format(relPath, newLnum, stat),
 				displayShort = ("%s:%s %s"):format(name, newLnum, stat),
@@ -98,6 +102,7 @@ local function pickHunk(hunks)
 	local actions = require("telescope.actions")
 	local finders = require("telescope.finders")
 	local previewers = require("telescope.previewers")
+	local opts = require("tinygit.config").config.staging
 
 	-- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
 	pickers
@@ -127,21 +132,34 @@ local function pickHunk(hunks)
 					local changeLines = vim.iter(vim.split(hunk.patch, "\n"))
 						:filter(function(line) return line:match("^[+-]") end)
 						:join("\n")
-					local matcher = hunk.file .. "\n" .. changeLines
-					return { value = hunk, display = hunk.displayShort, ordinal = matcher }
+					local matcher = hunk.path .. "\n" .. changeLines
+					return {
+						value = hunk,
+						display = hunk.displayShort,
+						ordinal = matcher,
+						path = hunk.path,
+						lnum = hunk.lnum,
+					}
 				end,
 			},
 
-			attach_mappings = function(prompt_bufnr, _)
-				actions.select_default:replace(function()
+			attach_mappings = function(prompt_bufnr, map)
+				map({ "n", "i" }, opts.keymaps.gotoHunk, function()
+					local entry = actionState.get_selected_entry()
+					local hunk = entry.value
+					actions.close(prompt_bufnr)
+					vim.cmd(("edit +%d %s"):format(hunk.lnum, hunk.path))
+				end, { desc = "Goto Hunk" })
+
+				map({ "n", "i" }, opts.keymaps.stageHunk, function()
 					local entry = actionState.get_selected_entry()
 					local hunk = entry.value
 					applyChange(hunk)
-
 					table.remove(hunks, entry.index)
 					actions.close(prompt_bufnr)
 					if #hunks > 0 then pickHunk(hunks) end -- select next hunk
-				end)
+				end, { desc = "Stage Hunk" })
+
 				return true -- keep default mappings
 			end,
 		})

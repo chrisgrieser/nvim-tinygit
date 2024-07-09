@@ -3,10 +3,15 @@ local M = {}
 
 ---@class pluginConfig
 ---@field commitMsg commitConfig
+---@field staging stagingConfig
 ---@field issueIcons issueIconConfig
 ---@field historySearch historySearchConfig
 ---@field push pushConfig
 ---@field statusline { branchState: branchStateConfig, blame: blameConfig }
+
+---@class (exact) stagingConfig
+---@field contextSize number
+---@field keymaps { gotoHunk: string, stageHunk: string }
 
 ---@class issueIconConfig
 ---@field closedIssue string
@@ -68,6 +73,13 @@ local defaultConfig = {
 			prev = "<S-Tab>",
 			issuesToFetch = 20,
 		},
+	},
+	staging = {
+		contextSize = 1, -- must be > 0
+		keymaps = {
+			gotoHunk = "<CR>",
+			stageHunk = "<Space>",
+		}
 	},
 	backdrop = {
 		enabled = true,
