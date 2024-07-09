@@ -70,6 +70,8 @@ local function getHunks()
 			removed = removed == "" and 1 or tonumber(removed) - 2 * contextSize
 			added = added == "" and 1 or tonumber(added) - 2 * contextSize
 			local stat = ("(+%s -%s)"):format(added, removed)
+			if removed == 0 then stat = ("(+%s)"):format(added) end
+			if added == 0 then stat = ("(-%s)"):format(removed) end
 
 			local patch = diffHeader .. "\n" .. hunk .. "\n" -- needs trailing newline for valid patch
 			local name = vim.fs.basename(relPath)
@@ -78,7 +80,7 @@ local function getHunks()
 			local hunkObj = {
 				path = absPath,
 				lnum = newLnum,
-				displayLong = ("%s:%s %s"):format(relPath, newLnum, stat),
+				displayLong = ("%s %s"):format(relPath, stat),
 				displayShort = ("%s:%s %s"):format(name, newLnum, stat),
 				patch = patch,
 			}
@@ -97,7 +99,7 @@ local function stageHunk(hunk)
 		{ stdin = hunk.patch },
 		function(out)
 			if u.nonZeroExit(out) then return end
-			u.notify(hunk.displayLong)
+			u.notify(hunk.displayShort)
 		end
 	)
 end
@@ -110,6 +112,7 @@ local function telescopePickHunk(hunks)
 	local actions = require("telescope.actions")
 	local finders = require("telescope.finders")
 	local previewers = require("telescope.previewers")
+
 	local opts = require("tinygit.config").config.staging
 
 	-- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
