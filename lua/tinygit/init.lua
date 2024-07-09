@@ -25,7 +25,6 @@ setmetatable(M, {
 				amendOnlyMsg = "commit-and-amend",
 				amendNoEdit = "commit-and-amend",
 				undoLastCommitOrAmend = "undo",
-				diffview = "diffview",
 				stashPop = "stash",
 				stashPush = "stash",
 				push = "push-pull",
@@ -33,9 +32,9 @@ setmetatable(M, {
 				issuesAndPrs = "github",
 				openIssueUnderCursor = "github",
 				createGitHubPr = "github",
-				searchFileHistory = "diffview",
-				functionHistory = "diffview",
-				lineHistory = "diffview",
+				searchFileHistory = "history",
+				functionHistory = "history",
+				lineHistory = "history",
 			}
 
 			local module = cmdToModuleMap[key]

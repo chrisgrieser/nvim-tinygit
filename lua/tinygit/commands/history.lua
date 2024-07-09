@@ -9,7 +9,7 @@ local backdrop = require("tinygit.shared.backdrop")
 local selectCommit = require("tinygit.shared.select-commit")
 --------------------------------------------------------------------------------
 
----@class (exact) diffviewState
+---@class (exact) historyState
 ---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field absPath string
 ---@field query string search query pickaxed for
@@ -167,7 +167,7 @@ local function showDiff(commitIdx)
 	local title = (" %s %s "):format(commitMsg, date)
 
 	-- CREATE WINDOW
-	local diffviewZindex = 40 -- below nvim-notify, which has 50
+	local historyZindex = 40 -- below nvim-notify, which has 50
 	local winnr = a.nvim_open_win(bufnr, true, {
 		-- center of the editor
 		relative = "editor",
@@ -181,10 +181,10 @@ local function showDiff(commitIdx)
 		border = config.diffPopup.border,
 		style = "minimal",
 		footer = { { " " .. footerText .. " ", "FloatBorder" } },
-		zindex = diffviewZindex,
+		zindex = historyZindex,
 	})
 	a.nvim_set_option_value("winfixbuf", true, { win = winnr })
-	backdrop.new(bufnr, diffviewZindex)
+	backdrop.new(bufnr, historyZindex)
 
 	-- search for the query
 	local ignoreCaseBefore = vim.o.ignorecase
@@ -296,7 +296,7 @@ local function selectFromCommits(commitList)
 	vim.ui.select(commits, {
 		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
 		format_item = selectCommit.selectorFormatter,
-		kind = "tinygit.diffview",
+		kind = "tinygit.history",
 	}, function(_, commitIdx)
 		a.nvim_del_autocmd(autocmdId)
 		if commitIdx then showDiff(commitIdx) end
