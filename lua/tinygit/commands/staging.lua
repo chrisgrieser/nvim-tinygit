@@ -13,14 +13,6 @@ local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@nodiscard
----@return boolean
-local function hasNoUnstagedChanges()
-	local noChanges = vim.system({ "git", "diff", "--quiet" }):wait().code == 0
-	if noChanges then u.notify("There are no unstaged changes.", "warn") end
-	return noChanges
-end
-
----@nodiscard
 ---@return Hunk[]?
 local function getHunks()
 	-- CAVEAT for some reason, context=0 results in patches that are not valid.
@@ -205,16 +197,21 @@ end
 function M.interactiveStaging()
 	vim.cmd("silent update")
 
-	if u.notInGitRepo() or hasNoUnstagedChanges() then return end
+	-- GUARD
 	local installed = pcall(require, "telescope")
 	if not installed then
 		u.notify("This feature requires `nvim-telescope`.", "warn", "Staging")
 		return
 	end
+	if u.notInGitRepo() then return end
+	local hasNoUnstagedChanges = vim.system({ "git", "diff", "--quiet" }):wait().code == 0
+	if hasNoUnstagedChanges then
+		u.notify("There are no unstaged changes.", "warn", "Staging")
+		return
+	end
 
 	local hunks = getHunks()
 	if not hunks then return end
-
 	telescopePickHunk(hunks)
 end
 --------------------------------------------------------------------------------
