@@ -9,12 +9,13 @@ operations.
 <img alt="Showcase diffview" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/34161d44-02eb-4340-a7ea-d18d436b4ab4">
 <img alt="Showcase statusline components" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
 
-## Features Overview
+## Feature Overview
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
   commit preview, automatic issue number insertion, and overlength indicators.
   If there are no staged changes, stages all changes before doing so (`git add
   -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
+- **Interactive Staging** of hunks.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Explore the git history**: Search the file for a string ("git pickaxe"), or
@@ -30,6 +31,7 @@ operations.
 
 - [Installation](#installation)
 - [Commands](#commands)
+	* [Interactive Staging](#interactive-staging)
 	* [Smart-Commit](#smart-commit)
 	* [Amend](#amend)
 	* [Fixup & Squash Commits](#fixup--squash-commits)
@@ -75,6 +77,12 @@ use {
 ```
 
 ## Commands
+
+### Interactive Staging
+
+```lua
+require("tinygit").interactiveStaging()
+```
 
 ### Smart-Commit
 - Open a commit popup, alongside a preview of what is going to be committed. If

@@ -19,6 +19,7 @@ setmetatable(M, {
 			end
 
 			local cmdToModuleMap = {
+				interactiveStaging = "staging",
 				smartCommit = "commit-and-amend",
 				fixupCommit = "commit-and-amend",
 				amendOnlyMsg = "commit-and-amend",
