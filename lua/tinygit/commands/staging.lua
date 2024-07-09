@@ -150,7 +150,10 @@ local function telescopePickHunk(hunks)
 
 			layout_strategy = "horizontal",
 			layout_config = {
-				horizontal = { preview_width = 0.65 },
+				horizontal = {
+					preview_width = 0.65,
+					height = { 0.7, min = 20 },
+				},
 			},
 
 			finder = newFinder(hunks),
