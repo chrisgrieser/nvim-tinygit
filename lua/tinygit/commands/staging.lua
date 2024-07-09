@@ -115,11 +115,32 @@ local function telescopePickHunk(hunks)
 
 	local opts = require("tinygit.config").config.staging
 
+	---@param _hunks Hunk[]
+	local function newFinder(_hunks)
+		return finders.new_table {
+			results = _hunks,
+			-- search for filenames, but also changed line contents
+			entry_maker = function(hunk)
+				local changeLines = vim.iter(vim.split(hunk.patch, "\n"))
+					:filter(function(line) return line:match("^[+-]") end)
+					:join("\n")
+				local matcher = hunk.path .. "\n" .. changeLines
+				return {
+					value = hunk,
+					display = hunk.displayShort,
+					ordinal = matcher,
+				}
+			end,
+		}
+	end
+
 	-- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
 	pickers
 		.new({}, {
 			prompt_title = "Git Hunks",
 			sorter = telescopeConf.generic_sorter {},
+
+			finder = newFinder(hunks),
 
 			-- DOCS `:help telescope.previewers`
 			previewer = previewers.new_buffer_previewer {
@@ -136,24 +157,6 @@ local function telescopePickHunk(hunks)
 				end,
 			},
 
-			finder = finders.new_table {
-				results = hunks,
-				-- search for filenames, but also changed line contents
-				entry_maker = function(hunk)
-					local changeLines = vim.iter(vim.split(hunk.patch, "\n"))
-						:filter(function(line) return line:match("^[+-]") end)
-						:join("\n")
-					local matcher = hunk.path .. "\n" .. changeLines
-					return {
-						value = hunk,
-						display = hunk.displayShort,
-						ordinal = matcher,
-						path = hunk.path,
-						lnum = hunk.lnum,
-					}
-				end,
-			},
-
 			attach_mappings = function(prompt_bufnr, map)
 				map({ "n", "i" }, opts.keymaps.gotoHunk, function()
 					local hunk = actionState.get_selected_entry().value
@@ -166,8 +169,13 @@ local function telescopePickHunk(hunks)
 					local hunk = entry.value
 					stageHunk(hunk)
 					table.remove(hunks, entry.index)
-					actions.close(prompt_bufnr)
-					if #hunks > 0 then telescopePickHunk(hunks) end -- select next hunk
+
+					if #hunks > 0 then
+						local picker = actionState.get_current_picker(prompt_bufnr)
+						picker:refresh(newFinder(hunks), { reset_prompt = false })
+					else
+						actions.close(prompt_bufnr)
+					end
 				end, { desc = "Stage Hunk" })
 
 				return true -- keep default mappings
