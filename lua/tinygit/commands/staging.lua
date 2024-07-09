@@ -125,12 +125,14 @@ local function telescopePickHunk(hunks)
 				entry.display = function(_entry)
 					local h = _entry.value
 					local name = vim.fs.basename(h.relPath)
-					local out = ("%s:%d +%d -%d"):format(name, h.lnum, h.added, h.removed)
+					local addedStr = h.added > 0 and (" +" .. h.added) or ""
+					local removedStr = h.removed > 0 and (" -" .. h.removed) or ""
+					local out = name .. ":" .. h.lnum .. addedStr .. removedStr
 					local diffStatPos = #name + #tostring(h.lnum) + 2
 					local highlights = {
 						{ { #name, diffStatPos - 1 }, "Comment" },
-						{ { diffStatPos, diffStatPos + #tostring(h.added) + 1 }, "diffAdded" },
-						{ { #out - #tostring(h.removed) - 1, #out }, "diffRemoved" },
+						{ { diffStatPos, diffStatPos + #addedStr }, "diffAdded" },
+						{ { #out - #removedStr, #out }, "diffRemoved" },
 					}
 					return out, highlights
 				end
