@@ -4,12 +4,11 @@
 Table of Contents                                  *tinygit-table-of-contents*
 
 1. nvim-tinygit                                         |tinygit-nvim-tinygit|
-  - Features Overview                 |tinygit-nvim-tinygit-features-overview|
+  - Feature Overview                   |tinygit-nvim-tinygit-feature-overview|
   - Installation                           |tinygit-nvim-tinygit-installation|
   - Commands                                   |tinygit-nvim-tinygit-commands|
   - Statusline Components         |tinygit-nvim-tinygit-statusline-components|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
-  - Comparison to existing git plugins|tinygit-nvim-tinygit-comparison-to-existing-git-plugins|
   - About me                                   |tinygit-nvim-tinygit-about-me|
 
 ==============================================================================
@@ -21,18 +20,20 @@ operations.
 
 
 
-FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
+FEATURE OVERVIEW                       *tinygit-nvim-tinygit-feature-overview*
 
 - **Smart-Commit**Open a popup to enter a commit message with syntax highlighting,
     commit preview, automatic issue number insertion, and overlength indicators.
     If there are no staged changes, stages all changes before doing so (`git add   -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
+- **Interactive Staging** of hunks, with proper syntax highlighting of the hunk
+    diffs (an improvement to `git add -p`).
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Explore the git history**Search the file for a string ("git pickaxe"), or
     examine a function’s or line’s history. Displays the results in a diff view
     with syntax highlighting, correctly following file renamings.
-- **Statusline components:** `git blame` and branch state.
+- **Statusline components:** `git blame` of a file and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
     friction. For instance, the smart-commit command combines staging, committing,
     and pushing, and searching the file history combines unshallowing, searching,
@@ -40,9 +41,9 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
 
 - |tinygit-installation|
 - |tinygit-commands|
+    - |tinygit-interactive-staging|
     - |tinygit-smart-commit|
-    - |tinygit-amend|
-    - |tinygit-fixup-&-squash-commits|
+    - |tinygit-amend,-fixup,-and-squash-commits|
     - |tinygit-undo-last-commit/amend|
     - |tinygit-github-interaction|
     - |tinygit-push-&-pr|
@@ -52,7 +53,6 @@ FEATURES OVERVIEW                     *tinygit-nvim-tinygit-features-overview*
     - |tinygit-git-blame|
     - |tinygit-branch-state|
 - |tinygit-configuration|
-- |tinygit-comparison-to-existing-git-plugins|
 - |tinygit-about-me|
 
 
@@ -65,24 +65,49 @@ highlighting: `TSInstall gitcommit` - `nvim-notify` for the commit preview,
 issue number insertion, and various notifications - telescope.nvim
 <https://github.com/nvim-telescope/telescope.nvim> or fzf-lua
 <https://github.com/ibhagwan/fzf-lua> for better UI when selecting commits or
-issues/PRs.
+issues/PRs. - `telescope` is required for interactive staging.
 
 >lua
     -- lazy.nvim
     {
         "chrisgrieser/nvim-tinygit",
-        dependencies = "stevearc/dressing.nvim",
+        dependencies = {
+            "stevearc/dressing.nvim",
+            "nvim-telescope/telescope.nvim", -- optional, but recommended
+            "rcarriga/nvim-notify", -- optional, but recommended
+        },
     },
     
     -- packer
     use {
         "chrisgrieser/nvim-tinygit",
-        requires = "stevearc/dressing.nvim",
+        requires = {
+            "stevearc/dressing.nvim", 
+            "nvim-telescope/telescope.nvim", -- optional, but recommended
+            "rcarriga/nvim-notify", -- optional, but recommended
+        },
     }
 <
 
 
 COMMANDS                                       *tinygit-nvim-tinygit-commands*
+
+
+INTERACTIVE STAGING ~
+
+- This feature requires
+    telescope.nvim <https://github.com/nvim-telescope/telescope.nvim>.
+- This command stages hunks, that is, _parts_ of a file instead of the
+    full file. It is roughly comparable to `git add -p`.
+- The size of the hunks is determined by the setting `staging.contextSize`.
+    Larger context size is going to "merge" changes that are close to one another
+    into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
+    from `gitsigns.nvim`.) A context size between 1 and 3 is recommended.
+- Limitation: currently, a `contextSize` of `0` is not supported.
+
+>lua
+    require("tinygit").interactiveStaging()
+<
 
 
 SMART-COMMIT ~
@@ -122,14 +147,14 @@ Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
 
 
-AMEND ~
+AMEND, FIXUP, AND SQUASH COMMITS ~
 
-- `amendOnlyMsg` just opens the commit popup to change the last commit message,
-    and does not stage any changes.
-- `amendNoEdit` keeps the last commit message; if there are no staged changes,
-    stages all changes (`git add --all`), like `smartCommit`.
-- Optionally runs `git push --force-with-lease` afterward, if the branch has
-    diverged (that is, the amended commit was already pushed).
+**Amending** - `amendOnlyMsg` just opens the commit popup to change the last
+commit message, and does not stage any changes. - `amendNoEdit` keeps the last
+commit message; if there are no staged changes, stages all changes (`git add
+--all`), like `smartCommit`. - Optionally runs `git push --force-with-lease`
+afterward, if the branch has diverged (that is, the amended commit was already
+pushed).
 
 >lua
     -- options default to `false`
@@ -137,15 +162,13 @@ AMEND ~
     require("tinygit").amendNoEdit { forcePushIfDiverged = false }
 <
 
-
-FIXUP & SQUASH COMMITS ~
-
-- `fixupCommit` lets you select a commit from the last X commits and runs `git   commit --fixup` on the selected commit.
-- If there are no staged changes, stages all changes (`git add --all`), like
-    `smartCommit`.
-- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`).
-- `autoRebase = true` automatically runs rebase with `--autosquash` and
-    `--autostash` afterward, confirming all fixups and squashes **without opening a rebase view**. (Note that this can potentially result in conflicts.)
+**Fixup and Squash** - `fixupCommit` lets you select a commit from the last X
+commits and runs `git commit --fixup` on the selected commit. - If there are no
+staged changes, stages all changes (`git add --all`), like `smartCommit`. - Use
+`squashInstead = true` to squash instead of fixup (`git commit --squash`). -
+`autoRebase = true` automatically runs rebase with `--autosquash` and
+`--autostash` afterward, confirming all fixups and squashes **without opening a
+rebase view**. (Note that this can potentially result in conflicts.)
 
 >lua
     -- options show default values
@@ -317,9 +340,16 @@ The `setup` call is optional. These are the default settings:
                 issuesToFetch = 20,
             },
         },
+        staging = { -- requires telescope
+            contextSize = 1, -- must be > 0. Larger values "merge" hunks.
+            keymaps = {
+                gotoHunk = "<CR>", -- insert & normal mode
+                stageHunk = "<Space>",
+            },
+        },
         backdrop = {
             enabled = true,
-            blend = 60, -- 0-100
+            blend = 50, -- 0-100
         },
         push = {
             preventPushingFixupOrSquashCommits = true,
@@ -328,6 +358,7 @@ The `setup` call is optional. These are the default settings:
         issueIcons = {
             openIssue = "🟢",
             closedIssue = "🟣",
+            notPlannedIssue = "⚪",
             openPR = "🟩",
             mergedPR = "🟪",
             closedPR = "🟥",
@@ -367,24 +398,6 @@ the width of the preview, use:
         max_width = 60,
     }
 <
-
-
-COMPARISON TO EXISTING GIT PLUGINS*tinygit-nvim-tinygit-comparison-to-existing-git-plugins*
-
-- `gitsigns.nvim`No feature overlap. `tinygit` rather complements `gitsigns`
-    as the latter is used to stage changes (`:GitSigns stage_hunk`) quickly, and
-    the former allows you to commit (and push) those changes quickly.
-- `Neogit` / `Fugitive`These two probably cover much more features than
-    `tinygit` has, but with much more configuration options. The benefit of
-    `tinygit` is that it is more lightweight and aims to streamline common actions
-    by smartly combining operations. For instance, the smart-commit command
-    combines staging, committing, and pushing. As such, `tinygit` is mostly for
-    those people that do want a more nimble and lightweight git integration.
-- `diffview.nvim`No overlap, except for the command to search the file history.
-    `tinygit`’s version of file history search should be easier to use and has a few
-    more quality-of-life features, such as automatically jumping to occurrences of
-    the search term. As opposed to `diffview`, the diff is not presented in a
-    side-by-side-diff, but in a unified view.
 
 
 ABOUT ME                                       *tinygit-nvim-tinygit-about-me*
