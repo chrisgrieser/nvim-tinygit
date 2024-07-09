@@ -15,13 +15,13 @@ operations.
   If there are no staged changes, stages all changes before doing so (`git add
   -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
-- **Interactive Staging** of hunks.
+- **Interactive Staging** of hunks (an improvement to `git add -p`).
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Explore the git history**: Search the file for a string ("git pickaxe"), or
   examine a function's or line's history. Displays the results in a diff view
   with syntax highlighting, correctly following file renamings.
-- **Statusline components:** `git blame` and branch state.
+- **Statusline components:** `git blame` of a file and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
   friction. For instance, the smart-commit command combines staging, committing,
   and pushing, and searching the file history combines unshallowing, searching,
@@ -90,6 +90,13 @@ use {
 ### Interactive Staging
 - This feature requires
   [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
+- This command stages hunks, that is, *parts* of a file instead of the
+  full file. It is roughly comparable to `git add -p`.
+- The size of the hunks is determined by the setting `staging.contextSize`.
+  Larger context size is going to "merge" changes that are close to one another
+  into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
+  from `gitsigns.nvim`.) A context size between 1 and 3 is recommended.
+- Limitation: currently, a `contextSize` of `0` is not supported.
 
 ```lua
 require("tinygit").interactiveStaging()
