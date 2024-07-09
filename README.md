@@ -6,6 +6,7 @@ A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
 <img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/f09dba0b-a81e-4973-897a-20605f4c29db">
+<img alt="Showcase interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/5f414954-7ae9-4103-8e19-2bf02cdc6e54">
 <img alt="Showcase diffview" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/34161d44-02eb-4340-a7ea-d18d436b4ab4">
 <img alt="Showcase statusline components" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
 
@@ -15,7 +16,8 @@ operations.
   If there are no staged changes, stages all changes before doing so (`git add
   -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
-- **Interactive Staging** of hunks (an improvement to `git add -p`).
+- **Interactive Staging** of hunks, with proper syntax highlighting of the hunk
+  diffs (an improvement to `git add -p`).
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Explore the git history**: Search the file for a string ("git pickaxe"), or
@@ -33,8 +35,7 @@ operations.
 - [Commands](#commands)
 	* [Interactive Staging](#interactive-staging)
 	* [Smart-Commit](#smart-commit)
-	* [Amend](#amend)
-	* [Fixup & Squash Commits](#fixup--squash-commits)
+	* [Amend, Fixup, and Squash Commits](#amend-fixup-and-squash-commits)
 	* [Undo Last Commit/Amend](#undo-last-commitamend)
 	* [GitHub Interaction](#github-interaction)
 	* [Push & PR](#push--pr)
@@ -44,7 +45,6 @@ operations.
 	* [Git Blame](#git-blame)
 	* [Branch State](#branch-state)
 - [Configuration](#configuration)
-- [Comparison to existing git plugins](#comparison-to-existing-git-plugins)
 - [About me](#about-me)
 
 <!-- tocstop -->
@@ -138,7 +138,8 @@ vim.keymap.set("n", "gp", function() require("tinygit").push() end)
 Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
 
-### Amend
+### Amend, Fixup, and Squash Commits
+**Amending**
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
@@ -152,7 +153,7 @@ require("tinygit").amendOnlyMsg { forcePushIfDiverged = false }
 require("tinygit").amendNoEdit { forcePushIfDiverged = false }
 ```
 
-### Fixup & Squash Commits
+**Fixup and Squash**
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
   commit --fixup` on the selected commit.
 - If there are no staged changes, stages all changes (`git add --all`), like
@@ -378,22 +379,6 @@ require("notify").setup {
 	max_width = 60,
 }
 ```
-
-## Comparison to existing git plugins
-- `gitsigns.nvim`: No feature overlap. `tinygit` rather complements `gitsigns`
-  as the latter is used to stage changes (`:GitSigns stage_hunk`) quickly, and
-  the former allows you to commit (and push) those changes quickly.
-- `Neogit` / `Fugitive`: These two probably cover much more features than
-  `tinygit` has, but with much more configuration options. The benefit of
-  `tinygit` is that it is more lightweight and aims to streamline common actions
-  by smartly combining operations. For instance, the smart-commit command
-  combines staging, committing, and pushing. As such, `tinygit` is mostly for
-  those people that do want a more nimble and lightweight git integration.
-- `diffview.nvim`: No overlap, except for the command to search the file history.
-  `tinygit`'s version of file history search should be easier to use and has a few
-  more quality-of-life features, such as automatically jumping to occurrences of
-  the search term. As opposed to `diffview`, the diff is not presented in a
-  side-by-side-diff, but in a unified view.
 
 <!-- vale Google.FirstPerson = NO -->
 ## About me
