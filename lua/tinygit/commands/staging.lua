@@ -3,10 +3,11 @@ local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@class (exact) Hunk
----@field path string
+---@field absPath string
+---@field relPath string
 ---@field lnum number
----@field displayLong string
----@field displayShort string
+---@field added number
+---@field removed number
 ---@field patch string
 
 --------------------------------------------------------------------------------
@@ -69,19 +70,16 @@ local function getHunks()
 			local _, removed, newLnum, added = hunk:match("^@@ %-(%d+),?(%d*) %+(%d+),?(%d*) @@")
 			removed = removed == "" and 1 or tonumber(removed) - 2 * contextSize
 			added = added == "" and 1 or tonumber(added) - 2 * contextSize
-			local stat = ("(+%s -%s)"):format(added, removed)
-			if removed == 0 then stat = ("(+%s)"):format(added) end
-			if added == 0 then stat = ("(-%s)"):format(removed) end
 
 			local patch = diffHeader .. "\n" .. hunk .. "\n" -- needs trailing newline for valid patch
-			local name = vim.fs.basename(relPath)
 
 			---@type Hunk
 			local hunkObj = {
-				path = absPath,
+				absPath = absPath,
+				relPath = relPath,
 				lnum = newLnum,
-				displayLong = ("%s %s"):format(relPath, stat),
-				displayShort = ("%s:%s %s"):format(name, newLnum, stat),
+				added = added,
+				removed = removed,
 				patch = patch,
 			}
 			table.insert(hunks, hunkObj)
@@ -92,14 +90,12 @@ end
 
 ---@param hunk Hunk
 local function stageHunk(hunk)
-	-- use `git apply` to stage only part of a file
-	-- https://stackoverflow.com/a/66618356/22114136
+	-- use `git apply` to stage only part of a file https://stackoverflow.com/a/66618356/22114136
 	vim.system(
 		{ "git", "apply", "--apply", "--cached", "--verbose", "-" },
 		{ stdin = hunk.patch },
 		function(out)
-			if u.nonZeroExit(out) then return end
-			u.notify(hunk.displayShort)
+			if out.code ~= 0 then u.notify(out.stderr, "error", "Stage Hunk") end
 		end
 	)
 end
@@ -119,17 +115,31 @@ local function telescopePickHunk(hunks)
 	local function newFinder(_hunks)
 		return finders.new_table {
 			results = _hunks,
-			-- search for filenames, but also changed line contents
 			entry_maker = function(hunk)
+				local entry = { value = hunk }
+
+				-- search for filenames, but also changed line contents
 				local changeLines = vim.iter(vim.split(hunk.patch, "\n"))
 					:filter(function(line) return line:match("^[+-]") end)
 					:join("\n")
-				local matcher = hunk.path .. "\n" .. changeLines
-				return {
-					value = hunk,
-					display = hunk.displayShort,
-					ordinal = matcher,
-				}
+				entry.ordinal = hunk.relPath .. "\n" .. changeLines
+
+				-- format: filename, lnum, added, removed
+				-- (and colored components)
+				entry.display = function(_entry)
+					local h = _entry.value
+					local name = vim.fs.basename(h.relPath)
+					local out = ("%s:%d +%d -%d"):format(name, h.lnum, h.added, h.removed)
+					local diffStatPos = #name + #tostring(h.lnum) + 2
+					local highlights = {
+						{ { #name, diffStatPos - 1 }, "Comment" },
+						{ { diffStatPos, diffStatPos + #tostring(h.added) + 1 }, "diffAdded" },
+						{ { #out - #tostring(h.removed) - 1, #out }, "diffRemoved" },
+					}
+					return out, highlights
+				end
+
+				return entry
 			end,
 		}
 	end
@@ -139,6 +149,11 @@ local function telescopePickHunk(hunks)
 		.new({}, {
 			prompt_title = "Git Hunks",
 			sorter = telescopeConf.generic_sorter {},
+
+			layout_strategy = "horizontal",
+			layout_config = {
+				horizontal = { preview_width = 0.65 },
+			},
 
 			finder = newFinder(hunks),
 
@@ -153,7 +168,7 @@ local function telescopePickHunk(hunks)
 				end,
 				dyn_title = function(_, entry)
 					local hunk = entry.value
-					return hunk.displayLong
+					return hunk.relPath .. (" (+%d -%d)"):format(hunk.added, hunk.removed)
 				end,
 			},
 
@@ -161,7 +176,7 @@ local function telescopePickHunk(hunks)
 				map({ "n", "i" }, opts.keymaps.gotoHunk, function()
 					local hunk = actionState.get_selected_entry().value
 					actions.close(prompt_bufnr)
-					vim.cmd(("edit +%d %s"):format(hunk.lnum, hunk.path))
+					vim.cmd(("edit +%d %s"):format(hunk.lnum, hunk.absPath))
 				end, { desc = "Goto Hunk" })
 
 				map({ "n", "i" }, opts.keymaps.stageHunk, function()
