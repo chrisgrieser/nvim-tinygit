@@ -59,7 +59,7 @@ local function getHunks()
 		-- loop hunks
 		for _, hunk in ipairs(hunksInFile) do
 			-- meaning of @@-line: https://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
-			local lnum = hunk:match("^@@ .- %+(%d+)")
+			local lnum = tonumber(hunk:match("^@@ .- %+(%d+)")) + contextSize
 
 			-- not from `@@` line, since number includes lines between two changes and context lines
 			local _, added = hunk:gsub("\n%+", "")
