@@ -79,7 +79,7 @@ local defaultConfig = {
 		keymaps = {
 			gotoHunk = "<CR>", -- insert & normal mode
 			stageHunk = "<Space>",
-		}
+		},
 	},
 	backdrop = {
 		enabled = true,
