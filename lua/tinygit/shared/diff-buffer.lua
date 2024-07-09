@@ -3,28 +3,28 @@ local M = {}
 
 ---@param bufnr number
 ---@param diffLines string[]
----@param filetype string
+---@param filetype string|nil
 ---@param sepLength number|false -- false to not draw separators
-function M.setDiffBuffer(bufnr, diffLines, filetype, sepLength)
+function M.set(bufnr, diffLines, filetype, sepLength)
 	local ns = vim.api.nvim_create_namespace("tinygit.diffBuffer")
-	if not sepLength then sepLength = 20 end
 	local sepChar = "═"
+
+	-- remove diff header
+	diffLines = vim.list_slice(diffLines, 5)
 
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
 	-- prefer only starting treesitter as opposed to setting the buffer filetype,
 	-- as this avoid triggering the filetype plugin, which can sometimes entail
 	-- undesired effects like LSPs attaching
-	local hasTsParser = pcall(vim.treesitter.start, bufnr, filetype)
-	if not hasTsParser then vim.api.nvim_set_option_value("filetype", filetype, { buf = bufnr }) end
-
-	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
-		table.remove(diffLines, 1)
+	if filetype then
+		local hasTsParser = pcall(vim.treesitter.start, bufnr, filetype)
+		if not hasTsParser then
+			vim.api.nvim_set_option_value("filetype", filetype, { buf = bufnr })
+		end
 	end
 
 	-- remove diff signs and remember line numbers
-	local diffAddLines = {}
-	local diffDelLines = {}
-	local diffHunkHeaderLines = {}
+	local diffAddLines, diffDelLines, diffHunkHeaderLines = {}, {}, {}
 	for i = 1, #diffLines do
 		local line = diffLines[i]
 		local lnum = i - 1

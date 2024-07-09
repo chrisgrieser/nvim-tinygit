@@ -110,6 +110,7 @@ local function telescopePickHunk(hunks)
 	local previewers = require("telescope.previewers")
 
 	local opts = require("tinygit.config").config.staging
+	local diffBuf = require("tinygit.shared.diff-buffer")
 
 	---@param _hunks Hunk[]
 	local function newFinder(_hunks)
@@ -162,9 +163,9 @@ local function telescopePickHunk(hunks)
 				define_preview = function(self, entry)
 					local bufnr = self.state.bufnr
 					local hunk = entry.value
-					local display = vim.list_slice(vim.split(hunk.patch, "\n"), 5)
-					vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, display)
-					vim.bo[bufnr].filetype = "diff"
+					local diffLines = vim.split(hunk.patch, "\n")
+					local ft = vim.filetype.match { filename = vim.fs.basename(hunk.relPath) }
+					diffBuf.set(bufnr, diffLines, ft, false)
 				end,
 				dyn_title = function(_, entry)
 					local hunk = entry.value

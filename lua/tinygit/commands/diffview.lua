@@ -150,7 +150,7 @@ local function showDiff(commitIdx)
 	local bufnr = a.nvim_create_buf(false, true)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	vim.bo[bufnr].buftype = "nofile"
-	require("tinygit.shared.diff-buffer").setDiffBuffer(bufnr, diffLines, state.ft, absWidth)
+	require("tinygit.shared.diff-buffer").set(bufnr, diffLines, state.ft, absWidth)
 
 	-- FOOTER & TITLE
 	local footer = {
