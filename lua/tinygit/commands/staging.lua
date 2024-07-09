@@ -66,7 +66,7 @@ local function getHunks()
 			local _, removed = hunk:gsub("\n%-", "")
 
 			-- needs trailing newline for valid patch
-			local patch = diffHeader .. "\n" .. hunk .. "\n" 
+			local patch = diffHeader .. "\n" .. hunk .. "\n"
 
 			---@type Hunk
 			local hunkObj = {

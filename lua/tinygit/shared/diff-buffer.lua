@@ -48,15 +48,13 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 
 	-- add highlights
 	for _, ln in pairs(diffAddLines) do
-		vim.api.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
+		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, { line_hl_group = "DiffAdd" })
 	end
 	for _, ln in pairs(diffDelLines) do
-		vim.api.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
+		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, { line_hl_group = "DiffDelete" })
 	end
 	for ln, preprocInfo in pairs(diffHunkHeaderLines) do
-		vim.api.nvim_buf_add_highlight(bufnr, ns, "DiffText", ln, 0, -1)
-
-		-- add preproc info
+		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, { line_hl_group = "DiffText" })
 		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
 			virt_text = { { preprocInfo .. " ", "DiffText" } },
 			virt_text_pos = "inline",
