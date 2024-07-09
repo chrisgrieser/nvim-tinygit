@@ -203,7 +203,13 @@ end
 
 function M.interactiveStaging()
 	vim.cmd("silent update")
+
 	if u.notInGitRepo() or hasNoUnstagedChanges() then return end
+	local installed = pcall(require, "telescope")
+	if not installed then
+		u.notify("This feature requires `nvim-telescope`.", "warn", "Staging")
+		return
+	end
 
 	local hunks = getHunks()
 	if not hunks then return end

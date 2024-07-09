@@ -74,10 +74,10 @@ local defaultConfig = {
 			issuesToFetch = 20,
 		},
 	},
-	staging = {
-		contextSize = 1, -- must be > 0
+	staging = { -- requires telescope
+		contextSize = 1, -- must be > 0. Larger values "merge" hunks.
 		keymaps = {
-			gotoHunk = "<CR>",
+			gotoHunk = "<CR>", -- insert & normal mode
 			stageHunk = "<Space>",
 		}
 	},

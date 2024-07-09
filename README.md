@@ -61,24 +61,35 @@ operations.
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) or
   [fzf-lua](https://github.com/ibhagwan/fzf-lua) for better UI when selecting
   commits or issues/PRs.
+- `telescope` is required for interactive staging.
 
 ```lua
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	dependencies = "stevearc/dressing.nvim",
+	dependencies = {
+		"stevearc/dressing.nvim",
+		"nvim-telescope/telescope.nvim", -- optional, but recommended
+		"rcarriga/nvim-notify", -- optional, but recommended
+	},
 },
 
 -- packer
 use {
 	"chrisgrieser/nvim-tinygit",
-	requires = "stevearc/dressing.nvim",
+	requires = {
+		"stevearc/dressing.nvim", 
+		"nvim-telescope/telescope.nvim", -- optional, but recommended
+		"rcarriga/nvim-notify", -- optional, but recommended
+	},
 }
 ```
 
 ## Commands
 
 ### Interactive Staging
+- This feature requires
+  [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
 
 ```lua
 require("tinygit").interactiveStaging()
@@ -302,12 +313,12 @@ local defaultConfig = {
 			issuesToFetch = 20,
 		},
 	},
-	staging = {
-		contextSize = 1, -- must be > 0
+	staging = { -- requires telescope
+		contextSize = 1, -- must be > 0. Larger values "merge" hunks.
 		keymaps = {
-			gotoHunk = "<CR>",
+			gotoHunk = "<CR>", -- insert & normal mode
 			stageHunk = "<Space>",
-		}
+		},
 	},
 	backdrop = {
 		enabled = true,
@@ -320,6 +331,7 @@ local defaultConfig = {
 	issueIcons = {
 		openIssue = "🟢",
 		closedIssue = "🟣",
+		notPlannedIssue = "⚪",
 		openPR = "🟩",
 		mergedPR = "🟪",
 		closedPR = "🟥",
