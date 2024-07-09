@@ -2,10 +2,17 @@ local M = {}
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
-function M.interactiveStaging()
-	vim.cmd("silent update")
-	if u.notInGitRepo() or u.hasNoChanges() then return end
+---@class (exact) Hunk
+---@field file string
+---@field lnum number
+---@field display string
+---@field patch string
 
+--------------------------------------------------------------------------------
+
+---@nodiscard
+---@return Hunk[]?
+local function getHunks()
 	-- CAVEAT for some reason, context=0 results in patches that are not valid.
 	-- Using context=1 seems to work, but has the downside of merging hunks that
 	-- are only two line apart. Test it: here 0 fails, but 1 works:
@@ -20,6 +27,7 @@ function M.interactiveStaging()
 	-- flattened list of hunks, each with their own diff header, so they work as
 	-- independent patches. Those patches in turn are needed for `git apply`
 	-- stage only part of a file.
+	---@type Hunk[]
 	local hunks = {}
 	for _, file in ipairs(changesPerFile) do
 		-- severe diff header
@@ -43,22 +51,51 @@ function M.interactiveStaging()
 		for _, hunk in ipairs(hunksInFile) do
 			local lnum = hunk:match("@@ %-(%d+)")
 			local patch = diffHeader .. "\n" .. hunk .. "\n"
-			table.insert(hunks, {
+
+			---@type Hunk
+			local hunkObj = {
 				file = relPath,
 				lnum = lnum,
 				display = vim.fs.basename(relPath) .. ":" .. lnum,
 				patch = patch,
-			})
+			}
+			table.insert(hunks, hunkObj)
 		end
 	end
+	return hunks
+end
 
-	-----------------------------------------------------------------------------
-	-- select from hunks & preview the hunk
-	vim.ui.select(hunks, {
-		prompt = "Git Hunks",
-		format_item = function(hunk) return hunk.display end,
-		telescope = {
-			previewer = require("telescope.previewers").new_buffer_previewer {
+---@param hunk Hunk
+local function applyChange(hunk)
+	-- use `git apply` to stage only part of a file
+	-- https://stackoverflow.com/a/66618356/22114136
+	vim.system(
+		{ "git", "apply", "--apply", "--cached", "--verbose", "-" },
+		{ stdin = hunk.patch },
+		function(out)
+			if u.nonZeroExit(out) then return end
+			u.notify(hunk.display)
+		end
+	)
+end
+
+---@param hunks Hunk[]
+local function pickHunk(hunks)
+	local pickers = require("telescope.pickers")
+	local telescopeConf = require("telescope.config").values
+	local actionState = require("telescope.actions.state")
+	local actions = require("telescope.actions")
+	local finders = require("telescope.finders")
+	local previewers = require("telescope.previewers")
+
+	-- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
+	pickers
+		.new({}, {
+			prompt_title = "Git Hunks",
+			sorter = telescopeConf.generic_sorter {},
+
+			-- DOCS `:help telescope.previewers`
+			previewer = previewers.new_buffer_previewer {
 				define_preview = function(self, entry)
 					local bufnr = self.state.bufnr
 					local hunk = entry.value
@@ -71,7 +108,8 @@ function M.interactiveStaging()
 					return hunk.file .. ":" .. hunk.lnum
 				end,
 			},
-			finder = require("telescope.finders").new_table {
+
+			finder = finders.new_table {
 				results = hunks,
 				-- search for filenames, but also changed line contents
 				entry_maker = function(hunk)
@@ -82,20 +120,33 @@ function M.interactiveStaging()
 					return { value = hunk, display = hunk.display, ordinal = matcher }
 				end,
 			},
-		},
-	}, function(hunk)
-		if not hunk then return end
 
-		-- use `git apply` to stage only part of a file, see https://stackoverflow.com/a/66618356/22114136
-		local out2 = vim.system(
-			{ "git", "apply", "--apply", "--cached", "--verbose", "-" },
-			{ stdin = hunk.patch }
-		):wait()
-		if u.nonZeroExit(out2) then return end
+			attach_mappings = function(prompt_bufnr, _)
+				actions.select_default:replace(function()
+					local entry = actionState.get_selected_entry()
+					local hunk = entry.value
+					applyChange(hunk)
 
-		u.notify("git", hunk.display)
-		if #hunks > 1 then M.gitChanges() end -- call itself to continue staging
-	end)
+					table.remove(hunks, entry.index)
+					actions.close(prompt_bufnr)
+					if #hunks > 0 then pickHunk(hunks) end -- select next hunk
+				end)
+				return true -- keep default mappings
+			end,
+		})
+		:find()
+end
+
+--------------------------------------------------------------------------------
+
+function M.interactiveStaging()
+	vim.cmd("silent update")
+	if u.notInGitRepo() or u.hasNoChanges() then return end
+
+	local hunks = getHunks()
+	if not hunks then return end
+
+	pickHunk(hunks)
 end
 --------------------------------------------------------------------------------
 return M
