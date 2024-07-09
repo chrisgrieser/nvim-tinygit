@@ -5,19 +5,23 @@ local u = require("tinygit.shared.utils")
 ---@class (exact) Hunk
 ---@field file string
 ---@field lnum number
----@field display string
+---@field displayLong string
+---@field displayShort string
 ---@field patch string
+
+-- CAVEAT for some reason, context=0 results in patches that are not valid.
+-- Using context=1 seems to work, but has the downside of merging hunks that
+-- are only two line apart. Test it: here 0 fails, but 1 works:
+-- `git -c diff.context=0 diff . | git apply --cached --verbose -`
+local contextSize = 1
 
 --------------------------------------------------------------------------------
 
 ---@nodiscard
 ---@return Hunk[]?
 local function getHunks()
-	-- CAVEAT for some reason, context=0 results in patches that are not valid.
-	-- Using context=1 seems to work, but has the downside of merging hunks that
-	-- are only two line apart. Test it: here 0 fails, but 1 works:
-	-- `git -c diff.context=0 diff . | git apply --cached --verbose -`
-	local out = vim.system({ "git", "-c", "diff.context=1", "diff", "--diff-filter=M" }):wait()
+	local out =
+		vim.system({ "git", "-c", "diff.context=" .. contextSize, "diff", "--diff-filter=M" }):wait()
 	if u.nonZeroExit(out) then return end
 
 	local changesPerFile = vim.split(out.stdout, "diff --git a/", { plain = true })
@@ -49,14 +53,21 @@ local function getHunks()
 
 		-- loop hunks
 		for _, hunk in ipairs(hunksInFile) do
-			local lnum = hunk:match("@@ %-(%d+)")
-			local patch = diffHeader .. "\n" .. hunk .. "\n"
+			-- meaning of @@-line: https://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
+			local _, removed, newLnum, added = hunk:match("^@@ %-(%d+),?(%d*) %+(%d+),?(%d*) @@")
+			removed = removed == "" and 1 or tonumber(removed) - 2 * contextSize
+			added = added == "" and 1 or tonumber(added) - 2 * contextSize
+			local stat = ("(+%s -%s)"):format(added, removed)
+
+			local patch = diffHeader .. "\n" .. hunk .. "\n" -- needs trailing newline for valid patch
+			local name = vim.fs.basename(relPath)
 
 			---@type Hunk
 			local hunkObj = {
 				file = relPath,
-				lnum = lnum,
-				display = vim.fs.basename(relPath) .. ":" .. lnum,
+				lnum = newLnum,
+				displayLong = ("%s:%s %s"):format(relPath, newLnum, stat),
+				displayShort = ("%s:%s %s"):format(name, newLnum, stat),
 				patch = patch,
 			}
 			table.insert(hunks, hunkObj)
@@ -74,7 +85,7 @@ local function applyChange(hunk)
 		{ stdin = hunk.patch },
 		function(out)
 			if u.nonZeroExit(out) then return end
-			u.notify(hunk.display)
+			u.notify(hunk.displayLong)
 		end
 	)
 end
@@ -105,7 +116,7 @@ local function pickHunk(hunks)
 				end,
 				dyn_title = function(_, entry)
 					local hunk = entry.value
-					return hunk.file .. ":" .. hunk.lnum
+					return hunk.displayLong
 				end,
 			},
 
@@ -117,7 +128,7 @@ local function pickHunk(hunks)
 						:filter(function(line) return line:match("^[+-]") end)
 						:join("\n")
 					local matcher = hunk.file .. "\n" .. changeLines
-					return { value = hunk, display = hunk.display, ordinal = matcher }
+					return { value = hunk, display = hunk.displayShort, ordinal = matcher }
 				end,
 			},
 
