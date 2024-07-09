@@ -212,6 +212,14 @@ function M.interactiveStaging()
 
 	local hunks = getHunks()
 	if not hunks then return end
+
+	-- backdrop
+	vim.api.nvim_create_autocmd("FileType", {
+		once = true,
+		pattern = "TelescopeResults",
+		callback = function(ctx) require("tinygit.shared.backdrop").new(ctx.buf) end,
+	})
+
 	telescopePickHunk(hunks)
 end
 --------------------------------------------------------------------------------
