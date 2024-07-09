@@ -35,6 +35,14 @@ function M.notInGitRepo()
 	return notInRepo
 end
 
+---@nodiscard
+---@return boolean
+function M.hasNoChanges()
+	local noChanges = M.syncShellCmd { "git", "status", "--porcelain" } == ""
+	if noChanges then M.notify("There are no staged or unstaged changes.", "warn") end
+	return noChanges
+end
+
 ---@return boolean
 function M.inShallowRepo()
 	return M.syncShellCmd { "git", "rev-parse", "--is-shallow-repository" } == "true"

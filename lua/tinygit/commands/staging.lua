@@ -3,17 +3,16 @@ local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 function M.interactiveStaging()
-	vim.cmd("silent! update")
+	vim.cmd("silent update")
+	if u.notInGitRepo() or u.hasNoChanges() then return end
 
 	-- CAVEAT for some reason, context=0 results in patches that are not valid.
 	-- Using context=1 seems to work, but has the downside of merging hunks that
 	-- are only two line apart. Test it: here 0 fails, but 1 works:
 	-- `git -c diff.context=0 diff . | git apply --cached --verbose -`
 	local out = vim.system({ "git", "-c", "diff.context=1", "diff", "--diff-filter=M" }):wait()
-	if out.code ~= 0 then
-		u.notify("error", out.stderr, "Staging")
-		return
-	end
+	if u.nonZeroExit(out) then return end
+
 	local changesPerFile = vim.split(out.stdout, "diff --git a/", { plain = true })
 	table.remove(changesPerFile, 1) -- first item is always an empty string
 
@@ -24,7 +23,7 @@ function M.interactiveStaging()
 	local hunks = {}
 	for _, file in ipairs(changesPerFile) do
 		-- severe diff header
-		file = "diff --git a/" .. file
+		file = "diff --git a/" .. file -- re-add, since needed to make patches valid
 		local diffLines = vim.split(file, "\n")
 		local relPath = diffLines[3]:sub(7)
 		local diffHeader = table.concat(vim.list_slice(diffLines, 1, 4), "\n")
