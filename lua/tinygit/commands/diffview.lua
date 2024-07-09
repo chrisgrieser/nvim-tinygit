@@ -98,7 +98,6 @@ end
 
 ---@param commitIdx number index of the selected commit in the list of commits
 local function showDiff(commitIdx)
-	local ns = a.nvim_create_namespace("tinygit.diffview")
 	local hashList = state.hashList
 	local hash = hashList[commitIdx]
 	local query = state.query
@@ -106,10 +105,10 @@ local function showDiff(commitIdx)
 	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=(%cr)", hash }
 	local commitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%s", hash }
 
-	-- determine filename in case of renaming
+	-- DETERMINE FILENAME (in case of renaming)
 	local filenameInPresent = state.absPath
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
-	local logCmd = {
+	local nameHistory = u.syncShellCmd {
 		"git",
 		"-C",
 		gitroot, -- in case cwd is not the git root
@@ -121,7 +120,6 @@ local function showDiff(commitIdx)
 		"--",
 		filenameInPresent,
 	}
-	local nameHistory = u.syncShellCmd(logCmd)
 	local nameAtCommit = table.remove(vim.split(nameHistory, "\n"))
 
 	-- DIFF COMMAND
@@ -137,39 +135,9 @@ local function showDiff(commitIdx)
 	end
 	local diffResult = vim.system(vim.list_extend(diffCmd, args)):wait()
 	if u.nonZeroExit(diffResult) then return end
+
 	local diff = assert(diffResult.stdout, "No diff output.")
-
 	local diffLines = vim.split(vim.trim(diff), "\n")
-	for _ = 1, 4 do -- remove first four lines (irrelevant diff header)
-		table.remove(diffLines, 1)
-	end
-
-	-- remove diff signs and remember line numbers
-	local diffAddLines = {}
-	local diffDelLines = {}
-	local diffHunkHeaderLines = {}
-	for i = 1, #diffLines do
-		local line = diffLines[i]
-		local lnum = i - 1
-		if line:find("^%+") then
-			table.insert(diffAddLines, lnum)
-		elseif line:find("^%-") then
-			table.insert(diffDelLines, lnum)
-		elseif line:find("^@@") then
-			-- remove preproc info and inject it alter as inline text,
-			-- as keeping in the text breaks filetype-highlighting
-			local preprocInfo, cleanLine = line:match("^(@@.-@@)(.*)")
-			diffLines[i] = cleanLine
-			diffHunkHeaderLines[lnum] = preprocInfo
-		end
-		diffLines[i] = diffLines[i]:sub(2)
-	end
-
-	-- BUFFER
-	local bufnr = a.nvim_create_buf(false, true)
-	a.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
-	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
-	a.nvim_set_option_value("modifiable", false, { buf = bufnr })
 
 	-- WINDOW STATS
 	local relWidth = math.min(config.diffPopup.width, 1)
@@ -177,6 +145,12 @@ local function showDiff(commitIdx)
 	local vimWidth = vim.o.columns - 2
 	local vimHeight = vim.o.lines - 2
 	local absWidth = math.floor(relWidth * vimWidth)
+
+	-- BUFFER
+	local bufnr = a.nvim_create_buf(false, true)
+	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
+	vim.bo[bufnr].buftype = "nofile"
+	require("tinygit.shared.diff-buffer").setDiffBuffer(bufnr, diffLines, state.ft, absWidth)
 
 	-- FOOTER & TITLE
 	local footer = {
@@ -211,43 +185,6 @@ local function showDiff(commitIdx)
 	})
 	a.nvim_set_option_value("winfixbuf", true, { win = winnr })
 	backdrop.new(bufnr, diffviewZindex)
-
-	-- HIGHLIGHTING
-	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
-	-- prefer only starting treesitter as opposed to setting the buffer filetype,
-	-- as this avoid triggering the filetype plugin, which can sometimes entail
-	-- undesired effects like LSPs attaching
-	local hasTsParser = pcall(vim.treesitter.start, bufnr, state.ft)
-	if not hasTsParser then a.nvim_set_option_value("filetype", state.ft, { buf = bufnr }) end
-
-	for _, ln in pairs(diffAddLines) do
-		a.nvim_buf_add_highlight(bufnr, ns, "DiffAdd", ln, 0, -1)
-	end
-	for _, ln in pairs(diffDelLines) do
-		a.nvim_buf_add_highlight(bufnr, ns, "DiffDelete", ln, 0, -1)
-	end
-	for ln, preprocInfo in pairs(diffHunkHeaderLines) do
-		a.nvim_buf_add_highlight(bufnr, ns, "DiffText", ln, 0, -1)
-
-		-- add preproc info
-		a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
-			virt_text = { { preprocInfo .. " ", "DiffText" } },
-			virt_text_pos = "inline",
-		})
-
-		-- separator between hunks
-		if ln > 1 then
-			a.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
-				virt_lines = { { { ("─"):rep(absWidth), "FloatBorder" } } },
-				virt_lines_above = true,
-			})
-		end
-	end
-	-- separator below last hunk for clarity
-	a.nvim_buf_set_extmark(bufnr, ns, #diffLines, 0, {
-		virt_lines = { { { ("─"):rep(absWidth), "FloatBorder" } } },
-		virt_lines_above = true,
-	})
 
 	-- search for the query
 	local ignoreCaseBefore = vim.o.ignorecase
