@@ -189,7 +189,10 @@ local function telescopePickHunk(hunks)
 				end,
 				dyn_title = function(_, entry)
 					local hunk = entry.value
-					return hunk.relPath .. (" (+%d -%d)"):format(hunk.added, hunk.removed)
+					local stats = ("(+%d -%d)"):format(hunk.added, hunk.removed)
+					if hunk.added == 0 then stats = ("(-%d)"):format(hunk.removed) end
+					if hunk.removed == 0 then stats = ("(+%d)"):format(hunk.added) end
+					return hunk.relPath .. " " .. stats
 				end,
 			},
 
