@@ -9,9 +9,10 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 	local ns = vim.api.nvim_create_namespace("tinygit.diffBuffer")
 	local sepChar = "═"
 
-	-- remove diff header, if the input has it
-	if vim.startswith(diffLines[1], "diff --git a/") then
-		diffLines = vim.list_slice(diffLines, 5)
+	-- remove diff header, if the input has it. checking for `@@`, as number of
+	-- header lines can vary (e.g., diff to new file are 5 lines, not 4)
+	while not vim.startswith(diffLines[1], "@@") do
+		table.remove(diffLines, 1)
 	end
 
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
@@ -30,15 +31,15 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 		local lnum = i - 1
 		if line:find("^%+") then
 			table.insert(diffAddLines, lnum)
-			diffLines[i] = diffLines[i]:sub(2)
+			diffLines[i] = line:sub(2)
 		elseif line:find("^%-") then
 			table.insert(diffDelLines, lnum)
-			diffLines[i] = diffLines[i]:sub(2)
+			diffLines[i] = line:sub(2)
 		elseif line:find("^@@") then
 			-- remove preproc info and inject the lnum later as inline text
 			-- as keeping in the text breaks filetype-highlighting
-			local originalLnum, cleanLine = line:match("^@@ %-.- %+(%d+).* @@ (.*)")
-			diffLines[i] = cleanLine
+			local originalLnum, cleanLine = line:match("^@@ %-.- %+(%d+).* @@ ?(.*)")
+			diffLines[i] = cleanLine or "" -- nil on new file
 			diffHunkHeaderLines[lnum] = originalLnum
 		end
 	end
