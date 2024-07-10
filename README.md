@@ -1,6 +1,8 @@
 <!-- LTeX: enabled=false -->
 # nvim-tinygit
 <!-- LTeX: enabled=true -->
+<a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
+<img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat" /> </a>
 
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
@@ -97,9 +99,9 @@ use {
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
   from `gitsigns.nvim`.) A context size between 1 and 3 is recommended.
-- Limitations: 
-	- `contextSize=0` (= no merging at all) is not supported.
-	- Only modified, deleted, and untracked/added files are included
+- Limitations:
+	* `contextSize=0` (= no merging at all) is not supported.
+	* Only modified, deleted, and untracked/added files are included
 	  (`--diff-filter=ADM`). Other changes, such as renamed files, are not
 	  supported.
 
