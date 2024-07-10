@@ -16,10 +16,15 @@ local u = require("tinygit.shared.utils")
 
 ---@return number
 local function getContextSize()
-	-- CAVEAT for some reason, context=0 results in patches that are not valid.
-	-- Using context=1 seems to work, but has the downside of merging hunks that
-	-- are only two line apart. Test it: here 0 fails, but 1 works:
-	-- `git -c diff.context=0 diff . | git apply --cached --verbose -`
+	-- CAVEAT context=0 is not supported without `--unidiff-zero`
+	-- DOCS https://git-scm.com/docs/git-apply#Documentation/git-apply.txt---unidiff-zero
+	-- However, it is discouraged in the git manual, and the `git apply` tends to
+	-- fail quite often, probably as line count changes are not accounted for
+	-- when splitting up changes into hunks in `getHunksFromDiffOutput`.
+	-- Using context=1 works, but has the downside of not being 1:1 the same
+	-- hunks as with `gitsigns.nvim`. Since many small hunks are actually abit
+	-- cumbersome, and since it's discouraged by git anyway, we simply disallow
+	-- context=0 for now.
 	local contextSize = require("tinygit.config").config.staging.contextSize
 	if contextSize < 1 then contextSize = 0 end
 	return contextSize
@@ -284,8 +289,7 @@ function M.interactiveStaging()
 	-- GET ALL HUNKS
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
 
-	local diffArgs =
-		{ "git", "-c", "diff.context=" .. getContextSize(), "diff", "--diff-filter=ADMR" }
+	local diffArgs = { "git", "diff", "--unified=" .. getContextSize(), "--diff-filter=ADMR" }
 	local changesDiff = u.syncShellCmd(diffArgs)
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
 
