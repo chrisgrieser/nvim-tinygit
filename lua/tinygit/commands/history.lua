@@ -3,8 +3,8 @@ local fn = vim.fn
 local a = vim.api
 local basename = vim.fs.basename
 
-local u = require("tinygit.shared.utils")
 local highlight = require("tinygit.shared.highlights")
+local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config.historySearch
 local backdrop = require("tinygit.shared.backdrop")
 local selectCommit = require("tinygit.shared.select-commit")

@@ -1,6 +1,6 @@
 local M = {}
-local u = require("tinygit.shared.utils")
 local highlight = require("tinygit.shared.highlights")
+local u = require("tinygit.shared.utils")
 local config = require("tinygit.config").config
 --------------------------------------------------------------------------------
 

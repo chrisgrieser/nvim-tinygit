@@ -79,6 +79,5 @@ function M.intentToAddUntrackedFiles()
 	end
 end
 
-
 --------------------------------------------------------------------------------
 return M
