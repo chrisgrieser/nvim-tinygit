@@ -12,8 +12,8 @@ operations.
 <img alt="Showcase git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94">
 
 ## Feature Overview
-- **Interactive Staging** of hunks, with proper syntax highlighting of the hunk
-  diffs (an improvement to `git add -p`).
+- **Interactive Staging** of hunks (parts of a file). Displays hunk diffs with
+  proper syntax highlighting, and allows resetting or navigating to the hunk.
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
   commit preview, automatic issue number insertion, and overlength indicators.
   If there are no staged changes, stages all changes before doing so (`git add
@@ -93,8 +93,9 @@ use {
   [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
 - This command stages hunks, that is, *parts* of a file instead of the
   full file. It is roughly comparable to `git add -p`.
-- Use `<CR>` to open the hunk in nvim, and `<Space>` to (un)stage the hunk
-  (mappings customizable). Your regular `telescope` mappings also apply.
+- Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r` to
+  reset the hunk (mappings customizable). Your regular `telescope` mappings also
+  apply.
 - The size of the hunks is determined by the setting `staging.contextSize`.
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
@@ -308,6 +309,7 @@ require("tinygit").setup({
 		keymaps = { -- insert & normal mode
 			stagingToggle = "<Space>", -- stage/unstage hunk
 			gotoHunk = "<CR>",
+			resetHunk = "<C-r>",
 		},
 	},
 	commitMsg = {

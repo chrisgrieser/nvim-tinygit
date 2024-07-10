@@ -114,19 +114,28 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 	return hunks
 end
 
+-- `git apply` to stage only part of a file https://stackoverflow.com/a/66618356/22114136
 ---@param hunk Hunk
+---@param mode "toggle" | "reset"
 ---@return boolean success
-local function stagingToggleHunk(hunk)
-	-- use `git apply` to stage only part of a file https://stackoverflow.com/a/66618356/22114136
-	local applyResult = vim.system({
+local function applyPatch(hunk, mode)
+	local args = {
 		"git",
 		"apply",
-		hunk.alreadyStaged and "--reverse" or nil, -- unstage, if already staged
-		"--cached", -- only change staging area, not working tree
-		"--verbose", -- better stderr for errors
-		"-",
-	}, { stdin = hunk.patch }):wait()
+		"--verbose", -- so the error messages are more informative
+		"-", -- read patch from stdin
+	}
+	if mode == "toggle" then
+		table.insert(args, "--cached") -- = only affect staging area, not working tree
+		if hunk.alreadyStaged then table.insert(args, "--reverse") end
+	elseif mode == "reset" then
+		assert(hunk.alreadyStaged == false, "A staged hunk cannot be reset, unstage it first.")
+		table.insert(args, "--reverse") -- undoing patch
+	end
+	local applyResult = vim.system(args, { stdin = hunk.patch }):wait()
+
 	local success = applyResult.code == 0
+	if success and mode == "reset" then vim.cmd.checktime() end -- refresh buffer
 	if not success then u.notify(applyResult.stderr, "error", "Stage Hunk") end
 	return success
 end
@@ -232,23 +241,7 @@ local function telescopePickHunk(hunks)
 			},
 
 			attach_mappings = function(prompt_bufnr, map)
-				map({ "n", "i" }, opts.keymaps.gotoHunk, function()
-					local hunk = actionState.get_selected_entry().value
-					actions.close(prompt_bufnr)
-					-- hunk lnum starts at beginning of context, not change
-					local hunkStart = hunk.lnum + getContextSize()
-					vim.cmd(("edit +%d %s"):format(hunkStart, hunk.absPath))
-				end, { desc = "Goto Hunk" })
-
-				map({ "n", "i" }, opts.keymaps.stagingToggle, function()
-					local entry = actionState.get_selected_entry()
-					local hunk = entry.value
-					local success = stagingToggleHunk(hunk)
-					if not success then return end
-
-					-- Change value for selected hunk in cached hunk-list
-					hunks[entry.index].alreadyStaged = not hunks[entry.index].alreadyStaged
-
+				local function refreshPicker()
 					-- temporarily register a callback which keeps selection on refresh
 					-- SOURCE https://github.com/nvim-telescope/telescope.nvim/blob/bfcc7d5c6f12209139f175e6123a7b7de6d9c18a/lua/telescope/builtin/__git.lua#L412-L421
 					local picker = actionState.get_current_picker(prompt_bufnr)
@@ -260,7 +253,43 @@ local function telescopePickHunk(hunks)
 					end)
 
 					picker:refresh(newFinder(hunks), { reset_prompt = false })
+				end
+
+				map({ "n", "i" }, opts.keymaps.gotoHunk, function()
+					local hunk = actionState.get_selected_entry().value
+					actions.close(prompt_bufnr)
+					-- hunk lnum starts at beginning of context, not change
+					local hunkStart = hunk.lnum + getContextSize()
+					vim.cmd(("edit +%d %s"):format(hunkStart, hunk.absPath))
+				end, { desc = "Goto Hunk" })
+
+				map({ "n", "i" }, opts.keymaps.stagingToggle, function()
+					local entry = actionState.get_selected_entry()
+					local hunk = entry.value
+					local success = applyPatch(hunk, "toggle")
+					if success then
+						-- Change value for selected hunk in cached hunk-list
+						hunks[entry.index].alreadyStaged = not hunks[entry.index].alreadyStaged
+						refreshPicker()
+					end
 				end, { desc = "Staging Toggle" })
+
+				map({ "n", "i" }, opts.keymaps.resetHunk, function()
+					local entry = actionState.get_selected_entry()
+					local hunk = entry.value
+
+					-- a staged hunk cannot be reset, so we unstage it first
+					if hunk.alreadyStaged then
+						local success1 = applyPatch(hunk, "toggle")
+						if not success1 then return end
+						hunk.alreadyStaged = false
+					end
+
+					local success2 = applyPatch(hunk, "reset")
+					if not success2 then return end
+					table.remove(hunks, entry.index) -- remove from list as not a hunk anymore
+					refreshPicker()
+				end, { desc = "Reset Hunk" })
 
 				return true -- keep default mappings
 			end,

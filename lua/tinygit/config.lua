@@ -13,7 +13,7 @@ local M = {}
 ---@class (exact) stagingConfig
 ---@field contextSize number
 ---@field stagedIndicator string
----@field keymaps { gotoHunk: string, stagingToggle: string }
+---@field keymaps { gotoHunk: string, stagingToggle: string, resetHunk: string }
 
 ---@class issueIconConfig
 ---@field closedIssue string
@@ -59,6 +59,7 @@ local defaultConfig = {
 		keymaps = { -- insert & normal mode
 			stagingToggle = "<Space>", -- stage/unstage hunk
 			gotoHunk = "<CR>",
+			resetHunk = "<C-r>",
 		},
 	},
 	commitMsg = {
