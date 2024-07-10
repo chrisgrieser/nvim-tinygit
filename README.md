@@ -92,8 +92,8 @@ use {
   [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
 - This command stages hunks, that is, *parts* of a file instead of the
   full file. It is roughly comparable to `git add -p`.
-- Use `<CR>` to open the hunk in nvim, and `<Space>` to stage the hunk (mappings
-  customizable). The `telescope` mappings are also available.
+- Use `<CR>` to open the hunk in nvim, and `<Space>` to (un)stage the hunk
+  (mappings customizable). Your regular `telescope` mappings also apply.
 - The size of the hunks is determined by the setting `staging.contextSize`.
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
