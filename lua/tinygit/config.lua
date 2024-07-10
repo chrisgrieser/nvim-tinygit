@@ -8,6 +8,7 @@ local M = {}
 ---@field historySearch historySearchConfig
 ---@field push pushConfig
 ---@field statusline { branchState: branchStateConfig, blame: blameConfig }
+---@field backdrop { enabled: boolean, blend: number  }
 
 ---@class (exact) stagingConfig
 ---@field contextSize number
@@ -52,6 +53,14 @@ local M = {}
 
 ---@type pluginConfig
 local defaultConfig = {
+	staging = { -- requires telescope
+		contextSize = 1, -- larger values "merge" hunks
+		stagedIndicator = "✜ ",
+		keymaps = { -- insert & normal mode
+			stagingToggle = "<Space>", -- stage/unstage hunk
+			gotoHunk = "<CR>",
+		},
+	},
 	commitMsg = {
 		commitPreview = true, -- requires nvim-notify
 		spellcheck = false,
@@ -75,29 +84,9 @@ local defaultConfig = {
 			issuesToFetch = 20,
 		},
 	},
-	staging = { -- requires telescope
-		contextSize = 1, -- must be > 0. Larger values "merge" hunks.
-		stagedIndicator = "● ",
-		keymaps = { -- insert & normal mode
-			stagingToggle = "<Space>", -- stage/unstage hunk
-			gotoHunk = "<CR>",
-		},
-	},
-	backdrop = {
-		enabled = true,
-		blend = 50, -- 0-100
-	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
-	},
-	issueIcons = {
-		openIssue = "🟢",
-		closedIssue = "🟣",
-		notPlannedIssue = "⚪",
-		openPR = "🟩",
-		mergedPR = "🟪",
-		closedPR = "🟥",
 	},
 	historySearch = {
 		diffPopup = {
@@ -106,6 +95,14 @@ local defaultConfig = {
 			border = "single",
 		},
 		autoUnshallowIfNeeded = false,
+	},
+	issueIcons = {
+		openIssue = "🟢",
+		closedIssue = "🟣",
+		notPlannedIssue = "⚪",
+		openPR = "🟩",
+		mergedPR = "🟪",
+		closedPR = "🟥",
 	},
 	statusline = {
 		blame = {
@@ -121,6 +118,10 @@ local defaultConfig = {
 				diverge = "󰃻",
 			},
 		},
+	},
+	backdrop = {
+		enabled = true,
+		blend = 50, -- 0-100
 	},
 }
 

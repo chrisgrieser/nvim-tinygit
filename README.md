@@ -304,7 +304,16 @@ require("tinygit.statusline").branchState()
 The `setup` call is optional. These are the default settings:
 
 ```lua
-local defaultConfig = {
+-- default config
+require("tinygit").setup({
+	staging = { -- requires telescope
+		contextSize = 1, -- larger values "merge" hunks
+		stagedIndicator = "✜ ",
+		keymaps = { -- insert & normal mode
+			stagingToggle = "<Space>", -- stage/unstage hunk
+			gotoHunk = "<CR>",
+		},
+	},
 	commitMsg = {
 		commitPreview = true, -- requires nvim-notify
 		spellcheck = false,
@@ -328,29 +337,9 @@ local defaultConfig = {
 			issuesToFetch = 20,
 		},
 	},
-	staging = { -- requires telescope
-		contextSize = 1, -- must be > 0. Larger values "merge" hunks.
-		stagedIndicator = "● ",
-		keymaps = { -- insert & normal mode
-			stagingToggle = "<Space>", -- stage/unstage hunk
-			gotoHunk = "<CR>",
-		},
-	},
-	backdrop = {
-		enabled = true,
-		blend = 50, -- 0-100
-	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
-	},
-	issueIcons = {
-		openIssue = "🟢",
-		closedIssue = "🟣",
-		notPlannedIssue = "⚪",
-		openPR = "🟩",
-		mergedPR = "🟪",
-		closedPR = "🟥",
 	},
 	historySearch = {
 		diffPopup = {
@@ -359,6 +348,14 @@ local defaultConfig = {
 			border = "single",
 		},
 		autoUnshallowIfNeeded = false,
+	},
+	issueIcons = {
+		openIssue = "🟢",
+		closedIssue = "🟣",
+		notPlannedIssue = "⚪",
+		openPR = "🟩",
+		mergedPR = "🟪",
+		closedPR = "🟥",
 	},
 	statusline = {
 		blame = {
@@ -375,7 +372,11 @@ local defaultConfig = {
 			},
 		},
 	},
-}
+	backdrop = {
+		enabled = true,
+		blend = 50, -- 0-100
+	},
+})
 ```
 
 The appearance of the commit preview and notifications is determined by
