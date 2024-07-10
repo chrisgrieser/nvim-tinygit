@@ -12,18 +12,22 @@ local u = require("tinygit.shared.utils")
 
 --------------------------------------------------------------------------------
 
----@nodiscard
----@return Hunk[]?
-local function getHunks()
+---@return number
+local function getContextSize()
 	-- CAVEAT for some reason, context=0 results in patches that are not valid.
 	-- Using context=1 seems to work, but has the downside of merging hunks that
 	-- are only two line apart. Test it: here 0 fails, but 1 works:
 	-- `git -c diff.context=0 diff . | git apply --cached --verbose -`
 	local contextSize = require("tinygit.config").config.staging.contextSize
 	if contextSize < 1 then contextSize = 0 end
+	return contextSize
+end
 
-	local out =
-		vim.system({ "git", "-c", "diff.context=" .. contextSize, "diff", "--diff-filter=M" }):wait()
+---@nodiscard
+---@return Hunk[]?
+local function getHunks()
+	local contextArg = "diff.context=" .. getContextSize()
+	local out = vim.system({ "git", "-c", contextArg, "diff", "--diff-filter=M" }):wait()
 	if u.nonZeroExit(out) then return end
 
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
@@ -59,7 +63,7 @@ local function getHunks()
 		-- loop hunks
 		for _, hunk in ipairs(hunksInFile) do
 			-- meaning of @@-line: https://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
-			local lnum = tonumber(hunk:match("^@@ .- %+(%d+)")) + contextSize
+			local lnum = tonumber(hunk:match("^@@ .- %+(%d+)")) or -1
 
 			-- not from `@@` line, since number includes lines between two changes and context lines
 			local _, added = hunk:gsub("\n%+", "")
@@ -177,7 +181,9 @@ local function telescopePickHunk(hunks)
 				map({ "n", "i" }, opts.keymaps.gotoHunk, function()
 					local hunk = actionState.get_selected_entry().value
 					actions.close(prompt_bufnr)
-					vim.cmd(("edit +%d %s"):format(hunk.lnum, hunk.absPath))
+					-- hunk lnum starts at beginning of context, not change
+					local hunkStart = hunk.lnum + getContextSize()
+					vim.cmd(("edit +%d %s"):format(hunkStart, hunk.absPath))
 				end, { desc = "Goto Hunk" })
 
 				map({ "n", "i" }, opts.keymaps.stageHunk, function()

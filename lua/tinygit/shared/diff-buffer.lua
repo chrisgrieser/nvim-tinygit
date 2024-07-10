@@ -35,11 +35,11 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 			table.insert(diffDelLines, lnum)
 			diffLines[i] = diffLines[i]:sub(2)
 		elseif line:find("^@@") then
-			-- remove preproc info and inject it alter as inline text,
+			-- remove preproc info and inject the lnum later as inline text
 			-- as keeping in the text breaks filetype-highlighting
-			local preprocInfo, cleanLine = line:match("^(@@.-@@)(.*)")
+			local originalLnum, cleanLine = line:match("^@@ %-.- %+(%d+).* @@ (.*)")
 			diffLines[i] = cleanLine
-			diffHunkHeaderLines[lnum] = preprocInfo
+			diffHunkHeaderLines[lnum] = originalLnum
 		end
 	end
 
@@ -54,10 +54,13 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 	for _, ln in pairs(diffDelLines) do
 		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, { line_hl_group = "DiffDelete" })
 	end
-	for ln, preprocInfo in pairs(diffHunkHeaderLines) do
+	for ln, originalLnum in pairs(diffHunkHeaderLines) do
 		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, { line_hl_group = "DiffText" })
 		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
-			virt_text = { { preprocInfo .. " ", "DiffText" } },
+			virt_text = {
+				{ originalLnum .. ":", "diffLine" },
+				{ " ", "None" },
+			},
 			virt_text_pos = "inline",
 		})
 
