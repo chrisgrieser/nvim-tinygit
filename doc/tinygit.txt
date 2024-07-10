@@ -22,12 +22,12 @@ operations.
 
 FEATURE OVERVIEW                       *tinygit-nvim-tinygit-feature-overview*
 
+- **Interactive Staging** of hunks, with proper syntax highlighting of the hunk
+    diffs (an improvement to `git add -p`).
 - **Smart-Commit**Open a popup to enter a commit message with syntax highlighting,
     commit preview, automatic issue number insertion, and overlength indicators.
     If there are no staged changes, stages all changes before doing so (`git add   -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
-- **Interactive Staging** of hunks, with proper syntax highlighting of the hunk
-    diffs (an improvement to `git add -p`).
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Explore the git history**Search the file for a string ("git pickaxe"), or
