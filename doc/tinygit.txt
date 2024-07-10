@@ -14,6 +14,8 @@ Table of Contents                                  *tinygit-table-of-contents*
 ==============================================================================
 1. nvim-tinygit                                         *tinygit-nvim-tinygit*
 
+
+
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
