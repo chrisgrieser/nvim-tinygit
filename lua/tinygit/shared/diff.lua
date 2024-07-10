@@ -6,16 +6,26 @@ local M = {}
 ---@param diffLines string[]
 ---@return string[] headerLines
 ---@return string[] outputWithoutHeader
----@return "new"|"deleted"|"modified" fileMode
+---@return FileMode fileMode
+---@return { from?: string, to?: string } rename
 ---@nodiscard
-function M.removeHeaderFromDiffOutputLines(diffLines)
+function M.splitOffDiffHeader(diffLines)
 	local headerLines = {}
 	while not vim.startswith(diffLines[1], "@@") do
 		local headerLine = table.remove(diffLines, 1)
 		table.insert(headerLines, headerLine)
+		if #diffLines == 0 then break end -- renamed file without changes have no `@@`
 	end
-	local fileMode = headerLines[2]:match("^(%w+) file") or "modified"
-	return diffLines, headerLines, fileMode
+
+	local fileMode = headerLines[2]:match("^(%w+) file")
+	local rename = {}
+	if not fileMode then
+		rename.from = headerLines[3]:match("^rename from (.+)$")
+		rename.to = headerLines[4]:match("^rename to (.+)$")
+		fileMode = rename.from and "renamed" or "modified"
+	end
+
+	return diffLines, headerLines, fileMode, rename
 end
 
 --------------------------------------------------------------------------------
@@ -27,10 +37,17 @@ end
 function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 	local ns = vim.api.nvim_create_namespace("tinygit.diffBuffer")
 	local sepChar = "═"
-	local diffLines, _, fileMode = M.removeHeaderFromDiffOutputLines(diffLinesWithHeader)
+	local diffLines, _, fileMode, rename = M.splitOffDiffHeader(diffLinesWithHeader)
 
 	-- context line is useless in this case
-	if fileMode == "deleted" or fileMode == "new" then table.remove(diffLines, 1) end
+	if fileMode == "deleted" or fileMode == "new" then
+		table.remove(diffLines, 1)
+	elseif fileMode == "renamed" then
+		-- dummy blanks for virtual text, as nvim does not support placing a
+		-- virtual line above the first line
+		table.insert(diffLines, 1, "")
+		table.insert(diffLines, 1, "")
+	end
 
 	-- remove diff signs and remember line numbers
 	local diffAddLines, diffDelLines, diffHunkHeaderLines = {}, {}, {}
@@ -66,14 +83,24 @@ function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 	for _, ln in pairs(diffDelLines) do
 		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, { line_hl_group = "DiffDelete" })
 	end
+	if fileMode == "renamed" then
+		vim.api.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
+			virt_text = { { ("renamed from %q"):format(rename.from), "Comment" } },
+			virt_text_pos = "inline",
+		})
+		vim.api.nvim_buf_set_extmark(bufnr, ns, 1, 0, {
+			virt_text = { { ("to %q"):format(rename.to), "Comment" } },
+			virt_text_pos = "inline",
+		})
+	end
 	for ln, originalLnum in pairs(diffHunkHeaderLines) do
-		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, { line_hl_group = "DiffText" })
 		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
 			virt_text = {
 				{ originalLnum .. ":", "diffLine" },
-				{ " ", "None" },
+				{ " ", "None_Padding" },
 			},
 			virt_text_pos = "inline",
+			line_hl_group = "DiffText",
 		})
 
 		-- separator between hunks

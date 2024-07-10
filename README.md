@@ -98,12 +98,8 @@ use {
 - The size of the hunks is determined by the setting `staging.contextSize`.
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
-  from `gitsigns.nvim`.) A context size between 1 and 3 is recommended.
-- Limitations:
-	* `contextSize=0` (= no merging at all) is not supported.
-	* Only modified, deleted, and untracked/added files are included
-	  (`--diff-filter=ADM`). Other changes, such as renamed files, are not
-	  supported.
+  from `gitsigns.nvim`.) A context size between 1 and 4 is recommended.
+- Limitations: `contextSize=0` (= no merging at all) is not supported.
 
 ```lua
 require("tinygit").interactiveStaging()

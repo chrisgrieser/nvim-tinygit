@@ -2,6 +2,8 @@ local M = {}
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
+---@alias FileMode "new"|"deleted"|"modified"|"renamed"
+
 ---@class (exact) Hunk
 ---@field absPath string
 ---@field relPath string
@@ -10,7 +12,7 @@ local u = require("tinygit.shared.utils")
 ---@field removed number
 ---@field patch string
 ---@field alreadyStaged boolean
----@field fileMode "new"|"deleted"|"modified"
+---@field fileMode FileMode
 
 --------------------------------------------------------------------------------
 
@@ -29,7 +31,7 @@ end
 ---@param diffIsOfStaged boolean
 ---@return Hunk[] hunks
 local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
-	local parseDiffHeader = require("tinygit.shared.diff").removeHeaderFromDiffOutputLines
+	local splitOffDiffHeader = require("tinygit.shared.diff").splitOffDiffHeader
 
 	if diffCmdStdout == "" then return {} end -- no hunks
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
@@ -47,9 +49,9 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 		end
 		-- split off diff header
 		local diffLines = vim.split(file, "\n")
-		local changesInFile, diffHeaderLines, fileMode = parseDiffHeader(diffLines)
+		local changesInFile, diffHeaderLines, fileMode, _ = splitOffDiffHeader(diffLines)
 		local diffHeader = table.concat(diffHeaderLines, "\n")
-		local relPath = diffHeaderLines[1]:match("a/(.+) b/") or "path not found"
+		local relPath = diffHeaderLines[1]:match("b/(.+)") or "ERROR: path not found"
 		local absPath = gitroot .. "/" .. relPath
 
 		-- split remaining output into hunks
@@ -62,10 +64,28 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 			end
 		end
 
+		-- special case: file renamed without any other changes
+		-- (needs to be handled separately because it has no hunks, that is no `@@` lines)
+		if #changesInFile == 0 and fileMode == "renamed" then
+			---@type Hunk
+			local hunkObj = {
+				absPath = absPath,
+				relPath = relPath,
+				lnum = -1,
+				added = 0,
+				removed = 0,
+				patch = diffHeader .. "\n",
+				alreadyStaged = diffIsOfStaged,
+				fileMode = fileMode,
+			}
+			table.insert(hunks, hunkObj)
+		end
+
 		-- loop hunks
 		for _, hunk in ipairs(hunksInFile) do
 			-- meaning of @@-line: https://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
-			local lnum = tonumber(hunk:match("^@@ .- %+(%d+)")) or -1
+			local lnum = tonumber(hunk:match("^@@ .- %+(%d+)"))
+			assert(lnum, "lnum not found.")
 
 			-- not from `@@` line, since number includes lines between two changes and context lines
 			local _, added = hunk:gsub("\n%+", "")
@@ -137,13 +157,22 @@ local function telescopePickHunk(hunks)
 				entry.display = function(_entry)
 					---@type Hunk
 					local h = _entry.value
+					local renamedWithoutChanges = h.lnum == -1 and h.fileMode == "renamed"
 
 					local name = vim.fs.basename(h.relPath)
 					local added = h.added > 0 and (" +" .. h.added) or ""
 					local del = h.removed > 0 and (" -" .. h.removed) or ""
-					if h.fileMode == "new" then added = added .. " (new file)" end
-					if h.fileMode == "deleted" then del = del .. " (deleted file)" end
-					local location = h.fileMode == "modified" and ":" .. h.lnum or ""
+					local location = ""
+					if h.fileMode == "new" then
+						added = added .. " (new file)"
+					elseif h.fileMode == "deleted" then
+						del = del .. " (deleted file)"
+					elseif renamedWithoutChanges then
+						location = " (renamed)"
+					else
+						location = ":" .. h.lnum
+						if h.fileMode == "renamed" then location = location .. " (renamed)" end
+					end
 					local status = h.alreadyStaged and opts.stagedIndicator
 						or (" "):rep(vim.api.nvim_strwidth(opts.stagedIndicator))
 
@@ -191,6 +220,7 @@ local function telescopePickHunk(hunks)
 				end,
 				dyn_title = function(_, entry)
 					local hunk = entry.value
+					if hunk.added + hunk.removed == 0 then return hunk.relPath end -- renamed w/o changes
 					local stats = ("(+%d -%d)"):format(hunk.added, hunk.removed)
 					if hunk.added == 0 then stats = ("(-%d)"):format(hunk.removed) end
 					if hunk.removed == 0 then stats = ("(+%d)"):format(hunk.added) end
@@ -257,7 +287,7 @@ function M.interactiveStaging()
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
 
 	local diffArgs =
-		{ "git", "-c", "diff.context=" .. getContextSize(), "diff", "--diff-filter=ADM" }
+		{ "git", "-c", "diff.context=" .. getContextSize(), "diff", "--diff-filter=ADMR" }
 	local changesDiff = u.syncShellCmd(diffArgs)
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
 
