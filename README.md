@@ -5,19 +5,18 @@
 A lightweight bundle of commands focussed on swift and streamlined git
 operations.
 
-<img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/f09dba0b-a81e-4973-897a-20605f4c29db">
-<img alt="Showcase interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/5f414954-7ae9-4103-8e19-2bf02cdc6e54">
-<img alt="Showcase git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/34161d44-02eb-4340-a7ea-d18d436b4ab4">
-<img alt="Showcase statusline components" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/20b8bc97-e1dc-4b7d-8d0e-54f2ed3f10ce">
+<img alt="Showcase interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/3c055861-6b93-4065-8601-f79568d8ac28">
+<img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/7000ca1e-199b-4632-802b-fe630589f8f5">
+<img alt="Showcase git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94">
 
 ## Feature Overview
+- **Interactive Staging** of hunks, with proper syntax highlighting of the hunk
+  diffs (an improvement to `git add -p`).
 - **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
   commit preview, automatic issue number insertion, and overlength indicators.
   If there are no staged changes, stages all changes before doing so (`git add
   -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
-- **Interactive Staging** of hunks, with proper syntax highlighting of the hunk
-  diffs (an improvement to `git add -p`).
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Explore the git history**: Search the file for a string ("git pickaxe"), or
