@@ -98,6 +98,8 @@ end
 
 ---@param commitIdx number index of the selected commit in the list of commits
 local function showDiff(commitIdx)
+	local setDiffBuffer = require("tinygit.shared.diff").setDiffBuffer
+
 	local hashList = state.hashList
 	local hash = hashList[commitIdx]
 	local query = state.query
@@ -150,7 +152,7 @@ local function showDiff(commitIdx)
 	local bufnr = a.nvim_create_buf(false, true)
 	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	vim.bo[bufnr].buftype = "nofile"
-	require("tinygit.shared.diff-buffer").set(bufnr, diffLines, state.ft, absWidth)
+	setDiffBuffer(bufnr, diffLines, state.ft, absWidth)
 
 	-- FOOTER & TITLE
 	local footer = {

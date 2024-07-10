@@ -29,6 +29,8 @@ end
 ---@param diffIsOfStaged boolean
 ---@return Hunk[] hunks
 local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
+	local parseDiffHeader = require("tinygit.shared.diff").removeHeaderFromDiffOutputLines
+
 	if diffCmdStdout == "" then return {} end -- no hunks
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	local changesPerFile = vim.split(diffCmdStdout, "\ndiff --git a/", { plain = true })
@@ -45,7 +47,7 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 		end
 		-- split off diff header
 		local diffLines = vim.split(file, "\n")
-		local changesInFile, diffHeaderLines, fileMode = u.removeHeaderFromDiffOutputLines(diffLines)
+		local changesInFile, diffHeaderLines, fileMode = parseDiffHeader(diffLines)
 		local diffHeader = table.concat(diffHeaderLines, "\n")
 		local relPath = diffHeaderLines[1]:match("a/(.+) b/") or "path not found"
 		local absPath = gitroot .. "/" .. relPath
@@ -116,7 +118,7 @@ local function telescopePickHunk(hunks)
 	local previewers = require("telescope.previewers")
 
 	local opts = require("tinygit.config").config.staging
-	local diffBuf = require("tinygit.shared.diff-buffer")
+	local setDiffBuffer = require("tinygit.shared.diff").setDiffBuffer
 
 	---@param _hunks Hunk[]
 	local function newFinder(_hunks)
@@ -185,7 +187,7 @@ local function telescopePickHunk(hunks)
 					local hunk = entry.value
 					local diffLines = vim.split(hunk.patch, "\n")
 					local ft = vim.filetype.match { filename = vim.fs.basename(hunk.relPath) }
-					diffBuf.set(bufnr, diffLines, ft, false)
+					setDiffBuffer(bufnr, diffLines, ft, false)
 				end,
 				dyn_title = function(_, entry)
 					local hunk = entry.value

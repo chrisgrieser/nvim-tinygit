@@ -1,15 +1,33 @@
 local M = {}
-local u = require("tinygit.shared.utils")
+--------------------------------------------------------------------------------
+
+-- remove diff header, if the input has it. checking for `@@`, as number of
+-- header lines can vary (e.g., diff to new file are 5 lines, not 4)
+---@param diffLines string[]
+---@return string[] headerLines
+---@return string[] outputWithoutHeader
+---@return "new"|"deleted"|"modified" fileMode
+---@nodiscard
+function M.removeHeaderFromDiffOutputLines(diffLines)
+	local headerLines = {}
+	while not vim.startswith(diffLines[1], "@@") do
+		local headerLine = table.remove(diffLines, 1)
+		table.insert(headerLines, headerLine)
+	end
+	local fileMode = headerLines[2]:match("^(%w+) file") or "modified"
+	return diffLines, headerLines, fileMode
+end
+
 --------------------------------------------------------------------------------
 
 ---@param bufnr number
 ---@param diffLinesWithHeader string[]
 ---@param filetype string|nil
 ---@param sepLength number|false -- false to not draw separators
-function M.set(bufnr, diffLinesWithHeader, filetype, sepLength)
+function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 	local ns = vim.api.nvim_create_namespace("tinygit.diffBuffer")
 	local sepChar = "═"
-	local diffLines, _, fileMode = u.removeHeaderFromDiffOutputLines(diffLinesWithHeader)
+	local diffLines, _, fileMode = M.removeHeaderFromDiffOutputLines(diffLinesWithHeader)
 
 	-- context line is useless in this case
 	if fileMode == "deleted" or fileMode == "new" then table.remove(diffLines, 1) end
