@@ -42,9 +42,11 @@ end
 
 ---@nodiscard
 ---@param cmd string[]
+---@param notrim? any
 ---@return string stdout
-function M.syncShellCmd(cmd)
+function M.syncShellCmd(cmd, notrim)
 	local stdout = vim.system(cmd):wait().stdout or ""
+	if notrim then return stdout end
 	return vim.trim(stdout)
 end
 

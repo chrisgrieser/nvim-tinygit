@@ -290,11 +290,12 @@ function M.interactiveStaging()
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
 
 	local diffArgs = { "git", "diff", "--unified=" .. getContextSize(), "--diff-filter=ADMR" }
-	local changesDiff = u.syncShellCmd(diffArgs)
+	-- no trimming, since trailing empty lines can be blank context lines in diff output
+	local changesDiff = u.syncShellCmd(diffArgs, "notrim")
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
 
 	table.insert(diffArgs, "--staged")
-	local stagedDiff = u.syncShellCmd(diffArgs)
+	local stagedDiff = u.syncShellCmd(diffArgs, "notrim")
 	local stagedHunks = getHunksFromDiffOutput(stagedDiff, true)
 
 	local allHunks = vim.list_extend(changedHunks, stagedHunks)
