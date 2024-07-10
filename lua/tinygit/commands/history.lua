@@ -137,7 +137,7 @@ local function showDiff(commitIdx)
 	if u.nonZeroExit(diffResult) then return end
 
 	local diff = assert(diffResult.stdout, "No diff output.")
-	local diffLines = vim.split(vim.trim(diff), "\n")
+	local diffLines = vim.split(diff, "\n", { trimempty = true })
 
 	-- WINDOW STATS
 	local relWidth = math.min(config.diffPopup.width, 1)

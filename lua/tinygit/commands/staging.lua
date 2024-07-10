@@ -31,9 +31,7 @@ local function getHunks()
 	if u.nonZeroExit(out) then return end
 
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
-
-	local changesPerFile = vim.split(out.stdout, "diff --git a/", { plain = true })
-	table.remove(changesPerFile, 1) -- first item is always an empty string
+	local changesPerFile = vim.split(out.stdout, "\ndiff --git a/", { plain = true })
 
 	-- Loop through each file, and then through each hunk of that file. Construct
 	-- flattened list of hunks, each with their own diff header, so they work as
@@ -42,8 +40,10 @@ local function getHunks()
 	---@type Hunk[]
 	local hunks = {}
 	for _, file in ipairs(changesPerFile) do
+		if not vim.startswith(file, "diff --git a/") then -- first file still has this
+			file = "diff --git a/" .. file -- needed to make patches valid
+		end
 		-- severe diff header
-		file = "diff --git a/" .. file -- re-add, since needed to make patches valid
 		local diffLines = vim.split(file, "\n")
 		local relPath = diffLines[3]:sub(7)
 		local absPath = gitroot .. "/" .. relPath
