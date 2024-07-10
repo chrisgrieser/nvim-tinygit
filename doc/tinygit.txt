@@ -105,7 +105,11 @@ INTERACTIVE STAGING ~
     Larger context size is going to "merge" changes that are close to one another
     into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
     from `gitsigns.nvim`.) A context size between 1 and 3 is recommended.
-- Limitation: currently, a `contextSize` of `0` is not supported.
+- Limitations:
+    - `contextSize=0` (= no merging at all) is not supported.
+    - Only modified, deleted, and untracked/added files are included
+        (`--diff-filter=ADM`). Other changes, such as renamed files, are not
+        supported.
 
 >lua
     require("tinygit").interactiveStaging()
