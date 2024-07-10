@@ -197,10 +197,7 @@ local function telescopePickHunk(hunks)
 					local entry = actionState.get_selected_entry()
 					local hunk = entry.value
 					local success = stagingToggleHunk(hunk)
-					if not success then
-						actions.close(prompt_bufnr)
-						return
-					end
+					if not success then return end
 
 					-- Change value for selected hunk in cached hunk-list
 					hunks[entry.index].staged = not hunks[entry.index].staged

@@ -183,7 +183,7 @@ local function showDiff(commitIdx)
 		footer = { { " " .. footerText .. " ", "FloatBorder" } },
 		zindex = historyZindex,
 	})
-	a.nvim_set_option_value("winfixbuf", true, { win = winnr })
+	vim.wo[winnr].winfixheight = true
 	backdrop.new(bufnr, historyZindex)
 
 	-- search for the query

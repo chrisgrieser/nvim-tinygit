@@ -15,15 +15,6 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 		table.remove(diffLines, 1)
 	end
 
-	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
-	-- prefer only starting treesitter as opposed to setting the buffer filetype,
-	-- as this avoid triggering the filetype plugin, which can sometimes entail
-	-- undesired effects like LSPs attaching
-	if filetype then
-		local hasTsParser = pcall(vim.treesitter.start, bufnr, filetype)
-		if not hasTsParser then vim.bo[bufnr].filetype = filetype end
-	end
-
 	-- remove diff signs and remember line numbers
 	local diffAddLines, diffDelLines, diffHunkHeaderLines = {}, {}, {}
 	for i = 1, #diffLines do
@@ -31,10 +22,8 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 		local lnum = i - 1
 		if line:find("^%+") then
 			table.insert(diffAddLines, lnum)
-			diffLines[i] = line:sub(2)
 		elseif line:find("^%-") then
 			table.insert(diffDelLines, lnum)
-			diffLines[i] = line:sub(2)
 		elseif line:find("^@@") then
 			-- remove preproc info and inject the lnum later as inline text
 			-- as keeping in the text breaks filetype-highlighting
@@ -42,11 +31,16 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 			diffLines[i] = cleanLine or "" -- nil on new file
 			diffHunkHeaderLines[lnum] = originalLnum
 		end
+		if not line:find("^@@") then diffLines[i] = line:sub(2) end
 	end
 
-	-- set lines
+	-- set lines & buffer properties
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, diffLines)
 	vim.bo[bufnr].modifiable = false
+	if filetype then
+		local hasTsParser = pcall(vim.treesitter.start, bufnr, filetype)
+		if not hasTsParser then vim.bo[bufnr].filetype = filetype end
+	end
 
 	-- add highlights
 	for _, ln in pairs(diffAddLines) do
