@@ -106,12 +106,8 @@ INTERACTIVE STAGING ~
 - The size of the hunks is determined by the setting `staging.contextSize`.
     Larger context size is going to "merge" changes that are close to one another
     into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
-    from `gitsigns.nvim`.) A context size between 1 and 3 is recommended.
-- Limitations:
-    - `contextSize=0` (= no merging at all) is not supported.
-    - Only modified, deleted, and untracked/added files are included
-        (`--diff-filter=ADM`). Other changes, such as renamed files, are not
-        supported.
+    from `gitsigns.nvim`.) A context size between 1 and 4 is recommended.
+- Limitations: `contextSize=0` (= no merging at all) is not supported.
 
 >lua
     require("tinygit").interactiveStaging()
@@ -324,7 +320,16 @@ CONFIGURATION                             *tinygit-nvim-tinygit-configuration*
 The `setup` call is optional. These are the default settings:
 
 >lua
-    local defaultConfig = {
+    -- default config
+    require("tinygit").setup({
+        staging = { -- requires telescope
+            contextSize = 1, -- larger values "merge" hunks
+            stagedIndicator = "✜ ",
+            keymaps = { -- insert & normal mode
+                stagingToggle = "<Space>", -- stage/unstage hunk
+                gotoHunk = "<CR>",
+            },
+        },
         commitMsg = {
             commitPreview = true, -- requires nvim-notify
             spellcheck = false,
@@ -348,29 +353,9 @@ The `setup` call is optional. These are the default settings:
                 issuesToFetch = 20,
             },
         },
-        staging = { -- requires telescope
-            contextSize = 1, -- must be > 0. Larger values "merge" hunks.
-            stagedIndicator = "● ",
-            keymaps = { -- insert & normal mode
-                stagingToggle = "<Space>", -- stage/unstage hunk
-                gotoHunk = "<CR>",
-            },
-        },
-        backdrop = {
-            enabled = true,
-            blend = 50, -- 0-100
-        },
         push = {
             preventPushingFixupOrSquashCommits = true,
             confirmationSound = true, -- currently macOS only, PRs welcome
-        },
-        issueIcons = {
-            openIssue = "🟢",
-            closedIssue = "🟣",
-            notPlannedIssue = "⚪",
-            openPR = "🟩",
-            mergedPR = "🟪",
-            closedPR = "🟥",
         },
         historySearch = {
             diffPopup = {
@@ -379,6 +364,14 @@ The `setup` call is optional. These are the default settings:
                 border = "single",
             },
             autoUnshallowIfNeeded = false,
+        },
+        issueIcons = {
+            openIssue = "🟢",
+            closedIssue = "🟣",
+            notPlannedIssue = "⚪",
+            openPR = "🟩",
+            mergedPR = "🟪",
+            closedPR = "🟥",
         },
         statusline = {
             blame = {
@@ -395,7 +388,11 @@ The `setup` call is optional. These are the default settings:
                 },
             },
         },
-    }
+        backdrop = {
+            enabled = true,
+            blend = 50, -- 0-100
+        },
+    })
 <
 
 The appearance of the commit preview and notifications is determined by
