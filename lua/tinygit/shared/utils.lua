@@ -71,6 +71,31 @@ function M.getAheadBehind()
 	return ahead, behind
 end
 
+function M.intentToAddUntrackedFiles()
+	local gitLsResponse = M.syncShellCmd { "git", "ls-files", "--others", "--exclude-standard" }
+	local newFiles = gitLsResponse ~= "" and vim.split(gitLsResponse, "\n") or {}
+	for _, file in ipairs(newFiles) do
+		vim.system({ "git", "add", "--intent-to-add", "--", file }):wait()
+	end
+end
+
+-- remove diff header, if the input has it. checking for `@@`, as number of
+-- header lines can vary (e.g., diff to new file are 5 lines, not 4)
+---@param diffLines string[]
+---@return string[] headerLines
+---@return string[] outputWithoutHeader
+---@return "new"|"deleted"|"modified" fileMode
+---@nodiscard
+function M.removeHeaderFromDiffOutputLines(diffLines)
+	local headerLines = {}
+	while not vim.startswith(diffLines[1], "@@") do
+		local headerLine = table.remove(diffLines, 1)
+		table.insert(headerLines, headerLine)
+	end
+	local fileMode = headerLines[2]:match("^(%w+) file") or "modified"
+	return diffLines, headerLines, fileMode
+end
+
 --------------------------------------------------------------------------------
 
 -- INFO using namespace in here does not work, therefore simply

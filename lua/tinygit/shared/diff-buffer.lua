@@ -1,19 +1,18 @@
 local M = {}
+local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@param bufnr number
----@param diffLines string[]
+---@param diffLinesWithHeader string[]
 ---@param filetype string|nil
 ---@param sepLength number|false -- false to not draw separators
-function M.set(bufnr, diffLines, filetype, sepLength)
+function M.set(bufnr, diffLinesWithHeader, filetype, sepLength)
 	local ns = vim.api.nvim_create_namespace("tinygit.diffBuffer")
 	local sepChar = "═"
+	local diffLines, _, fileMode = u.removeHeaderFromDiffOutputLines(diffLinesWithHeader)
 
-	-- remove diff header, if the input has it. checking for `@@`, as number of
-	-- header lines can vary (e.g., diff to new file are 5 lines, not 4)
-	while not vim.startswith(diffLines[1], "@@") do
-		table.remove(diffLines, 1)
-	end
+	-- context line is useless in this case
+	if fileMode == "deleted" or fileMode == "new" then table.remove(diffLines, 1) end
 
 	-- remove diff signs and remember line numbers
 	local diffAddLines, diffDelLines, diffHunkHeaderLines = {}, {}, {}

@@ -9,7 +9,8 @@ local u = require("tinygit.shared.utils")
 ---@field added number
 ---@field removed number
 ---@field patch string
----@field staged boolean already staged
+---@field alreadyStaged boolean
+---@field fileMode "new"|"deleted"|"modified"
 
 --------------------------------------------------------------------------------
 
@@ -42,14 +43,14 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 		if not vim.startswith(file, "diff --git a/") then -- first file still has this
 			file = "diff --git a/" .. file -- needed to make patches valid
 		end
-		-- severe diff header
+		-- split off diff header
 		local diffLines = vim.split(file, "\n")
-		local relPath = diffLines[3]:sub(7)
+		local changesInFile, diffHeaderLines, fileMode = u.removeHeaderFromDiffOutputLines(diffLines)
+		local diffHeader = table.concat(diffHeaderLines, "\n")
+		local relPath = diffHeaderLines[1]:match("a/(.+) b/") or "path not found"
 		local absPath = gitroot .. "/" .. relPath
-		local diffHeader = table.concat(vim.list_slice(diffLines, 1, 4), "\n")
 
-		-- split output into hunks
-		local changesInFile = vim.list_slice(diffLines, 5)
+		-- split remaining output into hunks
 		local hunksInFile = {}
 		for _, line in ipairs(changesInFile) do
 			if vim.startswith(line, "@@") then
@@ -79,7 +80,8 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 				added = added,
 				removed = removed,
 				patch = patch,
-				staged = diffIsOfStaged,
+				alreadyStaged = diffIsOfStaged,
+				fileMode = fileMode,
 			}
 			table.insert(hunks, hunkObj)
 		end
@@ -94,7 +96,7 @@ local function stagingToggleHunk(hunk)
 	local applyResult = vim.system({
 		"git",
 		"apply",
-		hunk.staged and "--reverse" or nil, -- unstage, if already staged
+		hunk.alreadyStaged and "--reverse" or nil, -- unstage, if already staged
 		"--cached", -- only change staging area, not working tree
 		"--verbose", -- better stderr for errors
 		"-",
@@ -131,20 +133,27 @@ local function telescopePickHunk(hunks)
 
 				-- format: status, filename, lnum, added, removed
 				entry.display = function(_entry)
+					---@type Hunk
 					local h = _entry.value
+
 					local name = vim.fs.basename(h.relPath)
 					local added = h.added > 0 and (" +" .. h.added) or ""
 					local del = h.removed > 0 and (" -" .. h.removed) or ""
-					local status = h.staged and opts.stagedIndicator
+					if h.fileMode == "new" then added = added .. " (new file)" end
+					if h.fileMode == "deleted" then del = del .. " (deleted file)" end
+					local location = h.fileMode == "modified" and ":" .. h.lnum or ""
+					local status = h.alreadyStaged and opts.stagedIndicator
 						or (" "):rep(vim.api.nvim_strwidth(opts.stagedIndicator))
-					local out = status .. name .. ":" .. h.lnum .. added .. del
-					local statPos = #status + #name + 1 + #tostring(h.lnum)
+
+					local out = status .. name .. location .. added .. del
+					local statPos = #status + #name + #location
 					local highlights = {
 						{ { 0, 1 }, "diffChanged" }, -- status
 						{ { #status + #name, statPos }, "Comment" }, -- lnum
 						{ { statPos, statPos + #added }, "diffAdded" }, -- added
 						{ { statPos + #added + 1, statPos + #added + #del }, "diffRemoved" }, -- removed
 					}
+
 					return out, highlights
 				end
 
@@ -200,7 +209,7 @@ local function telescopePickHunk(hunks)
 					if not success then return end
 
 					-- Change value for selected hunk in cached hunk-list
-					hunks[entry.index].staged = not hunks[entry.index].staged
+					hunks[entry.index].alreadyStaged = not hunks[entry.index].alreadyStaged
 
 					-- temporarily register a callback which keeps selection on refresh
 					-- SOURCE https://github.com/nvim-telescope/telescope.nvim/blob/bfcc7d5c6f12209139f175e6123a7b7de6d9c18a/lua/telescope/builtin/__git.lua#L412-L421
@@ -240,7 +249,10 @@ function M.interactiveStaging()
 	end
 
 	-- GET ALL HUNKS
-	local diffArgs = { "git", "-c", "diff.context=" .. getContextSize(), "diff", "--diff-filter=M" }
+	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
+
+	local diffArgs =
+		{ "git", "-c", "diff.context=" .. getContextSize(), "diff", "--diff-filter=ADM" }
 	local changesDiff = u.syncShellCmd(diffArgs)
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
 
