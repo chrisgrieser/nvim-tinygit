@@ -9,6 +9,7 @@ local u = require("tinygit.shared.utils")
 ---@field added number
 ---@field removed number
 ---@field patch string
+---@field staged boolean already staged
 
 --------------------------------------------------------------------------------
 
@@ -23,15 +24,13 @@ local function getContextSize()
 	return contextSize
 end
 
----@nodiscard
----@return Hunk[]?
-local function getHunks()
-	local contextArg = "diff.context=" .. getContextSize()
-	local out = vim.system({ "git", "-c", contextArg, "diff", "--diff-filter=M" }):wait()
-	if u.nonZeroExit(out) then return end
-
+---@param diffCmdStdout string
+---@param diffIsOfStaged boolean
+---@return Hunk[] hunks
+local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
+	if diffCmdStdout == "" then return {} end -- no hunks
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
-	local changesPerFile = vim.split(out.stdout, "\ndiff --git a/", { plain = true })
+	local changesPerFile = vim.split(diffCmdStdout, "\ndiff --git a/", { plain = true })
 
 	-- Loop through each file, and then through each hunk of that file. Construct
 	-- flattened list of hunks, each with their own diff header, so they work as
@@ -80,6 +79,7 @@ local function getHunks()
 				added = added,
 				removed = removed,
 				patch = patch,
+				staged = diffIsOfStaged,
 			}
 			table.insert(hunks, hunkObj)
 		end
@@ -88,15 +88,20 @@ local function getHunks()
 end
 
 ---@param hunk Hunk
-local function stageHunk(hunk)
+---@return boolean success
+local function stagingToggleHunk(hunk)
 	-- use `git apply` to stage only part of a file https://stackoverflow.com/a/66618356/22114136
-	vim.system(
-		{ "git", "apply", "--apply", "--cached", "--verbose", "-" },
-		{ stdin = hunk.patch },
-		function(out)
-			if out.code ~= 0 then u.notify(out.stderr, "error", "Stage Hunk") end
-		end
-	)
+	local applyResult = vim.system({
+		"git",
+		"apply",
+		hunk.staged and "--reverse" or nil, -- unstage, if already staged
+		"--cached", -- only change staging area, not working tree
+		"--verbose", -- better stderr for errors
+		"-",
+	}, { stdin = hunk.patch }):wait()
+	local success = applyResult.code == 0
+	if not success then u.notify(applyResult.stderr, "error", "Stage Hunk") end
+	return success
 end
 
 ---@param hunks Hunk[]
@@ -124,19 +129,21 @@ local function telescopePickHunk(hunks)
 					:join("\n")
 				entry.ordinal = hunk.relPath .. "\n" .. changeLines
 
-				-- format: filename, lnum, added, removed
-				-- (and colored components)
+				-- format: status, filename, lnum, added, removed
 				entry.display = function(_entry)
 					local h = _entry.value
 					local name = vim.fs.basename(h.relPath)
-					local addedStr = h.added > 0 and (" +" .. h.added) or ""
-					local removedStr = h.removed > 0 and (" -" .. h.removed) or ""
-					local out = name .. ":" .. h.lnum .. addedStr .. removedStr
-					local diffStatPos = #name + #tostring(h.lnum) + 2
+					local added = h.added > 0 and (" +" .. h.added) or ""
+					local del = h.removed > 0 and (" -" .. h.removed) or ""
+					local status = h.staged and opts.stagedIndicator
+						or (" "):rep(vim.api.nvim_strwidth(opts.stagedIndicator))
+					local out = status .. name .. ":" .. h.lnum .. added .. del
+					local statPos = #status + #name + 1 + #tostring(h.lnum)
 					local highlights = {
-						{ { #name, diffStatPos - 1 }, "Comment" },
-						{ { diffStatPos, diffStatPos + #addedStr }, "diffAdded" },
-						{ { #out - #removedStr, #out }, "diffRemoved" },
+						{ { 0, 1 }, "diffChanged" }, -- status
+						{ { #status + #name, statPos }, "Comment" }, -- lnum
+						{ { statPos, statPos + #added }, "diffAdded" }, -- added
+						{ { statPos + #added + 1, statPos + #added + #del }, "diffRemoved" }, -- removed
 					}
 					return out, highlights
 				end
@@ -186,19 +193,30 @@ local function telescopePickHunk(hunks)
 					vim.cmd(("edit +%d %s"):format(hunkStart, hunk.absPath))
 				end, { desc = "Goto Hunk" })
 
-				map({ "n", "i" }, opts.keymaps.stageHunk, function()
+				map({ "n", "i" }, opts.keymaps.stagingToggle, function()
 					local entry = actionState.get_selected_entry()
 					local hunk = entry.value
-					stageHunk(hunk)
-					table.remove(hunks, entry.index)
-
-					if #hunks > 0 then
-						local picker = actionState.get_current_picker(prompt_bufnr)
-						picker:refresh(newFinder(hunks), { reset_prompt = false })
-					else
+					local success = stagingToggleHunk(hunk)
+					if not success then
 						actions.close(prompt_bufnr)
+						return
 					end
-				end, { desc = "Stage Hunk" })
+
+					-- Change value for selected hunk in cached hunk-list
+					hunks[entry.index].staged = not hunks[entry.index].staged
+
+					-- temporarily register a callback which keeps selection on refresh
+					-- SOURCE https://github.com/nvim-telescope/telescope.nvim/blob/bfcc7d5c6f12209139f175e6123a7b7de6d9c18a/lua/telescope/builtin/__git.lua#L412-L421
+					local picker = actionState.get_current_picker(prompt_bufnr)
+					local selection = picker:get_selection_row()
+					local callbacks = { unpack(picker._completion_callbacks) } -- shallow copy
+					picker:register_completion_callback(function(self)
+						self:set_selection(selection)
+						self._completion_callbacks = callbacks
+					end)
+
+					picker:refresh(newFinder(hunks), { reset_prompt = false })
+				end, { desc = "Staging Toggle" })
 
 				return true -- keep default mappings
 			end,
@@ -209,32 +227,39 @@ end
 --------------------------------------------------------------------------------
 
 function M.interactiveStaging()
-	vim.cmd("silent update")
+	vim.cmd("silent! update")
 
-	-- GUARD
+	-- GUARD prerequisites not met
 	local installed = pcall(require, "telescope")
 	if not installed then
 		u.notify("This feature requires `nvim-telescope`.", "warn", "Staging")
 		return
 	end
 	if u.notInGitRepo() then return end
-	local hasNoUnstagedChanges = vim.system({ "git", "diff", "--quiet" }):wait().code == 0
-	if hasNoUnstagedChanges then
-		u.notify("There are no unstaged changes.", "warn", "Staging")
+	local noChanges = u.syncShellCmd { "git", "status", "--porcelain" } == ""
+	if noChanges then
+		u.notify("There are no staged or unstaged changes.", "warn", "Staging")
 		return
 	end
 
-	local hunks = getHunks()
-	if not hunks then return end
+	-- GET ALL HUNKS
+	local diffArgs = { "git", "-c", "diff.context=" .. getContextSize(), "diff", "--diff-filter=M" }
+	local changesDiff = u.syncShellCmd(diffArgs)
+	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
 
-	-- backdrop
+	table.insert(diffArgs, "--staged")
+	local stagedDiff = u.syncShellCmd(diffArgs)
+	local stagedHunks = getHunksFromDiffOutput(stagedDiff, true)
+
+	local allHunks = vim.list_extend(changedHunks, stagedHunks)
+
+	-- START TELESCOPE PICKER
 	vim.api.nvim_create_autocmd("FileType", {
 		once = true,
 		pattern = "TelescopeResults",
 		callback = function(ctx) require("tinygit.shared.backdrop").new(ctx.buf) end,
 	})
-
-	telescopePickHunk(hunks)
+	telescopePickHunk(allHunks)
 end
 --------------------------------------------------------------------------------
 return M

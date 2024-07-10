@@ -325,9 +325,10 @@ local defaultConfig = {
 	},
 	staging = { -- requires telescope
 		contextSize = 1, -- must be > 0. Larger values "merge" hunks.
-		keymaps = {
-			gotoHunk = "<CR>", -- insert & normal mode
-			stageHunk = "<Space>",
+		stagedIndicator = "● ",
+		keymaps = { -- insert & normal mode
+			stagingToggle = "<Space>", -- stage/unstage hunk
+			gotoHunk = "<CR>",
 		},
 	},
 	backdrop = {

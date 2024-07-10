@@ -11,7 +11,8 @@ local M = {}
 
 ---@class (exact) stagingConfig
 ---@field contextSize number
----@field keymaps { gotoHunk: string, stageHunk: string }
+---@field stagedIndicator string
+---@field keymaps { gotoHunk: string, stagingToggle: string }
 
 ---@class issueIconConfig
 ---@field closedIssue string
@@ -76,9 +77,10 @@ local defaultConfig = {
 	},
 	staging = { -- requires telescope
 		contextSize = 1, -- must be > 0. Larger values "merge" hunks.
-		keymaps = {
-			gotoHunk = "<CR>", -- insert & normal mode
-			stageHunk = "<Space>",
+		stagedIndicator = "● ",
+		keymaps = { -- insert & normal mode
+			stagingToggle = "<Space>", -- stage/unstage hunk
+			gotoHunk = "<CR>",
 		},
 	},
 	backdrop = {
