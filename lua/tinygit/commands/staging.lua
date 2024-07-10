@@ -2,8 +2,6 @@ local M = {}
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
----@alias FileMode "new"|"deleted"|"modified"|"renamed"
-
 ---@class (exact) Hunk
 ---@field absPath string
 ---@field relPath string
@@ -66,7 +64,7 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 
 		-- special case: file renamed without any other changes
 		-- (needs to be handled separately because it has no hunks, that is no `@@` lines)
-		if #changesInFile == 0 and fileMode == "renamed" then
+		if #changesInFile == 0 and (fileMode == "renamed" or fileMode == "binary") then
 			---@type Hunk
 			local hunkObj = {
 				absPath = absPath,
@@ -157,7 +155,7 @@ local function telescopePickHunk(hunks)
 				entry.display = function(_entry)
 					---@type Hunk
 					local h = _entry.value
-					local renamedWithoutChanges = h.lnum == -1 and h.fileMode == "renamed"
+					local changeWithoutHunk = h.lnum == -1
 
 					local name = vim.fs.basename(h.relPath)
 					local added = h.added > 0 and (" +" .. h.added) or ""
@@ -167,8 +165,8 @@ local function telescopePickHunk(hunks)
 						added = added .. " (new file)"
 					elseif h.fileMode == "deleted" then
 						del = del .. " (deleted file)"
-					elseif renamedWithoutChanges then
-						location = " (renamed)"
+					elseif changeWithoutHunk then
+						location = h.fileMode == "binary" and " (binary)" or " (renamed)"
 					else
 						location = ":" .. h.lnum
 						if h.fileMode == "renamed" then location = location .. " (renamed)" end

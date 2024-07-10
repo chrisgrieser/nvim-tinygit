@@ -1,6 +1,15 @@
 local M = {}
 --------------------------------------------------------------------------------
 
+---@enum (key) FileMode
+local FILEMODES = {
+	new = 0,
+	deleted = 1,
+	modified = 2,
+	renamed = 3,
+	binary = 4,
+}
+
 -- remove diff header, if the input has it. checking for `@@`, as number of
 -- header lines can vary (e.g., diff to new file are 5 lines, not 4)
 ---@param diffLines string[]
@@ -17,13 +26,19 @@ function M.splitOffDiffHeader(diffLines)
 		if #diffLines == 0 then break end -- renamed file without changes have no `@@`
 	end
 
-	local fileMode = headerLines[2]:match("^(%w+) file")
+	local fileMode = headerLines[2]:match("^(%w+) file") or headerLines[3]:match("^(%w+) file")
 	local rename = {}
 	if not fileMode then
 		rename.from = headerLines[3]:match("^rename from (.+)$")
 		rename.to = headerLines[4]:match("^rename to (.+)$")
 		fileMode = rename.from and "renamed" or "modified"
 	end
+	if fileMode then fileMode = fileMode:lower() end
+
+	assert(
+		vim.tbl_contains(vim.tbl_keys(FILEMODES), fileMode),
+		"Unknown file mode, please create an issue: " .. fileMode
+	)
 
 	return diffLines, headerLines, fileMode, rename
 end
