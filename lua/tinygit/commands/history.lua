@@ -4,6 +4,7 @@ local a = vim.api
 local basename = vim.fs.basename
 
 local u = require("tinygit.shared.utils")
+local highlight = require("tinygit.shared.highlights")
 local config = require("tinygit.config").config.historySearch
 local backdrop = require("tinygit.shared.backdrop")
 local selectCommit = require("tinygit.shared.select-commit")
@@ -84,7 +85,7 @@ local function restoreFileToCommit(hash)
 		on_open = function(win)
 			local buf = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(buf, function()
-				u.commitMsgHighlighting()
+				highlight.commitMsg()
 				vim.fn.matchadd("Comment", restoreText)
 			end)
 		end,

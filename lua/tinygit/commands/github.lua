@@ -1,5 +1,6 @@
 local M = {}
 local u = require("tinygit.shared.utils")
+local highlight = require("tinygit.shared.highlights")
 local config = require("tinygit.config").config
 --------------------------------------------------------------------------------
 
@@ -97,8 +98,8 @@ local function issueListAppearance()
 		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
 		callback = function(ctx)
 			require("tinygit.shared.backdrop").new(ctx.buf)
-			u.commitMsgHighlighting() -- for PRs
-			u.issueTextHighlighting()
+			highlight.commitMsg() -- for PRs
+			highlight.issueText()
 		end,
 	})
 	return autocmdId

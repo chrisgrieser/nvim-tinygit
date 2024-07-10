@@ -24,7 +24,7 @@ function M.setupAppearance()
 		once = true, -- to not affect other selectors
 		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
 		callback = function(ctx)
-			require("tinygit.shared.utils").commitMsgHighlighting()
+			require("tinygit.shared.highlights").commitMsg()
 			require("tinygit.shared.backdrop").new(ctx.buf)
 
 			-- detects date due to `M.gitlogFormat`

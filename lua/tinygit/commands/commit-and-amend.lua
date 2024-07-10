@@ -4,6 +4,7 @@ local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 local push = require("tinygit.commands.push-pull").push
 local updateStatusline = require("tinygit.statusline").updateAllComponents
+local highlight = require("tinygit.shared.highlights")
 local fn = vim.fn
 
 --------------------------------------------------------------------------------
@@ -98,7 +99,7 @@ local function insertIssueNumber(mode)
 		replace = M.state.issueNotif and M.state.issueNotif.id, ---@diagnostic disable-line: undefined-field
 		on_open = function(win)
 			local buf = vim.api.nvim_win_get_buf(win)
-			vim.api.nvim_buf_call(buf, u.issueTextHighlighting)
+			vim.api.nvim_buf_call(buf, highlight.issueText)
 		end,
 	})
 
@@ -146,7 +147,7 @@ local function setupInputField(commitType)
 	local function setupHighlighting(winid)
 		-- only-markup, since stuff like conventional commits keywords are done by
 		-- the treesitter parser
-		u.commitMsgHighlighting("only-markup")
+		highlight.commitMsg("only-markup")
 		vim.bo.filetype = "gitcommit" -- treesitter highlighting & ftplugin
 		vim.opt_local.formatoptions:remove("t") -- prevent auto-wrapping due "gitcommit" filetype
 
@@ -248,7 +249,7 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 
 			-- commit msg custom highlights
 			vim.api.nvim_buf_call(bufnr, function()
-				u.commitMsgHighlighting()
+				highlight.commitMsg()
 				if stagedAllChanges then fn.matchadd("Comment", stageAllText) end
 				if extraInfo then fn.matchadd("Comment", extraInfo) end
 			end)
