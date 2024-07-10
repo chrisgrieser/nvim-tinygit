@@ -9,8 +9,10 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 	local ns = vim.api.nvim_create_namespace("tinygit.diffBuffer")
 	local sepChar = "═"
 
-	-- remove diff header
-	diffLines = vim.list_slice(diffLines, 5)
+	-- remove diff header, if the input has it
+	if vim.startswith(diffLines[1], "diff --git a/") then
+		diffLines = vim.list_slice(diffLines, 5)
+	end
 
 	-- INFO not using `diff` filetype, since that removes filetype-specific highlighting
 	-- prefer only starting treesitter as opposed to setting the buffer filetype,
@@ -18,9 +20,7 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 	-- undesired effects like LSPs attaching
 	if filetype then
 		local hasTsParser = pcall(vim.treesitter.start, bufnr, filetype)
-		if not hasTsParser then
-			vim.api.nvim_set_option_value("filetype", filetype, { buf = bufnr })
-		end
+		if not hasTsParser then vim.bo[bufnr].filetype = filetype end
 	end
 
 	-- remove diff signs and remember line numbers
@@ -30,8 +30,10 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 		local lnum = i - 1
 		if line:find("^%+") then
 			table.insert(diffAddLines, lnum)
+			diffLines[i] = diffLines[i]:sub(2)
 		elseif line:find("^%-") then
 			table.insert(diffDelLines, lnum)
+			diffLines[i] = diffLines[i]:sub(2)
 		elseif line:find("^@@") then
 			-- remove preproc info and inject it alter as inline text,
 			-- as keeping in the text breaks filetype-highlighting
@@ -39,7 +41,6 @@ function M.set(bufnr, diffLines, filetype, sepLength)
 			diffLines[i] = cleanLine
 			diffHunkHeaderLines[lnum] = preprocInfo
 		end
-		diffLines[i] = diffLines[i]:sub(2)
 	end
 
 	-- set lines
