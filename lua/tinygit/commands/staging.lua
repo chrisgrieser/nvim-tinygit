@@ -12,6 +12,15 @@ local u = require("tinygit.shared.utils")
 ---@field alreadyStaged boolean
 ---@field fileMode FileMode
 
+---@param msg string
+---@param level? "info"|"trace"|"debug"|"warn"|"error"
+---@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
+local function notify(msg, level, extraOpts)
+	---@diagnostic disable-next-line: param-type-mismatch -- wrong diagnostic
+	u.notify(msg, level, "Staging", extraOpts)
+end
+
+
 --------------------------------------------------------------------------------
 
 ---@return number
@@ -135,8 +144,12 @@ local function applyPatch(hunk, mode)
 	local applyResult = vim.system(args, { stdin = hunk.patch }):wait()
 
 	local success = applyResult.code == 0
-	if success and mode == "reset" then vim.cmd.checktime() end -- refresh buffer
-	if not success then u.notify(applyResult.stderr, "error", "Stage Hunk") end
+	if success and mode == "reset" then
+		vim.cmd.checktime() -- refresh buffer
+		local filename = vim.fs.basename(hunk.absPath)
+		notify(('Hunk "%s:%s" reset.'):format(filename, hunk.lnum))
+	end 
+	if not success then notify(applyResult.stderr, "error") end
 	return success
 end
 
@@ -305,13 +318,13 @@ function M.interactiveStaging()
 	-- GUARD prerequisites not met
 	local installed = pcall(require, "telescope")
 	if not installed then
-		u.notify("This feature requires `nvim-telescope`.", "warn", "Staging")
+		notify("This feature requires `nvim-telescope`.", "warn")
 		return
 	end
 	if u.notInGitRepo() then return end
 	local noChanges = u.syncShellCmd { "git", "status", "--porcelain" } == ""
 	if noChanges then
-		u.notify("There are no staged or unstaged changes.", "warn", "Staging")
+		notify("There are no staged or unstaged changes.", "warn")
 		return
 	end
 

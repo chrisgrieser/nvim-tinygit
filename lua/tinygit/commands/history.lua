@@ -31,7 +31,7 @@ local state = {
 
 ---@param msg string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
----@param extraOpts? { icon?: string, on_open?: function, timeout?: boolean|number, animate?: boolean }
+---@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
 local function notify(msg, level, extraOpts)
 	---@diagnostic disable-next-line: param-type-mismatch -- wrong diagnostic
 	u.notify(msg, level, "Git History", extraOpts)
