@@ -20,7 +20,6 @@ local function notify(msg, level, extraOpts)
 	u.notify(msg, level, "Staging", extraOpts)
 end
 
-
 --------------------------------------------------------------------------------
 
 ---@return number
@@ -148,7 +147,7 @@ local function applyPatch(hunk, mode)
 		vim.cmd.checktime() -- refresh buffer
 		local filename = vim.fs.basename(hunk.absPath)
 		notify(('Hunk "%s:%s" reset.'):format(filename, hunk.lnum))
-	end 
+	end
 	if not success then notify(applyResult.stderr, "error") end
 	return success
 end
