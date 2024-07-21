@@ -4,7 +4,6 @@
 --------------------------------------------------------------------------------
 local M = {}
 
-local config = require("tinygit.config").config.statusline.blame
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
@@ -13,6 +12,7 @@ local u = require("tinygit.shared.utils")
 ---@nodiscard
 local function getBlame(bufnr)
 	bufnr = bufnr or 0
+	local config = require("tinygit.config").config.statusline.blame
 
 	-- GUARD valid buffer
 	if not vim.api.nvim_buf_is_valid(bufnr) then return "" end

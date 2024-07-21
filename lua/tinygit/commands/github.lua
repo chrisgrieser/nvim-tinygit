@@ -1,7 +1,6 @@
 local M = {}
 local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
-local config = require("tinygit.config").config
 --------------------------------------------------------------------------------
 
 ---@param silent? "silent"
@@ -68,6 +67,7 @@ end
 ---@param issue table
 ---@return string
 local function issueListFormatter(issue)
+	local config = require("tinygit.config").config
 	local icon
 	if issue.pull_request then
 		if issue.draft then

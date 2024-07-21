@@ -1,5 +1,4 @@
 local M = {}
-local icons = require("tinygit.config").config.statusline.branchState.icons
 --------------------------------------------------------------------------------
 
 ---Returns info ahead, behind, and divergence of the local branch with the remote one
@@ -23,6 +22,7 @@ local function getBranchState()
 	local ahead = currentBranchInfo:match("ahead (%d+)")
 	local behind = currentBranchInfo:match("behind (%d+)")
 
+	local icons = require("tinygit.config").config.statusline.branchState.icons
 	if ahead and behind then
 		return (icons.diverge .. " %s/%s"):format(ahead, behind)
 	elseif ahead then

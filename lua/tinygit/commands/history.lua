@@ -5,7 +5,6 @@ local basename = vim.fs.basename
 
 local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
-local config = require("tinygit.config").config.historySearch
 local backdrop = require("tinygit.shared.backdrop")
 local selectCommit = require("tinygit.shared.select-commit")
 --------------------------------------------------------------------------------
@@ -48,6 +47,7 @@ local function repoIsShallow(callback)
 	if state.unshallowingRunning then return false end
 	if not u.inShallowRepo() then return false end
 
+	local config = require("tinygit.config").config.historySearch
 	if config.autoUnshallowIfNeeded then
 		notify("Auto-unshallowing: fetching repo history…")
 		state.unshallowingRunning = true
@@ -107,6 +107,7 @@ local function showDiff(commitIdx)
 	local type = state.type
 	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=(%cr)", hash }
 	local commitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%s", hash }
+	local config = require("tinygit.config").config.historySearch
 
 	-- DETERMINE FILENAME (in case of renaming)
 	local filenameInPresent = state.absPath
