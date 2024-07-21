@@ -373,6 +373,7 @@ The `setup` call is optional. These are the default settings:
             notPlannedIssue = "⚪",
             openPR = "🟩",
             mergedPR = "🟪",
+            draftPR = "⬜",
             closedPR = "🟥",
         },
         statusline = {
