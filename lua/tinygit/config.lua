@@ -22,6 +22,7 @@ local M = {}
 ---@field openPR string
 ---@field mergedPR string
 ---@field closedPR string
+---@field draftPR string
 
 ---@class commitConfig
 ---@field conventionalCommits {enforce: boolean, keywords: string[]}
@@ -103,6 +104,7 @@ local defaultConfig = {
 		notPlannedIssue = "⚪",
 		openPR = "🟩",
 		mergedPR = "🟪",
+		draftPR = "⬜",
 		closedPR = "🟥",
 	},
 	statusline = {

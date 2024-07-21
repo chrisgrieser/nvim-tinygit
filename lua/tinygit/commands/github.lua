@@ -68,23 +68,25 @@ end
 ---@param issue table
 ---@return string
 local function issueListFormatter(issue)
-	local isPR = issue.pull_request ~= nil
-	local merged = isPR and issue.pull_request.merged_at ~= nil
-	local reason = issue.state_reason
-
 	local icon
-	if issue.state == "open" and isPR then
-		icon = config.issueIcons.openPR
-	elseif issue.state == "closed" and isPR and merged then
-		icon = config.issueIcons.mergedPR
-	elseif issue.state == "closed" and isPR and not merged then
-		icon = config.issueIcons.closedPR
-	elseif issue.state == "closed" and reason == "completed" then
-		icon = config.issueIcons.closedIssue
-	elseif issue.state == "closed" and reason == "not_planned" then
-		icon = config.issueIcons.notPlannedIssue
-	elseif issue.state == "open" and not isPR then
-		icon = config.issueIcons.openIssue
+	if issue.pull_request then
+		if issue.draft then
+			icon = config.issueIcons.draftPR
+		elseif issue.state == "open" then
+			icon = config.issueIcons.openPR
+		elseif issue.pull_request.merged_at then
+			icon = config.issueIcons.mergedPR
+		else
+			icon = config.issueIcons.closedPR
+		end
+	else
+		if issue.state == "open" then
+			icon = config.issueIcons.openIssue
+		elseif issue.state_reason == "completed" then
+			icon = config.issueIcons.closedIssue
+		elseif issue.state_reason == "not_planned" then
+			icon = config.issueIcons.notPlannedIssue
+		end
 	end
 
 	return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)

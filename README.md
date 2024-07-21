@@ -353,6 +353,7 @@ require("tinygit").setup({
 		notPlannedIssue = "⚪",
 		openPR = "🟩",
 		mergedPR = "🟪",
+		draftPR = "⬜",
 		closedPR = "🟥",
 	},
 	statusline = {
