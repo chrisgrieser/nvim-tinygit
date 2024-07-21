@@ -15,10 +15,7 @@ local u = require("tinygit.shared.utils")
 ---@param msg string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
 ---@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
-local function notify(msg, level, extraOpts)
-	---@diagnostic disable-next-line: param-type-mismatch -- wrong diagnostic
-	u.notify(msg, level, "Staging", extraOpts)
-end
+local function notify(msg, level, extraOpts) u.notify(msg, level, "Staging", extraOpts) end
 
 --------------------------------------------------------------------------------
 

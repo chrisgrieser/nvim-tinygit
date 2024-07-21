@@ -10,6 +10,8 @@ local FILEMODES = {
 	binary = 4,
 }
 
+--------------------------------------------------------------------------------
+
 -- remove diff header, if the input has it. checking for `@@`, as number of
 -- header lines can vary (e.g., diff to new file are 5 lines, not 4)
 ---@param diffLines string[]

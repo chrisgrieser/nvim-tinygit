@@ -5,8 +5,6 @@ local u = require("tinygit.shared.utils")
 local push = require("tinygit.commands.push-pull").push
 local updateStatusline = require("tinygit.statusline").updateAllComponents
 local highlight = require("tinygit.shared.highlights")
-local fn = vim.fn
-
 --------------------------------------------------------------------------------
 
 M.state = {
@@ -15,6 +13,8 @@ M.state = {
 	curIssue = nil,
 	issueNotif = nil,
 }
+
+--------------------------------------------------------------------------------
 
 ---@nodiscard
 ---@return boolean
@@ -152,7 +152,7 @@ local function setupInputField(commitType)
 		vim.opt_local.formatoptions:remove("t") -- prevent auto-wrapping due "gitcommit" filetype
 
 		-- overlength
-		fn.matchadd("ErrorMsg", ([[.\{%s}\zs.*]]):format(commitMaxLen))
+		vim.fn.matchadd("ErrorMsg", ([[.\{%s}\zs.*]]):format(commitMaxLen))
 
 		-- treesitter parser makes first line bold, but since we have only one
 		-- line, we do not need to bold everything in it
@@ -250,8 +250,8 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 			-- commit msg custom highlights
 			vim.api.nvim_buf_call(bufnr, function()
 				highlight.commitMsg()
-				if stagedAllChanges then fn.matchadd("Comment", stageAllText) end
-				if extraInfo then fn.matchadd("Comment", extraInfo) end
+				if stagedAllChanges then vim.fn.matchadd("Comment", stageAllText) end
+				if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
 			end)
 		end,
 	})
@@ -312,15 +312,15 @@ local function showCommitPreview()
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
 			vim.api.nvim_buf_call(bufnr, function()
-				fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
-				fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
-				fn.matchadd("Keyword", [[(new.*)]])
-				fn.matchadd("Keyword", [[(gone.*)]])
-				fn.matchadd("Comment", "│")
+				vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
+				vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
+				vim.fn.matchadd("Keyword", [[(new.*)]])
+				vim.fn.matchadd("Keyword", [[(gone.*)]])
+				vim.fn.matchadd("Comment", "│")
 
 				if not willStageAllChanges then
 					-- `\_.` matches any char, including newline
-					fn.matchadd("Comment", specialWhitespace .. [[\_.*]])
+					vim.fn.matchadd("Comment", specialWhitespace .. [[\_.*]])
 				end
 			end)
 		end,

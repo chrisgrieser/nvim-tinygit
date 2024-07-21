@@ -1,12 +1,8 @@
 local M = {}
-local fn = vim.fn
-local a = vim.api
-local basename = vim.fs.basename
-
-local highlight = require("tinygit.shared.highlights")
-local u = require("tinygit.shared.utils")
 local backdrop = require("tinygit.shared.backdrop")
+local highlight = require("tinygit.shared.highlights")
 local selectCommit = require("tinygit.shared.select-commit")
+local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@class (exact) historyState
@@ -32,7 +28,7 @@ local state = {
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
 ---@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
 local function notify(msg, level, extraOpts)
-	---@diagnostic disable-next-line: param-type-mismatch -- wrong diagnostic
+	---@diagnostic disable-next-line: param-type-mismatch diagnostic is wrong
 	u.notify(msg, level, "Git History", extraOpts)
 end
 
@@ -151,8 +147,8 @@ local function showDiff(commitIdx)
 	local absWidth = math.floor(relWidth * vimWidth)
 
 	-- BUFFER
-	local bufnr = a.nvim_create_buf(false, true)
-	a.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
+	local bufnr = vim.api.nvim_create_buf(false, true)
+	vim.api.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
 	vim.bo[bufnr].buftype = "nofile"
 	setDiffBuffer(bufnr, diffLines, state.ft, absWidth)
 
@@ -172,7 +168,7 @@ local function showDiff(commitIdx)
 
 	-- CREATE WINDOW
 	local historyZindex = 40 -- below nvim-notify, which has 50
-	local winnr = a.nvim_open_win(bufnr, true, {
+	local winnr = vim.api.nvim_open_win(bufnr, true, {
 		-- center of the editor
 		relative = "editor",
 		width = absWidth,
@@ -198,7 +194,7 @@ local function showDiff(commitIdx)
 		vim.o.ignorecase = true
 		vim.o.smartcase = false
 
-		fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
+		vim.fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 		vim.fn.setreg("/", query) -- so `n` searches directly
 		pcall(vim.cmd.normal, { "n", bang = true }) -- move to first match
 		-- (pcall to prevent error when query cannot found, due to non-equivalent
@@ -210,8 +206,8 @@ local function showDiff(commitIdx)
 	local keymap = vim.keymap.set
 	local opts = { buffer = bufnr, nowait = true }
 	local function closePopup()
-		if a.nvim_win_is_valid(winnr) then a.nvim_win_close(winnr, true) end
-		if a.nvim_buf_is_valid(bufnr) then a.nvim_buf_delete(bufnr, { force = true }) end
+		if vim.api.nvim_win_is_valid(winnr) then vim.api.nvim_win_close(winnr, true) end
+		if vim.api.nvim_buf_is_valid(bufnr) then vim.api.nvim_buf_delete(bufnr, { force = true }) end
 		vim.o.ignorecase = ignoreCaseBefore
 		vim.o.smartcase = smartCaseBefore
 	end
@@ -273,9 +269,9 @@ local function selectFromCommits(commitList)
 		local oneCommitPer3Lines = vim.split(commitList, "\n")
 		for i = 1, #oneCommitPer3Lines, 3 do
 			local commitLine = oneCommitPer3Lines[i]
-			local nameAtCommit = basename(oneCommitPer3Lines[i + 2])
+			local nameAtCommit = vim.fs.basename(oneCommitPer3Lines[i + 2])
 			-- append name at commit only when it is not the same name as in the present
-			if basename(state.absPath) ~= nameAtCommit then
+			if vim.fs.basename(state.absPath) ~= nameAtCommit then
 				-- tab-separated for consistently with `--format` output
 				commitLine = commitLine .. "\t" .. nameAtCommit
 			end
@@ -296,13 +292,13 @@ local function selectFromCommits(commitList)
 
 	-- select commit
 	local autocmdId = selectCommit.setupAppearance()
-	local searchMode = state.query == "" and basename(state.absPath) or state.query
+	local searchMode = state.query == "" and vim.fs.basename(state.absPath) or state.query
 	vim.ui.select(commits, {
 		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
 		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.history",
 	}, function(_, commitIdx)
-		a.nvim_del_autocmd(autocmdId)
+		vim.api.nvim_del_autocmd(autocmdId)
 		if commitIdx then showDiff(commitIdx) end
 	end)
 end
@@ -311,7 +307,7 @@ end
 
 function M.searchFileHistory()
 	if u.notInGitRepo() or repoIsShallow() then return end
-	state.absPath = a.nvim_buf_get_name(0)
+	state.absPath = vim.api.nvim_buf_get_name(0)
 	state.ft = vim.bo.filetype
 	state.type = "file"
 
@@ -385,7 +381,7 @@ function M.functionHistory()
 		return
 	end
 
-	state.absPath = a.nvim_buf_get_name(0)
+	state.absPath = vim.api.nvim_buf_get_name(0)
 	state.ft = vim.bo.filetype
 	state.type = "function"
 
@@ -484,7 +480,7 @@ function M.lineHistory()
 		state.query = "L" .. startOfVisual .. (onlyOneLine and "" or "-L" .. endOfVisual)
 	end
 
-	state.absPath = a.nvim_buf_get_name(0)
+	state.absPath = vim.api.nvim_buf_get_name(0)
 	state.ft = vim.bo.filetype
 	state.lnum = lnum
 	state.offset = offset

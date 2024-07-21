@@ -1,11 +1,10 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----send notification
 ---@param body string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
 ---@param title? string
----@param extraOpts? { icon?: string, on_open?: function, timeout?: boolean|number, animate?: boolean }
+---@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
 function M.notify(body, level, title, extraOpts)
 	local pluginName = "tinygit"
 	local notifyTitle = title and pluginName .. ": " .. title or pluginName
@@ -16,7 +15,7 @@ function M.notify(body, level, title, extraOpts)
 	return vim.notify(vim.trim(body), notifyLevel, opts)
 end
 
----checks if last command was successful, if not, notify
+---checks if command was successful, if not, notifies
 ---@nodiscard
 ---@return boolean
 ---@param result vim.SystemCompleted
@@ -35,6 +34,7 @@ function M.notInGitRepo()
 	return notInRepo
 end
 
+---@nodiscard
 ---@return boolean
 function M.inShallowRepo()
 	return M.syncShellCmd { "git", "rev-parse", "--is-shallow-repository" } == "true"
@@ -50,6 +50,7 @@ function M.syncShellCmd(cmd, notrim)
 	return vim.trim(stdout)
 end
 
+---@nodiscard
 ---@return string? ahead
 ---@return string? behind
 function M.getAheadBehind()
