@@ -36,6 +36,8 @@ function M.githubUrl(justRepo)
 	if not repo then return end
 	local hash = u.syncShellCmd { "git", "rev-parse", "HEAD" }
 	local branch = u.syncShellCmd { "git", "branch", "--show-current" }
+	-- if on branch, uses branch, if detached HEAD, falls back to HEAD's hash
+	if branch == "" then branch = hash end
 
 	local mode = vim.fn.mode()
 	local url = "https://github.com/" .. repo
