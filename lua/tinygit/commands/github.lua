@@ -69,25 +69,25 @@ end
 ---@param issue table
 ---@return string
 local function issueListFormatter(issue)
-	local config = require("tinygit.config").config
+	local icons = require("tinygit.config").config.issueIcons
 	local icon
 	if issue.pull_request then
 		if issue.draft then
-			icon = config.issueIcons.draftPR
+			icon = icons.draftPR
 		elseif issue.state == "open" then
-			icon = config.issueIcons.openPR
+			icon = icons.openPR
 		elseif issue.pull_request.merged_at then
-			icon = config.issueIcons.mergedPR
+			icon = icons.mergedPR
 		else
-			icon = config.issueIcons.closedPR
+			icon = icons.closedPR
 		end
 	else
 		if issue.state == "open" then
-			icon = config.issueIcons.openIssue
+			icon = icons.openIssue
 		elseif issue.state_reason == "completed" then
-			icon = config.issueIcons.closedIssue
+			icon = icons.closedIssue
 		elseif issue.state_reason == "not_planned" then
-			icon = config.issueIcons.notPlannedIssue
+			icon = icons.notPlannedIssue
 		end
 	end
 
