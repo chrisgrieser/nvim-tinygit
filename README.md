@@ -95,7 +95,7 @@ use {
   full file. It is roughly comparable to `git add -p`.
 - Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r` to
   reset the hunk (mappings customizable). Your regular `telescope` mappings also
-  apply.
+  apply. Staging and resets support Telescope multi selections.
 - The size of the hunks is determined by the setting `staging.contextSize`.
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
