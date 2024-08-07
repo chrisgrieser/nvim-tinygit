@@ -289,6 +289,7 @@ local function telescopePickHunk(hunks)
 				map({ "n", "i" }, opts.keymaps.resetHunk, function()
 					local multi = picker:get_multi_selection()
 					local selections = next(multi) and multi or { actionState.get_selected_entry() }
+
 					for i, entry in pairs(selections) do
 						local hunk = entry.value
 
@@ -304,7 +305,12 @@ local function telescopePickHunk(hunks)
 						-- remove from list as not a hunk anymore
 						table.remove(hunks, entry.index - i + 1)
 					end
-					refreshPicker()
+
+					if next(hunks) then
+						refreshPicker()
+					else
+						actions.close(prompt_bufnr)
+					end
 				end, { desc = "Reset Hunk" })
 
 				return true -- keep default mappings
