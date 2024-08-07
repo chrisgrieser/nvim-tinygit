@@ -287,19 +287,23 @@ local function telescopePickHunk(hunks)
 				end, { desc = "Staging Toggle" })
 
 				map({ "n", "i" }, opts.keymaps.resetHunk, function()
-					local entry = actionState.get_selected_entry()
-					local hunk = entry.value
+					local multi = picker:get_multi_selection()
+					local selections = next(multi) and multi or { actionState.get_selected_entry() }
+					for i, entry in pairs(selections) do
+						local hunk = entry.value
 
-					-- a staged hunk cannot be reset, so we unstage it first
-					if hunk.alreadyStaged then
-						local success1 = applyPatch(hunk, "toggle")
-						if not success1 then return end
-						hunk.alreadyStaged = false
+						-- a staged hunk cannot be reset, so we unstage it first
+						if hunk.alreadyStaged then
+							local success1 = applyPatch(hunk, "toggle")
+							if not success1 then return end
+							hunk.alreadyStaged = false
+						end
+
+						local success2 = applyPatch(hunk, "reset")
+						if not success2 then return end
+						-- remove from list as not a hunk anymore
+						table.remove(hunks, entry.index - i + 1)
 					end
-
-					local success2 = applyPatch(hunk, "reset")
-					if not success2 then return end
-					table.remove(hunks, entry.index) -- remove from list as not a hunk anymore
 					refreshPicker()
 				end, { desc = "Reset Hunk" })
 
