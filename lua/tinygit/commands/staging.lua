@@ -250,10 +250,10 @@ local function telescopePickHunk(hunks)
 			},
 
 			attach_mappings = function(prompt_bufnr, map)
+				local picker = actionState.get_current_picker(prompt_bufnr)
 				local function refreshPicker()
 					-- temporarily register a callback which keeps selection on refresh
 					-- SOURCE https://github.com/nvim-telescope/telescope.nvim/blob/bfcc7d5c6f12209139f175e6123a7b7de6d9c18a/lua/telescope/builtin/__git.lua#L412-L421
-					local picker = actionState.get_current_picker(prompt_bufnr)
 					local selection = picker:get_selection_row()
 					local callbacks = { unpack(picker._completion_callbacks) } -- shallow copy
 					picker:register_completion_callback(function(self)
@@ -273,14 +273,17 @@ local function telescopePickHunk(hunks)
 				end, { desc = "Goto Hunk" })
 
 				map({ "n", "i" }, opts.keymaps.stagingToggle, function()
-					local entry = actionState.get_selected_entry()
-					local hunk = entry.value
-					local success = applyPatch(hunk, "toggle")
-					if success then
-						-- Change value for selected hunk in cached hunk-list
-						hunks[entry.index].alreadyStaged = not hunks[entry.index].alreadyStaged
-						refreshPicker()
+					local multi = picker:get_multi_selection()
+					local selections = next(multi) and multi or { actionState.get_selected_entry() }
+					for _, entry in pairs(selections) do
+						local hunk = entry.value
+						local success = applyPatch(hunk, "toggle")
+						if success then
+							-- Change value for selected hunk in cached hunk-list
+							hunks[entry.index].alreadyStaged = not hunks[entry.index].alreadyStaged
+						end
 					end
+					refreshPicker()
 				end, { desc = "Staging Toggle" })
 
 				map({ "n", "i" }, opts.keymaps.resetHunk, function()
