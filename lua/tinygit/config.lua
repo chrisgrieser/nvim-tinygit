@@ -14,6 +14,7 @@ local M = {}
 ---@field contextSize number
 ---@field stagedIndicator string
 ---@field keymaps { gotoHunk: string, stagingToggle: string, resetHunk: string }
+---@field moveToNextHunkOnStagingToggle boolean
 
 ---@class issueIconConfig
 ---@field closedIssue string
@@ -62,6 +63,7 @@ local defaultConfig = {
 			gotoHunk = "<CR>",
 			resetHunk = "<C-r>",
 		},
+		moveToNextHunkOnStagingToggle = false,
 	},
 	commitMsg = {
 		commitPreview = true, -- requires nvim-notify

@@ -302,7 +302,7 @@ The `setup` call is optional. These are the default settings:
 
 ```lua
 -- default config
-require("tinygit").setup({
+require("tinygit").setup {
 	staging = { -- requires telescope
 		contextSize = 1, -- larger values "merge" hunks
 		stagedIndicator = "✜ ",
@@ -311,6 +311,7 @@ require("tinygit").setup({
 			gotoHunk = "<CR>",
 			resetHunk = "<C-r>",
 		},
+		moveToNextHunkOnStagingToggle = false,
 	},
 	commitMsg = {
 		commitPreview = true, -- requires nvim-notify
@@ -375,7 +376,7 @@ require("tinygit").setup({
 		enabled = true,
 		blend = 50, -- 0-100
 	},
-})
+}
 ```
 
 The appearance of the commit preview and notifications is determined by

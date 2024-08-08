@@ -279,6 +279,9 @@ local function telescopePickHunk(hunks)
 					if success then
 						-- Change value for selected hunk in cached hunk-list
 						hunks[entry.index].alreadyStaged = not hunks[entry.index].alreadyStaged
+						if opts.moveToNextHunkOnStagingToggle then
+							actions.move_selection_next(prompt_bufnr)
+						end
 						refreshPicker()
 					end
 				end, { desc = "Staging Toggle" })
