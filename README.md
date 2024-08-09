@@ -157,7 +157,7 @@ require("tinygit").amendOnlyMsg { forcePushIfDiverged = false }
 require("tinygit").amendNoEdit { forcePushIfDiverged = false }
 ```
 
-**Fixup and Squash**
+**Fixup or Squash Commits**
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
   commit --fixup` on the selected commit.
 - If there are no staged changes, stages all changes (`git add --all`), like
@@ -188,7 +188,7 @@ require("tinygit").undoLastCommitOrAmend()
   pushIfClean = false }`), the last commit is not undone.
 
 ### GitHub Interaction
-- Search issues & PRs.
+**Search issues & PRs**
 - Requires `curl`.
 
 ```lua
@@ -197,13 +197,16 @@ require("tinygit").undoLastCommitOrAmend()
 require("tinygit").issuesAndPrs { type = "all", state = "all" }
 
 -- alternative: if the word under the cursor is of the form `#123`,
--- just open that issue/PR
+-- open that issue/PR
 require("tinygit").openIssueUnderCursor()
 ```
 
-- Open the current file at GitHub in the browser and copy the URL to the system clipboard.
+
+**GitHub URL**
+Opens the current file at GitHub in the browser and copy the URL to the system
+clipboard.
 - Normal mode: open the current file or repo.
-- Visual mode: open the current selection.
+- Visual mode: open selected lines.
 
 ```lua
 -- file|repo (default: file)
@@ -298,13 +301,13 @@ require("tinygit.statusline").branchState()
 ```
 
 ## Configuration
-The `setup` call is optional. These are the default settings:
+The `setup` call is optional.
 
 ```lua
 -- default config
 require("tinygit").setup {
 	staging = { -- requires telescope
-		contextSize = 1, -- larger values "merge" hunks
+		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
 		stagedIndicator = "✜ ",
 		keymaps = { -- insert & normal mode
 			stagingToggle = "<Space>", -- stage/unstage hunk
@@ -390,7 +393,7 @@ require("notify").setup {
 ```
 
 <!-- vale Google.FirstPerson = NO -->
-## About me
+## Credits
 In my day job, I am a sociologist studying the social mechanisms underlying the
 digital economy. For my PhD project, I investigate the governance of the app
 economy and how software ecosystems manage the tension between innovation and

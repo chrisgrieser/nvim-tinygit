@@ -4,7 +4,7 @@ local M = {}
 ---@class pluginConfig
 local defaultConfig = {
 	staging = { -- requires telescope
-		contextSize = 1, -- larger values "merge" hunks
+		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
 		stagedIndicator = "✜ ",
 		keymaps = { -- insert & normal mode
 			stagingToggle = "<Space>", -- stage/unstage hunk
