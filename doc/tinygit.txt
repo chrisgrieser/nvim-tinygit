@@ -9,7 +9,7 @@ Table of Contents                                  *tinygit-table-of-contents*
   - Commands                                   |tinygit-nvim-tinygit-commands|
   - Statusline Components         |tinygit-nvim-tinygit-statusline-components|
   - Configuration                         |tinygit-nvim-tinygit-configuration|
-  - About me                                   |tinygit-nvim-tinygit-about-me|
+  - Credits                                     |tinygit-nvim-tinygit-credits|
 
 ==============================================================================
 1. nvim-tinygit                                         *tinygit-nvim-tinygit*
@@ -167,13 +167,14 @@ pushed).
     require("tinygit").amendNoEdit { forcePushIfDiverged = false }
 <
 
-**Fixup and Squash** - `fixupCommit` lets you select a commit from the last X
-commits and runs `git commit --fixup` on the selected commit. - If there are no
-staged changes, stages all changes (`git add --all`), like `smartCommit`. - Use
-`squashInstead = true` to squash instead of fixup (`git commit --squash`). -
-`autoRebase = true` automatically runs rebase with `--autosquash` and
-`--autostash` afterward, confirming all fixups and squashes **without opening a
-rebase view**. (Note that this can potentially result in conflicts.)
+**Fixup or Squash Commits** - `fixupCommit` lets you select a commit from the
+last X commits and runs `git commit --fixup` on the selected commit. - If there
+are no staged changes, stages all changes (`git add --all`), like
+`smartCommit`. - Use `squashInstead = true` to squash instead of fixup (`git
+commit --squash`). - `autoRebase = true` automatically runs rebase with
+`--autosquash` and `--autostash` afterward, confirming all fixups and squashes
+**without opening a rebase view**. (Note that this can potentially result in
+conflicts.)
 
 >lua
     -- options show default values
@@ -198,8 +199,7 @@ UNDO LAST COMMIT/AMEND ~
 
 GITHUB INTERACTION ~
 
-- Search issues & PRs.
-- Requires `curl`.
+**Search issues & PRs** - Requires `curl`.
 
 >lua
     -- state: all|closed|open (default: all)
@@ -207,13 +207,13 @@ GITHUB INTERACTION ~
     require("tinygit").issuesAndPrs { type = "all", state = "all" }
     
     -- alternative: if the word under the cursor is of the form `#123`,
-    -- just open that issue/PR
+    -- open that issue/PR
     require("tinygit").openIssueUnderCursor()
 <
 
-- Open the current file at GitHub in the browser and copy the URL to the system clipboard.
-- Normal mode: open the current file or repo.
-- Visual mode: open the current selection.
+**GitHub URL** Opens the current file at GitHub in the browser and copy the URL
+to the system clipboard. - Normal mode: open the current file or repo. - Visual
+mode: open selected lines.
 
 >lua
     -- file|repo (default: file)
@@ -318,13 +318,13 @@ the information may not be up-to-date with remote changes.)
 
 CONFIGURATION                             *tinygit-nvim-tinygit-configuration*
 
-The `setup` call is optional. These are the default settings:
+The `setup` call is optional.
 
 >lua
     -- default config
     require("tinygit").setup {
         staging = { -- requires telescope
-            contextSize = 1, -- larger values "merge" hunks
+            contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
             stagedIndicator = "✜ ",
             keymaps = { -- insert & normal mode
                 stagingToggle = "<Space>", -- stage/unstage hunk
@@ -410,7 +410,7 @@ the width of the preview, use:
 <
 
 
-ABOUT ME                                       *tinygit-nvim-tinygit-about-me*
+CREDITS                                         *tinygit-nvim-tinygit-credits*
 
 In my day job, I am a sociologist studying the social mechanisms underlying the
 digital economy. For my PhD project, I investigate the governance of the app
