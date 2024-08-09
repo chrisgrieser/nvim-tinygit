@@ -283,7 +283,7 @@ require("tinygit.statusline").blame()
 > [!TIP]
 > Some status line plugins also allow you to put components into the tabline or
 > winbar. If your status line is too crowded, you can add the blame-component to
-> the one of those bars instead.
+> one of those bars instead.
 
 The component can be configured with the `statusline.blame` options in the [plugin
 configuration](#configuration).
