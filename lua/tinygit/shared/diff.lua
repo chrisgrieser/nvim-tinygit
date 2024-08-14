@@ -8,6 +8,7 @@ local FILEMODES = {
 	modified = 2,
 	renamed = 3,
 	binary = 4,
+	line_or_function_history = 5,
 }
 
 --------------------------------------------------------------------------------
@@ -30,10 +31,12 @@ function M.splitOffDiffHeader(diffLines)
 
 	local fileMode = headerLines[2]:match("^(%w+) file") or headerLines[3]:match("^(%w+) file")
 	local rename = {}
-	if not fileMode then
+	if not fileMode and headerLines[4] then
 		rename.from = headerLines[3]:match("^rename from (.+)$")
 		rename.to = headerLines[4]:match("^rename to (.+)$")
 		fileMode = rename.from and "renamed" or "modified"
+	elseif not fileMode and not headerLines[4] then
+		fileMode = "line_or_function_history"
 	end
 	if fileMode then fileMode = fileMode:lower() end
 
