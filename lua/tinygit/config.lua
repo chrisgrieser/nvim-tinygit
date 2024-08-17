@@ -26,7 +26,6 @@ local defaultConfig = {
 				"perf", "style", "revert", "ci", "break", "improv",
 			},
 		},
-		openReferencedIssue = false, -- if message has issue/PR, open in browser afterwards
 		insertIssuesOnHash = {
 			-- Experimental. Typing `#` will insert the most recent open issue.
 			-- Requires nvim-notify.
@@ -39,6 +38,10 @@ local defaultConfig = {
 	push = {
 		preventPushingFixupOrSquashCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
+
+		-- Pushed commits contain references to issues, open those issues.
+		-- Not used when using force-push.
+		openReferencedIssues = false,
 	},
 	historySearch = {
 		diffPopup = {
@@ -91,6 +94,13 @@ function M.setupPlugin(userConfig)
 		local fallback = defaultConfig.historySearch.diffPopup.border
 		M.config.historySearch.diffPopup.border = fallback
 		local msg = ('Border type "none" is not supported, falling back to %q.'):format(fallback)
+		require("tinygit.shared.utils").notify(msg, "warn")
+	end
+
+	-- DEPRECATION
+	if M.config.commitMsg.openReferencedIssue ~= nil or M.config.push.openReferencedIssue ~= nil then
+		local msg = "`config.commitMsg.openReferencedIssue` is deprecated. "
+			.. "Use `config.push.openReferencedIssues` instead. (Note the plural-s.)"
 		require("tinygit.shared.utils").notify(msg, "warn")
 	end
 end

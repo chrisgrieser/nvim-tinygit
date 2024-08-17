@@ -336,18 +336,6 @@ local function closeNotifications()
 	end
 end
 
----@param processedMsg string
-local function openReferencedIssue(processedMsg)
-	local config = require("tinygit.config").config.commitMsg
-	local issueReferenced = processedMsg:match("#(%d+)")
-	if config.openReferencedIssue and issueReferenced then
-		local repo = require("tinygit.commands.github").getGithubRemote("silent")
-		if not repo then return end
-		local url = ("https://github.com/%s/issues/%s"):format(repo, issueReferenced)
-		vim.ui.open(url)
-	end
-end
-
 --------------------------------------------------------------------------------
 
 ---If there are staged changes, commit them.
@@ -416,7 +404,6 @@ function M.smartCommit(opts, msgNeedsFixing)
 			push({ pullBefore = opts.pullBeforePush }, true)
 		end
 
-		openReferencedIssue(processedMsg)
 		updateStatusline()
 	end)
 end
@@ -493,7 +480,6 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 				push({ forceWithLease = true }, true)
 			end
 
-			openReferencedIssue(processedMsg)
 			updateStatusline()
 		end
 	)

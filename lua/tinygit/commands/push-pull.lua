@@ -6,6 +6,20 @@ local createGitHubPr = require("tinygit.commands.github").createGitHubPr
 local updateStatusline = require("tinygit.statusline").updateAllComponents
 --------------------------------------------------------------------------------
 
+---@param commitRange string
+local function openReferencedIssue(commitRange)
+	if not config.openReferencedIssues then return end
+
+	local repo = require("tinygit.commands.github").getGithubRemote("silent")
+	if not repo then return end
+
+	local pushedCommits = u.syncShellCmd { "git", "log", commitRange, "--format=%s" }
+	for issue in pushedCommits:gmatch("#(%d+)") do
+		local url = ("https://github.com/%s/issues/%s"):format(repo, issue)
+		vim.ui.open(url)
+	end
+end
+
 ---@param opts { pullBefore?: boolean|nil, forceWithLease?: boolean, createGitHubPr?: boolean }
 local function pushCmd(opts)
 	local gitCommand = { "git", "push" }
@@ -20,6 +34,8 @@ local function pushCmd(opts)
 			local severity = result.code == 0 and "info" or "error"
 			if severity == "info" then
 				local commitRange = out:match("%x+%.%.%x+")
+				if not opts.forceWithLease then openReferencedIssue(commitRange) end
+
 				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
 				if numOfPushedCommits ~= "" then
 					local plural = numOfPushedCommits ~= "1" and "s" or ""
@@ -28,7 +44,6 @@ local function pushCmd(opts)
 			end
 			u.notify(out, severity, "Push")
 
-			-- sound
 			if config.confirmationSound and vim.uv.os_uname().sysname == "Darwin" then
 				local sound = result.code == 0
 						and "/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore

@@ -329,7 +329,6 @@ require("tinygit").setup {
 				"perf", "style", "revert", "ci", "break", "improv",
 			},
 		},
-		openReferencedIssue = false, -- if message has issue/PR, open in browser afterwards
 		insertIssuesOnHash = {
 			-- Experimental. Typing `#` will insert the most recent open issue.
 			-- Requires nvim-notify.
@@ -342,6 +341,10 @@ require("tinygit").setup {
 	push = {
 		preventPushingFixupOrSquashCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
+
+		-- Pushed commits contain references to issues, open those issues. 
+		-- Not used when using force-push.
+		openReferencedIssues = false, 
 	},
 	historySearch = {
 		diffPopup = {
