@@ -233,7 +233,7 @@ local function setupInputField(commitType)
 end
 
 ---@param title string title for nvim-notify
----@param stagedAllChanges boolean
+---@param stagedAllChanges? boolean
 ---@param commitMsg string
 ---@param extraInfo? string extra lines to display
 local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
@@ -408,14 +408,15 @@ function M.smartCommit(opts, msgNeedsFixing)
 	end)
 end
 
----@param opts? { forcePushIfDiverged?: boolean }
+---@param opts? { forcePushIfDiverged?: boolean, stageAllIfNothingStaged?: boolean }
 function M.amendNoEdit(opts)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
-	if not opts then opts = {} end
+	local defaultOpts = { forcePushIfDiverged = false, stageAllIfNothingStaged = true }
+	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	-- stage
-	local doStageAllChanges = hasNoStagedChanges()
+	local doStageAllChanges = opts.stageAllIfNothingStaged and hasNoStagedChanges()
 	if doStageAllChanges then
 		local result = vim.system({ "git", "add", "--all" }):wait()
 		if u.nonZeroExit(result) then return end

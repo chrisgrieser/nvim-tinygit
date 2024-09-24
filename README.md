@@ -154,7 +154,7 @@ pushing into a single step, when it is the last commit you intend to make.
 ```lua
 -- options default to `false`
 require("tinygit").amendOnlyMsg { forcePushIfDiverged = false }
-require("tinygit").amendNoEdit { forcePushIfDiverged = false }
+require("tinygit").amendNoEdit { forcePushIfDiverged = false, stageAllIfNothingStaged = true }
 ```
 
 **Fixup or Squash Commits**
