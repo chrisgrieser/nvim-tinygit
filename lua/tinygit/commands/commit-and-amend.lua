@@ -415,10 +415,17 @@ function M.amendNoEdit(opts)
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	-- stage
-	local doStageAllChanges = opts.stageAllIfNothingStaged and hasNoStagedChanges()
-	if doStageAllChanges then
-		local result = vim.system({ "git", "add", "--all" }):wait()
-		if u.nonZeroExit(result) then return end
+	local doStageAllChanges = false
+	local nothingStaged = hasNoStagedChanges()
+	if nothingStaged then
+		if opts.stageAllIfNothingStaged then
+			doStageAllChanges = true
+			local result = vim.system({ "git", "add", "--all" }):wait()
+			if u.nonZeroExit(result) then return end
+		else
+			u.notify("Nothing staged. Aborting.", "warn")
+			return
+		end
 	end
 
 	-- commit
