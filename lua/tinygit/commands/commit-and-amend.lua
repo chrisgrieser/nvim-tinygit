@@ -416,8 +416,7 @@ function M.amendNoEdit(opts)
 
 	-- stage
 	local doStageAllChanges = false
-	local nothingStaged = hasNoStagedChanges()
-	if nothingStaged then
+	if hasNoStagedChanges() then
 		if opts.stageAllIfNothingStaged then
 			doStageAllChanges = true
 			local result = vim.system({ "git", "add", "--all" }):wait()
