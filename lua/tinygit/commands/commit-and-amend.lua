@@ -48,8 +48,7 @@ local function processCommitMsg(commitMsg)
 
 	if #commitMsg > commitMaxLen then
 		u.notify("Commit Message too long.", "warn")
-		local shortenedMsg = commitMsg:sub(1, commitMaxLen)
-		return false, shortenedMsg
+		return false, commitMsg
 	elseif commitMsg == "" then
 		u.notify("Commit Message empty.", "warn")
 		return false, ""
