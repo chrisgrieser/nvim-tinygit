@@ -74,10 +74,10 @@ function M.push(opts, calledByCommitFunc)
 		end
 	end
 	if not opts then opts = {} end
+	local title = opts.forceWithLease and "Force Push" or "Push"
 
 	-- extra notification when called by user
 	if not calledByCommitFunc then
-		local title = opts.forceWithLease and "Force Push" or "Push"
 		if opts.pullBefore then title = "Pull & " .. title end
 		u.notify(title .. "…", "info")
 	end
@@ -86,6 +86,24 @@ function M.push(opts, calledByCommitFunc)
 	if not opts.pullBefore then
 		pushCmd(opts)
 		return
+	end
+
+	-- Handle missing tracking branch, see #21
+	local hasNoTrackingBranch = u.syncShellCmd({ "git", "status", "--short", "--branch" })
+		:find("## (.-)%.%.%.") == nil
+	if hasNoTrackingBranch then
+		local noAutoSetupRemote = u.syncShellCmd { "git", "config", "--get", "push.autoSetupRemote" }
+			== "false"
+		if noAutoSetupRemote then
+			u.notify("There is no tracking branch. Aborting push.", "warn", title)
+			return
+		end
+		if opts.pullBefore then
+			local msg = "Not pulling since not tracking any branch. Skipping to push."
+			u.notify(msg, "info", title)
+			pushCmd(opts)
+			return
+		end
 	end
 
 	-- Pull & Push
