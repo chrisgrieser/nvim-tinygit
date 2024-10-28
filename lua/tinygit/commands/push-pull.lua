@@ -44,7 +44,7 @@ local function pushCmd(opts)
 			u.notify(out, result.code == 0 and "info" or "error", "Push")
 
 			-- sound
-			if config.confirmationSound and vim.uv.os_uname().sysname == "Darwin" then
+			if config.confirmationSound and jit.os == "OSX" then
 				local sound = result.code == 0
 						and "/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 					or "/System/Library/Sounds/Basso.aiff"
