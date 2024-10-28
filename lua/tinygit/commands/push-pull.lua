@@ -7,9 +7,7 @@ local updateStatusline = require("tinygit.statusline").updateAllComponents
 --------------------------------------------------------------------------------
 
 ---@param commitRange string
-local function openReferencedIssue(commitRange)
-	if not config.openReferencedIssues then return end
-
+local function openReferencedIssues(commitRange)
 	local repo = require("tinygit.commands.github").getGithubRemote("silent")
 	if not repo then return end
 
@@ -32,29 +30,31 @@ local function pushCmd(opts)
 		gitCommand,
 		{ detach = true, text = true },
 		vim.schedule_wrap(function(result)
-			-- notify
 			local out = (result.stdout or "") .. (result.stderr or "")
-			local severity = result.code == 0 and "info" or "error"
-			if severity == "info" then
-				local commitRange = out:match("%x+%.%.%x+")
-				if not opts.forceWithLease then openReferencedIssue(commitRange) end
+			local commitRange = out:match("%x+%.%.%x+")
 
+			-- notify
+			if result.code == 0 then
 				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
 				if numOfPushedCommits ~= "" then
 					local plural = numOfPushedCommits ~= "1" and "s" or ""
 					out = out .. (" (%s commit%s)"):format(numOfPushedCommits, plural)
 				end
 			end
-			u.notify(out, severity, "Push")
+			u.notify(out, result.code == 0 and "info" or "error", "Push")
 
+			-- sound
 			if config.confirmationSound and vim.uv.os_uname().sysname == "Darwin" then
 				local sound = result.code == 0
 						and "/System/Library/Components/CoreAudio.component/Contents/SharedSupport/SystemSounds/siri/jbl_confirm.caf" -- codespell-ignore
 					or "/System/Library/Sounds/Basso.aiff"
-				vim.system { "afplay", sound }
+				vim.system { "afplay", sound } -- run async
 			end
 
 			-- post-push actions
+			if config.openReferencedIssues and not opts.forceWithLease then
+				openReferencedIssues(commitRange)
+			end
 			if opts.createGitHubPr then createGitHubPr() end
 			updateStatusline()
 		end)

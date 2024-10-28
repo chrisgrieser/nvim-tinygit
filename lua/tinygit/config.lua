@@ -96,13 +96,6 @@ function M.setupPlugin(userConfig)
 		local msg = ('Border type "none" is not supported, falling back to %q.'):format(fallback)
 		require("tinygit.shared.utils").notify(msg, "warn")
 	end
-
-	-- DEPRECATION
-	if M.config.commitMsg.openReferencedIssue ~= nil or M.config.push.openReferencedIssue ~= nil then
-		local msg = "`config.commitMsg.openReferencedIssue` is deprecated. "
-			.. "Use `config.push.openReferencedIssues` instead. (Note the plural-s.)"
-		require("tinygit.shared.utils").notify(msg, "warn")
-	end
 end
 
 --------------------------------------------------------------------------------
