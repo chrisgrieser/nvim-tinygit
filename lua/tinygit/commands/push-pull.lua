@@ -1,7 +1,6 @@
 local M = {}
 
 local u = require("tinygit.shared.utils")
-local config = require("tinygit.config").config.push
 local createGitHubPr = require("tinygit.commands.github").createGitHubPr
 local updateStatusline = require("tinygit.statusline").updateAllComponents
 --------------------------------------------------------------------------------
@@ -23,6 +22,7 @@ end
 
 ---@param opts { pullBefore?: boolean|nil, forceWithLease?: boolean, createGitHubPr?: boolean }
 local function pushCmd(opts)
+	local config = require("tinygit.config").config.push
 	local gitCommand = { "git", "push" }
 	if opts.forceWithLease then table.insert(gitCommand, "--force-with-lease") end
 
@@ -65,6 +65,8 @@ end
 ---@param opts? { pullBefore?: boolean, forceWithLease?: boolean, createGitHubPr?: boolean }
 ---@param calledByCommitFunc? boolean
 function M.push(opts, calledByCommitFunc)
+	local config = require("tinygit.config").config.push
+
 	-- GUARD
 	if u.notInGitRepo() then return end
 	if config.preventPushingFixupOrSquashCommits then
