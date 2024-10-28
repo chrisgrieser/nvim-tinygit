@@ -16,7 +16,10 @@ local function openReferencedIssue(commitRange)
 	local pushedCommits = u.syncShellCmd { "git", "log", commitRange, "--format=%s" }
 	for issue in pushedCommits:gmatch("#(%d+)") do
 		local url = ("https://github.com/%s/issues/%s"):format(repo, issue)
-		vim.ui.open(url)
+
+		-- deferred, so github registers the change before tab is opened, and so
+		-- the user can register notifications before switching to browser
+		vim.defer_fn(function() vim.ui.open(url) end, 400)
 	end
 end
 
