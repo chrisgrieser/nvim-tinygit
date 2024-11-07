@@ -94,7 +94,8 @@ local function insertIssueNumber(mode)
 	-- notification
 	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
 	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
-		-- `id` and `keep` are for `snacks.nvim`
+		-- `ft`, `keep` and `id` are for `snacks.nvim`
+		ft = "text",
 		id = "tinygit.issue-notification",
 		keep = function() return true end,
 		-- `replace`, `timeout`, and `on_open` are for `nvim-notify`
@@ -267,6 +268,8 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 	end
 
 	u.notify(text, "info", title, {
+		-- `ft` only for `snacks.nvim`
+		ft = "text",
 		-- `on_open` only used by nvim-notify
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
@@ -364,7 +367,8 @@ local function showCommitPreview()
 
 	-- send notification
 	u.notify(changes, "info", title, {
-		-- `keep` and `id` are for `snacks.nvim`
+		-- `ft`, `keep` and `id` are for `snacks.nvim`
+		ft = "text",
 		id = "tinygit.commit-preview",
 		keep = function() return true end,
 		-- `animate`, `timeout`, and `on_open` are for `nvim-notify`
