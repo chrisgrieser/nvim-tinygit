@@ -35,10 +35,11 @@ local function pushCmd(opts)
 
 			-- notify
 			if result.code == 0 then
-				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
+				local numOfPushedCommits = u.syncShellCmd({ "git", "rev-list", "--count", commitRange })
+					:gsub("\n +", "\n") -- remove leading spaces
 				if numOfPushedCommits ~= "" then
 					local plural = numOfPushedCommits ~= "1" and "s" or ""
-					out = out .. (" (%s commit%s)"):format(numOfPushedCommits, plural)
+					out = out .. ("\n(%s commit%s)"):format(numOfPushedCommits, plural)
 				end
 			end
 			u.notify(out, result.code == 0 and "info" or "error", "Push")
