@@ -4,7 +4,7 @@ local M = {}
 ---@param body string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
 ---@param title? string
----@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
+---@param extraOpts? table for nvim-notify or snacks.nvim
 function M.notify(body, level, title, extraOpts)
 	local pluginName = "tinygit"
 	local notifyTitle = title and pluginName .. ": " .. title or pluginName

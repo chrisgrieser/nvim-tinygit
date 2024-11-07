@@ -94,6 +94,10 @@ local function insertIssueNumber(mode)
 	-- notification
 	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
 	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
+		-- `id` and `keep` are for `snacks.nvim`
+		id = "tinygit.issue-notification",
+		keep = function() return true end,
+		-- `replace`, `timeout`, and `on_open` are for `nvim-notify`
 		timeout = false,
 		replace = M.state.issueNotif and M.state.issueNotif.id, ---@diagnostic disable-line: undefined-field
 		on_open = function(win)
@@ -192,9 +196,8 @@ local function setupInputField(commitType)
 			charCountInFooter(bufnr, winid)
 
 			-- fetch the issues now, so they are later available when typing `#`
-			if opts.insertIssuesOnHash.enabled and package.loaded["notify"] then
-				setupIssueInsertion(bufnr)
-			end
+			local hasNotifyPlugin = (package.loaded["notify"] or package.loaded["snacks"])
+			if opts.insertIssuesOnHash.enabled and hasNotifyPlugin then setupIssueInsertion(bufnr) end
 
 			-- activates styling for statusline plugins (e.g., filename icons)
 			vim.api.nvim_buf_set_name(bufnr, "COMMIT_EDITMSG")
@@ -263,7 +266,8 @@ end
 local function showCommitPreview()
 	local config = require("tinygit.config").config.commitMsg
 	local notifyInstalled, notifyNvim = pcall(require, "notify")
-	if not (notifyInstalled and config.commitPreview) then return end
+	local snacksInstalled, _ = pcall(require, "snacks")
+	if not (config.commitPreview and (notifyInstalled or snacksInstalled)) then return end
 
 	---@param gitStatsArgs string[]
 	local function cleanupStatsOutput(gitStatsArgs)
@@ -275,14 +279,23 @@ local function showCommitPreview()
 	end
 	-----------------------------------------------------------------------------
 
-	-- get width defined by user for nvim-notify to avoid overflow/wrapped lines
-	-- INFO max_width can be number, nil, or function, see https://github.com/chrisgrieser/nvim-tinygit/issues/6#issuecomment-1999537606
-	local _, notifyConfig = notifyNvim.instance() ---@diagnostic disable-line: missing-parameter
+	-- INFO get width defined by user to avoid overflow/wrapped lines
 	local width = 50
-	if notifyConfig and notifyConfig.max_width then
-		local max_width = type(notifyConfig.max_width) == "number" and notifyConfig.max_width
-			or notifyConfig.max_width()
-		width = max_width - 3
+	if notifyInstalled then
+		local _, notifyConfig = notifyNvim.instance() ---@diagnostic disable-line: missing-parameter
+		if notifyConfig and notifyConfig.max_width then
+			local max_width = type(notifyConfig.max_width) == "number" and notifyConfig.max_width
+				or notifyConfig.max_width()
+			width = max_width - 3
+		end
+	elseif snacksInstalled then
+		local widthSetting = require("snacks").config.get("notifier", {}).width
+		if type(widthSetting) == "number" then
+			width = widthSetting
+		elseif widthSetting.max then
+			width = widthSetting.max < 1 and math.floor(vim.o.columns * widthSetting.max) or widthSetting.max
+		end
+		width = width - 3
 	end
 
 	-- get changes
@@ -306,6 +319,10 @@ local function showCommitPreview()
 
 	-- send notification
 	u.notify(changes, "info", title, {
+		-- `keep` and `id` are for `snacks.nvim`
+		id = "tinygit.commit-preview",
+		keep = function() return true end,
+		-- `animate`, `timeout`, and `on_open` are for `nvim-notify`
 		timeout = false, -- keep shown, only remove when input window closed
 		animate = false,
 		on_open = function(win)
@@ -328,10 +345,16 @@ end
 
 local function closeNotifications()
 	local opts = require("tinygit.config").config.commitMsg
-	if package.loaded["notify"] and (opts.commitPreview or M.state.issueNotif) then
-		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
-		require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
-		M.state.issueNotif = nil
+	if opts.commitPreview or M.state.issueNotif then
+		if package.loaded["notify"] then
+			-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
+			require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
+			M.state.issueNotif = nil
+		elseif package.loaded["snacks"] then
+			-- https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md#snacksnotifierhide
+			require("snacks").notifier.hide("tinygit.issue-notification")
+			require("snacks").notifier.hide("tinygit.commit-preview")
+		end
 	end
 end
 

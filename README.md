@@ -4,7 +4,7 @@
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
 <img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat" /> </a>
 
-A lightweight bundle of commands focussed on swift and streamlined git
+A lightweight bundle of commands focused on swift and streamlined git
 operations.
 
 <img alt="Showcase interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/3c055861-6b93-4065-8601-f79568d8ac28">
@@ -51,14 +51,14 @@ operations.
 <!-- tocstop -->
 
 ## Installation
-**Hard Requirements**  
+**Hard Requirements**
 - nvim 0.10 or higher
 - `dressing.nvim`
 
 **Optional/Recommended Requirements**
 - Treesitter parser for syntax highlighting: `TSInstall gitcommit`
-- `nvim-notify` for the commit preview, issue number insertion, and various
-  notifications
+- `nvim-notify` or `snacks.nvim` for the commit preview, issue number insertion,
+  and various notifications
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) or
   [fzf-lua](https://github.com/ibhagwan/fzf-lua) for better UI when selecting
   commits or issues/PRs.
@@ -68,21 +68,13 @@ operations.
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	dependencies = {
-		"stevearc/dressing.nvim",
-		"nvim-telescope/telescope.nvim", -- optional, but recommended
-		"rcarriga/nvim-notify", -- optional, but recommended
-	},
+	dependencies = "stevearc/dressing.nvim",
 },
 
 -- packer
 use {
 	"chrisgrieser/nvim-tinygit",
-	requires = {
-		"stevearc/dressing.nvim", 
-		"nvim-telescope/telescope.nvim", -- optional, but recommended
-		"rcarriga/nvim-notify", -- optional, but recommended
-	},
+	requires = "stevearc/dressing.nvim",
 }
 ```
 
@@ -217,7 +209,7 @@ require("tinygit").githubUrl("file")
 - `push` can be combined with other actions, depending on the options.
 - `createGitHubPr` opens a PR from the current branch browser.
 	* This requires the repo to be a fork with sufficient information on the remote.
-	* This does not require the `gh` cli, as it uses a GitHub web feature.
+	* This does not require the `gh` CLI, as it uses a GitHub web feature.
 
 ```lua
 -- options default to `false`
@@ -317,7 +309,7 @@ require("tinygit").setup {
 		moveToNextHunkOnStagingToggle = false,
 	},
 	commitMsg = {
-		commitPreview = true, -- requires nvim-notify
+		commitPreview = true, -- requires `nvim-notify` or `snacks.nvim`
 		spellcheck = false,
 		keepAbortedMsgSecs = 300,
 		inputFieldWidth = 72, -- `false` to use dressing.nvim config
@@ -330,8 +322,8 @@ require("tinygit").setup {
 			},
 		},
 		insertIssuesOnHash = {
-			-- Experimental. Typing `#` will insert the most recent open issue.
-			-- Requires nvim-notify.
+			-- Typing `#` will insert the most recent open issue.
+			-- Requires nvim-notify or snacks.nvim.
 			enabled = false,
 			next = "<Tab>", -- insert & normal mode
 			prev = "<S-Tab>",

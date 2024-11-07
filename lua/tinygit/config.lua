@@ -14,7 +14,7 @@ local defaultConfig = {
 		moveToNextHunkOnStagingToggle = false,
 	},
 	commitMsg = {
-		commitPreview = true, -- requires nvim-notify
+		commitPreview = true, -- requires `nvim-notify` or `snacks.nvim`
 		spellcheck = false,
 		keepAbortedMsgSecs = 300,
 		inputFieldWidth = 72, -- `false` to use dressing.nvim config
@@ -27,8 +27,8 @@ local defaultConfig = {
 			},
 		},
 		insertIssuesOnHash = {
-			-- Experimental. Typing `#` will insert the most recent open issue.
-			-- Requires nvim-notify.
+			-- Typing `#` will insert the most recent open issue.
+			-- Requires nvim-notify or snacks.nvim.
 			enabled = false,
 			next = "<Tab>", -- insert & normal mode
 			prev = "<S-Tab>",
