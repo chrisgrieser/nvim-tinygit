@@ -234,6 +234,16 @@ local function setupInputField(commitType)
 	end
 end
 
+local function postCommitNotifHighlights(bufnr, stageAllText, stagedAllChanges, extraInfo)
+	vim.defer_fn(function()
+		vim.api.nvim_buf_call(bufnr, function()
+			highlight.commitMsg()
+			if stagedAllChanges then vim.fn.matchadd("Comment", stageAllText) end
+			if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
+		end)
+	end, 1)
+end
+
 ---@param title string title for nvim-notify
 ---@param stagedAllChanges? boolean
 ---@param commitMsg string
@@ -245,18 +255,42 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 	if extraInfo then table.insert(lines, extraInfo) end
 	local text = table.concat(lines, "\n")
 
+	if package.loaded["snacks"] then
+		local snacksNotifyFt = require("snacks").config.get("styles", {}).notification.bo.filetype
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = snacksNotifyFt,
+			once = true,
+			callback = function(ctx)
+				postCommitNotifHighlights(ctx.buf, stageAllText, stagedAllChanges, extraInfo)
+			end,
+		})
+	end
+
 	u.notify(text, "info", title, {
+		-- `on_open` only used by nvim-notify
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
-
-			-- commit msg custom highlights
-			vim.api.nvim_buf_call(bufnr, function()
-				highlight.commitMsg()
-				if stagedAllChanges then vim.fn.matchadd("Comment", stageAllText) end
-				if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
-			end)
+			postCommitNotifHighlights(bufnr, stageAllText, stagedAllChanges, extraInfo)
 		end,
 	})
+end
+
+local function commitPreviewBufHighlights(bufnr, willStageAllChanges)
+	vim.defer_fn(function()
+		vim.api.nvim_buf_call(bufnr, function()
+			vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
+			vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
+			vim.fn.matchadd("Keyword", [[(new.*)]])
+			vim.fn.matchadd("Keyword", [[(gone.*)]])
+			vim.fn.matchadd("Comment", "│")
+
+			if not willStageAllChanges then
+				local specialWhitespace = " " -- HACK to force nvim-notify to keep the blank line
+				-- `\_.` matches any char, including newline
+				vim.fn.matchadd("Comment", specialWhitespace .. [[\_.*]])
+			end
+		end)
+	end, 1)
 end
 
 ---The notification makes it more transparent to the user what is going to be
@@ -276,6 +310,7 @@ local function showCommitPreview()
 			:gsub("\n[^\n]*$", "") -- remove summary line (footer)
 			:gsub(" | ", " │ ") -- pipes to full vertical bars
 			:gsub(" Bin ", "    ") -- binary icon
+			:gsub("\n +", "\n") -- remove leading spaces
 	end
 	-----------------------------------------------------------------------------
 
@@ -318,6 +353,15 @@ local function showCommitPreview()
 			or table.concat({ staged, specialWhitespace, "not staged:", notStaged }, "\n")
 	end
 
+	if snacksInstalled then
+		local snacksNotifyFt = require("snacks").config.get("styles", {}).notification.bo.filetype
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = snacksNotifyFt,
+			once = true,
+			callback = function(ctx) commitPreviewBufHighlights(ctx.buf, willStageAllChanges) end,
+		})
+	end
+
 	-- send notification
 	u.notify(changes, "info", title, {
 		-- `keep` and `id` are for `snacks.nvim`
@@ -328,18 +372,7 @@ local function showCommitPreview()
 		animate = false,
 		on_open = function(win)
 			local bufnr = vim.api.nvim_win_get_buf(win)
-			vim.api.nvim_buf_call(bufnr, function()
-				vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
-				vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
-				vim.fn.matchadd("Keyword", [[(new.*)]])
-				vim.fn.matchadd("Keyword", [[(gone.*)]])
-				vim.fn.matchadd("Comment", "│")
-
-				if not willStageAllChanges then
-					-- `\_.` matches any char, including newline
-					vim.fn.matchadd("Comment", specialWhitespace .. [[\_.*]])
-				end
-			end)
+			commitPreviewBufHighlights(bufnr, willStageAllChanges)
 		end,
 	})
 end
