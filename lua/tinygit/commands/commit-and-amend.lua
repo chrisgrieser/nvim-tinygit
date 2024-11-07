@@ -293,7 +293,8 @@ local function showCommitPreview()
 		if type(widthSetting) == "number" then
 			width = widthSetting
 		elseif widthSetting.max then
-			width = widthSetting.max < 1 and math.floor(vim.o.columns * widthSetting.max) or widthSetting.max
+			width = widthSetting.max < 1 and math.floor(vim.o.columns * widthSetting.max)
+				or widthSetting.max
 		end
 		width = width - 3
 	end
