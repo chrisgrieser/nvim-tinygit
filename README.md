@@ -34,19 +34,19 @@ operations.
 
 - [Installation](#installation)
 - [Commands](#commands)
-	* [Interactive Staging](#interactive-staging)
-	* [Smart-Commit](#smart-commit)
-	* [Amend, Fixup, and Squash Commits](#amend-fixup-and-squash-commits)
-	* [Undo Last Commit/Amend](#undo-last-commitamend)
-	* [GitHub Interaction](#github-interaction)
-	* [Push & PR](#push--pr)
-	* [Explore the History of a File, Function, or Line ("git pickaxe")](#explore-the-history-of-a-file-function-or-line-git-pickaxe)
-	* [Stash](#stash)
+  * [Interactive Staging](#interactive-staging)
+  * [Smart-Commit](#smart-commit)
+  * [Amend, Fixup, and Squash Commits](#amend-fixup-and-squash-commits)
+  * [Undo Last Commit/Amend](#undo-last-commitamend)
+  * [GitHub Interaction](#github-interaction)
+  * [Push & PR](#push--pr)
+  * [Explore the History of a File, Function, or Line ("git pickaxe")](#explore-the-history-of-a-file-function-or-line-git-pickaxe)
+  * [Stash](#stash)
 - [Statusline Components](#statusline-components)
-	* [Git Blame](#git-blame)
-	* [Branch State](#branch-state)
+  * [Git Blame](#git-blame)
+  * [Branch State](#branch-state)
 - [Configuration](#configuration)
-- [About me](#about-me)
+- [Credits](#credits)
 
 <!-- tocstop -->
 
@@ -57,12 +57,13 @@ operations.
 
 **Optional/Recommended Requirements**
 - Treesitter parser for syntax highlighting: `TSInstall gitcommit`
-- `nvim-notify` or `snacks.nvim` for the commit preview, issue number insertion,
+- `nvim-notify` OR `snacks.nvim` for the commit preview, issue number insertion,
   and various notifications
-- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) or
-  [fzf-lua](https://github.com/ibhagwan/fzf-lua) for better UI when selecting
-  commits or issues/PRs.
+- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) OR
+  [fzf-lua](https://github.com/ibhagwan/fzf-lua) for nicer UI when selecting
+  commits, issues, or PRs.
 - `telescope` is required for interactive staging.
+- GitHub-related features require `curl`.
 
 ```lua
 -- lazy.nvim
@@ -192,7 +193,6 @@ require("tinygit").issuesAndPrs { type = "all", state = "all" }
 -- open that issue/PR
 require("tinygit").openIssueUnderCursor()
 ```
-
 
 **GitHub URL**
 Opens the current file at GitHub in the browser and copy the URL to the system

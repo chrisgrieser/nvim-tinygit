@@ -36,6 +36,31 @@ local function hasNoChanges()
 	return noChanges
 end
 
+---@param highlightingFunc function
+local function setupNotificationHighlights(highlightingFunc)
+	if not (package.loaded["snacks"] or package.loaded["notify"]) then return end
+
+	-- determine snacks.nvim notification filetype
+	local snacksInstalled, snacks = pcall(require, "snacks")
+	local snacksFt = "snacks_notif"
+	if snacksInstalled then
+		local snacksOpts = snacks.config.get("styles", {})
+		local userFt = snacksOpts.notification
+			and snacksOpts.notification.bo
+			and snacksOpts.notification.bo.filetype
+		if userFt then snacksFt = userFt end
+	end
+
+	-- call highlighting function in notification buffer
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = { snacksFt, "noice", "notify" },
+		once = true,
+		callback = function(ctx)
+			vim.defer_fn(function() vim.api.nvim_buf_call(ctx.buf, highlightingFunc) end, 1)
+		end,
+	})
+end
+
 ---process a commit message: length, not empty, adheres to conventional commits
 ---@param commitMsg string
 ---@nodiscard
@@ -92,19 +117,16 @@ local function insertIssueNumber(mode)
 	local issue = M.state.openIssues[M.state.curIssue]
 
 	-- notification
+	setupNotificationHighlights(highlight.issueText)
 	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
 	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
 		-- `ft`, `keep` and `id` are for `snacks.nvim`
 		ft = "text",
 		id = "tinygit.issue-notification",
 		keep = function() return true end,
-		-- `replace`, `timeout`, and `on_open` are for `nvim-notify`
+		-- `replace`, and `timeout` are for `nvim-notify`
 		timeout = false,
 		replace = M.state.issueNotif and M.state.issueNotif.id, ---@diagnostic disable-line: undefined-field
-		on_open = function(win)
-			local buf = vim.api.nvim_win_get_buf(win)
-			vim.api.nvim_buf_call(buf, highlight.issueText)
-		end,
 	})
 
 	-- update text
@@ -211,8 +233,8 @@ local function setupInputField(commitType)
 	})
 
 	-- SETUP BRIEFLY SAVING MESSAGE WHEN ABORTING COMMIT
-	-- Only relevant for smartCommit, since amendNoEdit has no commitMsg and
-	-- amendOnlyMsg uses different prefilled message.
+	-- Only relevant for `smartCommit`, since `amendNoEdit` has no commitMsg and
+	-- `amendOnlyMsg` uses a prefilled message.
 	if commitType == "smartCommit" then
 		vim.api.nvim_create_autocmd("WinClosed", {
 			callback = function(ctx)
@@ -235,16 +257,6 @@ local function setupInputField(commitType)
 	end
 end
 
-local function postCommitNotifHighlights(bufnr, stageAllText, stagedAllChanges, extraInfo)
-	vim.defer_fn(function()
-		vim.api.nvim_buf_call(bufnr, function()
-			highlight.commitMsg()
-			if stagedAllChanges then vim.fn.matchadd("Comment", stageAllText) end
-			if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
-		end)
-	end, 1)
-end
-
 ---@param title string title for nvim-notify
 ---@param stagedAllChanges? boolean
 ---@param commitMsg string
@@ -256,55 +268,22 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 	if extraInfo then table.insert(lines, extraInfo) end
 	local text = table.concat(lines, "\n")
 
-	if package.loaded["snacks"] then
-		local snacksNotifyFt = require("snacks").config.get("styles", {}).notification.bo.filetype
-		vim.api.nvim_create_autocmd("FileType", {
-			pattern = snacksNotifyFt,
-			once = true,
-			callback = function(ctx)
-				postCommitNotifHighlights(ctx.buf, stageAllText, stagedAllChanges, extraInfo)
-			end,
-		})
-	end
+	setupNotificationHighlights(function()
+		highlight.commitMsg()
+		if stagedAllChanges then vim.fn.matchadd("Comment", stageAllText) end
+		if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
+	end)
 
 	u.notify(text, "info", title, {
-		-- `ft` only for `snacks.nvim`
-		ft = "text",
-		-- `on_open` only used by nvim-notify
-		on_open = function(win)
-			local bufnr = vim.api.nvim_win_get_buf(win)
-			postCommitNotifHighlights(bufnr, stageAllText, stagedAllChanges, extraInfo)
-		end,
+		ft = "text", -- `ft` only for `snacks.nvim`
 	})
 end
 
-local function commitPreviewBufHighlights(bufnr, willStageAllChanges)
-	vim.defer_fn(function()
-		vim.api.nvim_buf_call(bufnr, function()
-			vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
-			vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
-			vim.fn.matchadd("Keyword", [[(new.*)]])
-			vim.fn.matchadd("Keyword", [[(gone.*)]])
-			vim.fn.matchadd("Comment", "│")
-
-			if not willStageAllChanges then
-				local specialWhitespace = " " -- HACK to force nvim-notify to keep the blank line
-				-- `\_.` matches any char, including newline
-				vim.fn.matchadd("Comment", specialWhitespace .. [[\_.*]])
-			end
-		end)
-	end, 1)
-end
-
----The notification makes it more transparent to the user what is going to be
----committed. (This is similar to the commented out lines at the bottom of a git
----message in the terminal.)
----@return number|nil -- nil if no notification is shown
 local function showCommitPreview()
 	local config = require("tinygit.config").config.commitMsg
-	local notifyInstalled, notifyNvim = pcall(require, "notify")
-	local snacksInstalled, _ = pcall(require, "snacks")
-	if not (config.commitPreview and (notifyInstalled or snacksInstalled)) then return end
+	if not (config.commitPreview and (package.loaded["notify"] or package.loaded["snacks"])) then
+		return
+	end
 
 	---@param gitStatsArgs string[]
 	local function cleanupStatsOutput(gitStatsArgs)
@@ -318,23 +297,27 @@ local function showCommitPreview()
 	-----------------------------------------------------------------------------
 
 	-- INFO get width defined by user to avoid overflow/wrapped lines
-	local width = 50
-	if notifyInstalled then
-		local _, notifyConfig = notifyNvim.instance() ---@diagnostic disable-line: missing-parameter
+	local width
+	if package.loaded["notify"] then
+		local _, notifyConfig = require("notify").instance() ---@diagnostic disable-line: missing-parameter
 		if notifyConfig and notifyConfig.max_width then
+			-- max_width can be number, nil, or function, see #6
 			local max_width = type(notifyConfig.max_width) == "number" and notifyConfig.max_width
 				or notifyConfig.max_width()
-			width = max_width - 3
+			width = max_width - 3 -- account of notification borders/padding
+		else
+			-- default max width is unset, minimum width is 50
+			width = 50
 		end
-	elseif snacksInstalled then
-		local widthSetting = require("snacks").config.get("notifier", {}).width
-		if type(widthSetting) == "number" then
-			width = widthSetting
-		elseif widthSetting.max then
-			width = widthSetting.max < 1 and math.floor(vim.o.columns * widthSetting.max)
-				or widthSetting.max
+	elseif package.loaded["snacks"] then
+		local widthSetting = require("snacks").config.get("notifier", {})
+		if widthSetting and widthSetting.width and widthSetting.width.max then
+			width = widthSetting.width.max
+			if width < 1 then width = math.floor(vim.o.columns * width) end
+		else
+			-- default is 0.4 https://github.com/folke/snacks.nvim/blob/f5602e60c325f0c60eb6f2869a7222beb88a773c/lua/snacks/notifier.lua#L77C29-L77C32
+			width = math.floor(vim.o.columns * 0.4)
 		end
-		width = width - 3
 	end
 
 	-- get changes
@@ -356,43 +339,42 @@ local function showCommitPreview()
 			or table.concat({ staged, specialWhitespace, "not staged:", notStaged }, "\n")
 	end
 
-	if snacksInstalled then
-		local snacksNotifyFt = require("snacks").config.get("styles", {}).notification.bo.filetype
-		vim.api.nvim_create_autocmd("FileType", {
-			pattern = snacksNotifyFt,
-			once = true,
-			callback = function(ctx) commitPreviewBufHighlights(ctx.buf, willStageAllChanges) end,
-		})
-	end
+	setupNotificationHighlights(function()
+		vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
+		vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
+		vim.fn.matchadd("Keyword", [[(new.*)]])
+		vim.fn.matchadd("Keyword", [[(gone.*)]])
+		vim.fn.matchadd("Comment", "│")
 
-	-- send notification
+		if not willStageAllChanges then
+			-- `\_.` matches any char, including newline
+			vim.fn.matchadd("Comment", specialWhitespace .. [[\_.*]])
+		end
+	end)
+
 	u.notify(changes, "info", title, {
-		-- `ft`, `keep` and `id` are for `snacks.nvim`
+		-- `ft`, `keep` and `id` only for `snacks.nvim`
 		ft = "text",
 		id = "tinygit.commit-preview",
 		keep = function() return true end,
-		-- `animate`, `timeout`, and `on_open` are for `nvim-notify`
+		-- `animate`, `timeout` only for `nvim-notify`
 		timeout = false, -- keep shown, only remove when input window closed
 		animate = false,
-		on_open = function(win)
-			local bufnr = vim.api.nvim_win_get_buf(win)
-			commitPreviewBufHighlights(bufnr, willStageAllChanges)
-		end,
 	})
 end
 
 local function closeNotifications()
 	local opts = require("tinygit.config").config.commitMsg
-	if opts.commitPreview or M.state.issueNotif then
-		if package.loaded["notify"] then
-			-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
-			require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
-			M.state.issueNotif = nil
-		elseif package.loaded["snacks"] then
-			-- https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md#snacksnotifierhide
-			require("snacks").notifier.hide("tinygit.issue-notification")
-			require("snacks").notifier.hide("tinygit.commit-preview")
-		end
+	if not (opts.commitPreview or M.state.issueNotif) then return end
+
+	if package.loaded["notify"] then
+		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
+		require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
+		M.state.issueNotif = nil
+	elseif package.loaded["snacks"] then
+		-- https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md#snacksnotifierhide
+		require("snacks").notifier.hide("tinygit.issue-notification")
+		require("snacks").notifier.hide("tinygit.commit-preview")
 	end
 end
 
