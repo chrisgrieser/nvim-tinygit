@@ -30,8 +30,7 @@ local function pushCmd(opts)
 		gitCommand,
 		{ detach = true, text = true },
 		vim.schedule_wrap(function(result)
-			local out = vim.trim((result.stdout or "") .. (result.stderr or ""))
-				:gsub("\n%s+", "\n") -- fix leading spacing
+			local out = vim.trim((result.stdout or "") .. (result.stderr or "")):gsub("\n%s+", "\n") -- fix leading spacing
 			local commitRange = out:match("%x+%.%.%x+")
 
 			-- notify
