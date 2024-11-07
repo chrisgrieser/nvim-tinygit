@@ -30,13 +30,13 @@ local function pushCmd(opts)
 		gitCommand,
 		{ detach = true, text = true },
 		vim.schedule_wrap(function(result)
-			local out = (result.stdout or "") .. (result.stderr or "")
+			local out = vim.trim((result.stdout or "") .. (result.stderr or ""))
+				:gsub("\n%s+", "\n") -- fix leading spacing
 			local commitRange = out:match("%x+%.%.%x+")
 
 			-- notify
 			if result.code == 0 then
-				local numOfPushedCommits = u.syncShellCmd({ "git", "rev-list", "--count", commitRange })
-					:gsub("\n +", "\n") -- remove leading spaces
+				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
 				if numOfPushedCommits ~= "" then
 					local plural = numOfPushedCommits ~= "1" and "s" or ""
 					out = out .. ("\n(%s commit%s)"):format(numOfPushedCommits, plural)
