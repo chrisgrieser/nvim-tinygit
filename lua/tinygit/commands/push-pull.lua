@@ -38,10 +38,11 @@ local function pushCmd(opts)
 				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
 				if numOfPushedCommits ~= "" then
 					local plural = numOfPushedCommits ~= "1" and "s" or ""
-					out = out .. ("\n(%s commit%s)"):format(numOfPushedCommits, plural)
+					-- `[]` together with `ft=markdown` -> simple highlighting for `snacks.nvim`
+					out = out .. ("\n[%s commit%s]"):format(numOfPushedCommits, plural)
 				end
 			end
-			u.notify(out, result.code == 0 and "info" or "error", "Push")
+			u.notify(out, result.code == 0 and "info" or "error", "Push", { ft = "markdown" })
 
 			-- sound
 			if config.confirmationSound and jit.os == "OSX" then

@@ -120,8 +120,7 @@ local function insertIssueNumber(mode)
 	setupNotificationHighlights(highlight.issueText)
 	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
 	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
-		-- `ft`, `keep` and `id` are for `snacks.nvim`
-		ft = "text",
+		-- `keep` and `id` are for `snacks.nvim`
 		id = "tinygit.issue-notification",
 		keep = function() return true end,
 		-- `replace`, and `timeout` are for `nvim-notify`
@@ -274,9 +273,7 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 		if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
 	end)
 
-	u.notify(text, "info", title, {
-		ft = "text", -- `ft` only for `snacks.nvim`
-	})
+	u.notify(text, "info", title)
 end
 
 local function showCommitPreview()
@@ -353,8 +350,7 @@ local function showCommitPreview()
 	end)
 
 	u.notify(changes, "info", title, {
-		-- `ft`, `keep` and `id` only for `snacks.nvim`
-		ft = "text",
+		-- `keep` and `id` only for `snacks.nvim`
 		id = "tinygit.commit-preview",
 		keep = function() return true end,
 		-- `animate`, `timeout` only for `nvim-notify`

@@ -10,7 +10,10 @@ function M.notify(body, level, title, extraOpts)
 	local notifyTitle = title and pluginName .. ": " .. title or pluginName
 	local notifyLevel = level and vim.log.levels[level:upper()] or vim.log.levels.INFO
 
-	local baseOpts = { title = notifyTitle }
+	local baseOpts = {
+		title = notifyTitle,
+		ft = "text", -- `ft` only for `snacks.nvim`
+	}
 	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
 	return vim.notify(vim.trim(body), notifyLevel, opts)
 end
