@@ -341,7 +341,9 @@ local function showCommitPreview()
 		vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
 		vim.fn.matchadd("Keyword", [[(new.*)]])
 		vim.fn.matchadd("Keyword", [[(gone.*)]])
-		vim.fn.matchadd("Comment", "│")
+		vim.fn.matchadd("Comment", "│") -- vertical separator
+		vim.fn.matchadd("Function", ".*/") -- directory of a file
+		vim.fn.matchadd("WarningMsg", "/")
 
 		if not willStageAllChanges then
 			-- `\_.` matches any char, including newline
