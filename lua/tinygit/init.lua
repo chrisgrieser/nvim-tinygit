@@ -10,14 +10,12 @@ local M = {}
 -- code base on the plugin's initialization.
 --------------------------------------------------------------------------------
 
+---@param userConfig? Tinygit.Config
+function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig) end
+
 setmetatable(M, {
 	__index = function(_, key)
 		return function(...)
-			if key == "setup" then
-				require("tinygit.config").setupPlugin(...)
-				return
-			end
-
 			local cmdToModuleMap = {
 				interactiveStaging = "staging",
 				smartCommit = "commit-and-amend",

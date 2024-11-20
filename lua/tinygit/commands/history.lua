@@ -5,7 +5,7 @@ local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
----@class (exact) historyState
+---@class (exact) Tinygit.historyState
 ---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field absPath string
 ---@field query string search query pickaxed for
@@ -14,6 +14,8 @@ local u = require("tinygit.shared.utils")
 ---@field lnum? number only for line history
 ---@field offset? number only for line history
 ---@field type? "file"|"function"|"line"
+
+---@type Tinygit.historyState
 local state = {
 	hashList = {},
 	absPath = "",

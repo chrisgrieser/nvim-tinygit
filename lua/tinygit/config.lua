@@ -1,7 +1,7 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----@class pluginConfig
+---@class Tinygit.Config
 local defaultConfig = {
 	staging = { -- requires telescope
 		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
@@ -85,7 +85,7 @@ local defaultConfig = {
 
 M.config = defaultConfig -- in case user does not call `setup`
 
----@param userConfig? pluginConfig
+---@param userConfig? Tinygit.Config
 function M.setupPlugin(userConfig)
 	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig or {})
 

@@ -2,7 +2,7 @@ local M = {}
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
----@class (exact) Hunk
+---@class (exact) Tinygit.Hunk
 ---@field absPath string
 ---@field relPath string
 ---@field lnum number
@@ -10,7 +10,7 @@ local u = require("tinygit.shared.utils")
 ---@field removed number
 ---@field patch string
 ---@field alreadyStaged boolean
----@field fileMode FileMode
+---@field fileMode Tinygit.FileMode
 
 ---@param msg string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
@@ -37,7 +37,7 @@ end
 
 ---@param diffCmdStdout string
 ---@param diffIsOfStaged boolean
----@return Hunk[] hunks
+---@return Tinygit.Hunk[] hunks
 local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 	local splitOffDiffHeader = require("tinygit.shared.diff").splitOffDiffHeader
 
@@ -49,7 +49,7 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 	-- flattened list of hunks, each with their own diff header, so they work as
 	-- independent patches. Those patches in turn are needed for `git apply`
 	-- stage only part of a file.
-	---@type Hunk[]
+	---@type Tinygit.Hunk[]
 	local hunks = {}
 	for _, file in ipairs(changesPerFile) do
 		if not vim.startswith(file, "diff --git a/") then -- first file still has this
@@ -75,7 +75,7 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 		-- special case: file renamed without any other changes
 		-- (needs to be handled separately because it has no hunks, that is no `@@` lines)
 		if #changesInFile == 0 and (fileMode == "renamed" or fileMode == "binary") then
-			---@type Hunk
+			---@type Tinygit.Hunk
 			local hunkObj = {
 				absPath = absPath,
 				relPath = relPath,
@@ -102,7 +102,7 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 			-- needs trailing newline for valid patch
 			local patch = diffHeader .. "\n" .. hunk .. "\n"
 
-			---@type Hunk
+			---@type Tinygit.Hunk
 			local hunkObj = {
 				absPath = absPath,
 				relPath = relPath,
@@ -120,7 +120,7 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 end
 
 -- `git apply` to stage only part of a file https://stackoverflow.com/a/66618356/22114136
----@param hunk Hunk
+---@param hunk Tinygit.Hunk
 ---@param mode "toggle" | "reset"
 ---@return boolean success
 function M.applyPatch(hunk, mode)

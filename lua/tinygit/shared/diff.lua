@@ -1,7 +1,7 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----@enum (key) FileMode
+---@enum (key) Tinygit.FileMode
 local FILEMODES = {
 	new = 0,
 	deleted = 1,
@@ -18,7 +18,7 @@ local FILEMODES = {
 ---@param diffLines string[]
 ---@return string[] headerLines
 ---@return string[] outputWithoutHeader
----@return FileMode fileMode
+---@return Tinygit.FileMode fileMode
 ---@return { from?: string, to?: string } rename
 ---@nodiscard
 function M.splitOffDiffHeader(diffLines)

@@ -12,7 +12,7 @@ local conf = require("tinygit.config").config.staging
 local setDiffBuffer = require("tinygit.shared.diff").setDiffBuffer
 --------------------------------------------------------------------------------
 
----@param hunks Hunk[]
+---@param hunks Tinygit.Hunk[]
 local function newFinder(hunks)
 	return finders.new_table {
 		results = hunks,
@@ -27,7 +27,7 @@ local function newFinder(hunks)
 
 			-- format: status, filename, lnum, added, removed
 			entry.display = function(_entry)
-				---@type Hunk
+				---@type Tinygit.Hunk
 				local h = _entry.value
 				local changeWithoutHunk = h.lnum == -1
 
@@ -65,7 +65,7 @@ local function newFinder(hunks)
 	}
 end
 
----@param hunks Hunk[]
+---@param hunks Tinygit.Hunk[]
 ---@param prompt_bufnr number
 local function refreshPicker(hunks, prompt_bufnr)
 	-- temporarily register a callback which keeps selection on refresh
@@ -102,7 +102,7 @@ end
 --------------------------------------------------------------------
 
 -- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
----@param hunks Hunk[]
+---@param hunks Tinygit.Hunk[]
 function M.pickHunk(hunks)
 	pickers
 		.new({}, {
@@ -122,7 +122,7 @@ function M.pickHunk(hunks)
 			-- DOCS `:help telescope.previewers`
 			previewer = previewers.new_buffer_previewer {
 				---@param self table
-				---@param entry { value: Hunk }
+				---@param entry { value: Tinygit.Hunk }
 				define_preview = function(self, entry)
 					local bufnr = self.state.bufnr
 					local hunk = entry.value
@@ -130,7 +130,7 @@ function M.pickHunk(hunks)
 					local ft = getFiletype(hunk.absPath)
 					setDiffBuffer(bufnr, diffLines, ft, false)
 				end,
-				---@param entry { value: Hunk }
+				---@param entry { value: Tinygit.Hunk }
 				dyn_title = function(_, entry)
 					local hunk = entry.value
 					if hunk.added + hunk.removed == 0 then return hunk.relPath end -- renamed w/o changes
