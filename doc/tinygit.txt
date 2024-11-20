@@ -392,6 +392,7 @@ The `setup` call is optional.
             enabled = true,
             blend = 50, -- 0-100
         },
+        mainIcon = "󰊢",
     }
 <
 
