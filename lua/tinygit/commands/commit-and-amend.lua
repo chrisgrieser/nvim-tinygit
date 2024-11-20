@@ -501,33 +501,29 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	setupInputField()
 	local icon = require("tinygit.config").config.mainIcon
 	local prompt = vim.trim(icon .. "Amend only message")
-	vim.ui.input(
-		{ prompt = prompt, default = msgNeedsFixing },
-		function(commitMsg)
-			if not commitMsg then return end -- aborted input modal
-			local validMsg, processedMsg = processCommitMsg(commitMsg)
-			if not validMsg then -- if msg invalid, run again to fix the msg
-				M.amendOnlyMsg(opts, processedMsg)
-				return
-			end
-
-			-- commit
-			local result = vim.system({ "git", "commit", "--amend", "-m", processedMsg }):wait()
-			if u.nonZeroExit(result) then return end
-
-			-- push & notification
-			local branchInfo = vim.system({ "git", "branch", "--verbose" }):wait().stdout or ""
-			local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
-			local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…"
-				or nil
-			postCommitNotif("Amend only message", false, processedMsg, extra)
-			if opts.forcePushIfDiverged and prevCommitWasPushed then
-				push({ forceWithLease = true }, true)
-			end
-
-			updateStatusline()
+	vim.ui.input({ prompt = prompt, default = msgNeedsFixing }, function(commitMsg)
+		if not commitMsg then return end -- aborted input modal
+		local validMsg, processedMsg = processCommitMsg(commitMsg)
+		if not validMsg then -- if msg invalid, run again to fix the msg
+			M.amendOnlyMsg(opts, processedMsg)
+			return
 		end
-	)
+
+		-- commit
+		local result = vim.system({ "git", "commit", "--amend", "-m", processedMsg }):wait()
+		if u.nonZeroExit(result) then return end
+
+		-- push & notification
+		local branchInfo = vim.system({ "git", "branch", "--verbose" }):wait().stdout or ""
+		local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
+		local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force Pushing…" or nil
+		postCommitNotif("Amend only message", false, processedMsg, extra)
+		if opts.forcePushIfDiverged and prevCommitWasPushed then
+			push({ forceWithLease = true }, true)
+		end
+
+		updateStatusline()
+	end)
 end
 
 ---@param opts? { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }

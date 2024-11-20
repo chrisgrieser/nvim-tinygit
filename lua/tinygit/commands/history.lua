@@ -441,7 +441,8 @@ function M.functionHistory()
 
 			-- prompt to select a commit that changed that function/method
 			local prompt = vim.trim(icon .. " Select function:")
-			vim.ui.select(funcNames,
+			vim.ui.select(
+				funcNames,
 				{ prompt = prompt, kind = "tinygit.functionSelect" },
 				function(funcname)
 					if not funcname then return end -- aborted
