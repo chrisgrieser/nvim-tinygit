@@ -13,6 +13,7 @@ function M.notify(body, level, title, extraOpts)
 	local baseOpts = {
 		title = notifyTitle,
 		ft = "text", -- `ft` only for `snacks.nvim`
+		icon = require("tinygit.config").config.mainIcon,
 	}
 	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
 	return vim.notify(vim.trim(body), notifyLevel, opts)

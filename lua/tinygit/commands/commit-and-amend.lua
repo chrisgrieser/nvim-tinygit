@@ -396,11 +396,12 @@ function M.smartCommit(opts, msgNeedsFixing)
 	local title = "Commit"
 	if doStageAllChanges then title = "Stage All · " .. title end
 	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
+	title = vim.trim("󰊢 " .. title)
 
 	showCommitPreview()
 	setupInputField("smartCommit")
 
-	vim.ui.input({ prompt = "󰊢 " .. title, default = prefillMsg }, function(commitMsg)
+	vim.ui.input({ prompt = title, default = prefillMsg }, function(commitMsg)
 		closeNotifications()
 
 		-- abort
@@ -498,8 +499,10 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	end
 
 	setupInputField()
+	local icon = require("tinygit.config").config.mainIcon
+	local prompt = vim.trim(icon .. "Amend only message")
 	vim.ui.input(
-		{ prompt = "󰊢 Amend only message", default = msgNeedsFixing },
+		{ prompt = prompt, default = msgNeedsFixing },
 		function(commitMsg)
 			if not commitMsg then return end -- aborted input modal
 			local validMsg, processedMsg = processCommitMsg(commitMsg)
@@ -552,8 +555,10 @@ function M.fixupCommit(opts)
 	showCommitPreview()
 	local autocmdId = selectCommit.setupAppearance()
 	local title = opts.squashInstead and "Squash" or "Fixup"
+	local icon = require("tinygit.config").config.mainIcon
+	local prompt = vim.trim(("%s Select commit to %s"):format(icon, title))
 	vim.ui.select(commits, {
-		prompt = ("󰊢 Select Commit to %s"):format(title),
+		prompt = prompt,
 		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)

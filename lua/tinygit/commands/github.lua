@@ -146,14 +146,14 @@ function M.issuesAndPrs(opts)
 
 	local type = opts.type == "all" and "Issue/PR" or opts.type
 	local autocmdId = issueListAppearance()
+	local icon = require("tinygit.config").config.mainIcon
 	vim.ui.select(issues, {
-		prompt = (" Select %s (%s)"):format(type, opts.state),
+		prompt = vim.trim(("%s Select %s (%s)"):format(icon, type, opts.state)),
 		kind = "tinygit.githubIssue",
 		format_item = issueListFormatter,
 	}, function(choice)
 		vim.api.nvim_del_autocmd(autocmdId)
-		if not choice then return end
-		vim.ui.open(choice.html_url)
+		if choice then vim.ui.open(choice.html_url) end
 	end)
 end
 

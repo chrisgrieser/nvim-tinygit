@@ -295,8 +295,9 @@ local function selectFromCommits(commitList)
 	-- select commit
 	local autocmdId = selectCommit.setupAppearance()
 	local searchMode = state.query == "" and vim.fs.basename(state.absPath) or state.query
+	local icon = require("tinygit.config").config.mainIcon
 	vim.ui.select(commits, {
-		prompt = ('󰊢 Commits that changed "%s"'):format(searchMode),
+		prompt = vim.trim(("%s Commits that changed %q"):format(icon, searchMode)),
 		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.history",
 	}, function(_, commitIdx)
@@ -327,7 +328,9 @@ function M.searchFileHistory()
 		end,
 	})
 
-	vim.ui.input({ prompt = "󰊢 Search File History" }, function(query)
+	local icon = require("tinygit.config").config.mainIcon
+	local prompt = vim.trim(icon .. " Search File History")
+	vim.ui.input({ prompt = prompt }, function(query)
 		if not query then return end -- aborted
 
 		-- GUARD loop back when unshallowing is still running
@@ -360,6 +363,8 @@ function M.searchFileHistory()
 end
 
 function M.functionHistory()
+	local icon = require("tinygit.config").config.mainIcon
+
 	---@param funcname? string -- nil: aborted
 	local function selectFromFunctionHistory(funcname)
 		if not funcname or funcname == "" then return end
@@ -387,8 +392,6 @@ function M.functionHistory()
 	state.ft = vim.bo.filetype
 	state.type = "function"
 
-	-- TODO figure out how to query treesitter for function names, and use
-	-- treesitter instead?
 	local lspWithSymbolSupport = false
 	local clients = vim.lsp.get_clients { bufnr = 0 }
 	for _, client in pairs(clients) do
@@ -399,7 +402,8 @@ function M.functionHistory()
 	end
 
 	if not lspWithSymbolSupport then
-		vim.ui.input({ prompt = "󰊢 Search History of Function named:" }, function(funcname)
+		local prompt = vim.trim(icon .. " Search function history")
+		vim.ui.input({ prompt = prompt }, function(funcname)
 			if not funcname then return end -- aborted
 
 			-- GUARD loop back when unshallowing is still running
@@ -436,9 +440,9 @@ function M.functionHistory()
 			end, funcsObjs)
 
 			-- prompt to select a commit that changed that function/method
-			vim.ui.select(
-				funcNames,
-				{ prompt = "󰊢 Select Function:", kind = "tinygit.functionSelect" },
+			local prompt = vim.trim(icon .. " Select function:")
+			vim.ui.select(funcNames,
+				{ prompt = prompt, kind = "tinygit.functionSelect" },
 				function(funcname)
 					if not funcname then return end -- aborted
 

@@ -374,6 +374,7 @@ require("tinygit").setup {
 		enabled = true,
 		blend = 50, -- 0-100
 	},
+	mainIcon = "󰊢",
 }
 ```
 

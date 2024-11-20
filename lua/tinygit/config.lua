@@ -5,7 +5,7 @@ local M = {}
 local defaultConfig = {
 	staging = { -- requires telescope
 		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
-		stagedIndicator = "✜ ",
+		stagedIndicator = "󰐖 ",
 		keymaps = { -- insert & normal mode
 			stagingToggle = "<Space>", -- stage/unstage hunk
 			gotoHunk = "<CR>",
@@ -45,7 +45,7 @@ local defaultConfig = {
 	},
 	historySearch = {
 		diffPopup = {
-			width = 0.8, -- float, 0 to 1
+			width = 0.8, -- between 0-1
 			height = 0.8,
 			border = "single",
 		},
@@ -79,6 +79,7 @@ local defaultConfig = {
 		enabled = true,
 		blend = 50, -- 0-100
 	},
+	mainIcon = "󰊢",
 }
 
 --------------------------------------------------------------------------------
