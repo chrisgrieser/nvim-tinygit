@@ -126,7 +126,7 @@ function M.issuesAndPrs(opts)
 	local rawJSON = vim.system({ "curl", "-sL", rawJsonUrl }):wait().stdout or ""
 	local issues = vim.json.decode(rawJSON)
 	if not issues then
-		u.notify("Failed to fetch issues.", "error")
+		u.notify("Failed to fetch issues.", "warn")
 		return
 	end
 	if issues and opts.type ~= "all" then
@@ -164,7 +164,8 @@ function M.openIssueUnderCursor()
 
 	local cword = vim.fn.expand("<cword>")
 	if not cword:match("^#%d+$") then
-		u.notify("Word under cursor is not an issue id of the form `#123`", "warn")
+		local msg = "Word under cursor is not an issue id of the form `#123`"
+		u.notify(msg, "warn", nil, { ft = "markdown" })
 		return
 	end
 
