@@ -4,19 +4,21 @@ local M = {}
 ---@param body string
 ---@param level? "info"|"trace"|"debug"|"warn"|"error"
 ---@param title? string
----@param extraOpts? table for nvim-notify or snacks.nvim
+---@param extraOpts? table for `nvim-notify` / `snacks.nvim`
 function M.notify(body, level, title, extraOpts)
-	local pluginName = "tinygit"
-	local notifyTitle = title and pluginName .. ": " .. title or pluginName
-	local notifyLevel = level and vim.log.levels[level:upper()] or vim.log.levels.INFO
+	if not level then level = "info" end
 
 	local baseOpts = {
-		title = notifyTitle,
-		ft = "text", -- `ft` only for `snacks.nvim`
+		title = title and "tinygit: " .. title or "tinygit",
+		ft = "text", -- `ft` and `icon` only for `snacks.nvim`
 		icon = require("tinygit.config").config.mainIcon,
 	}
 	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
-	return vim.notify(vim.trim(body), notifyLevel, opts)
+
+	-- since nvim-notify does not support the `icon` field that snacks.nvim
+	if package.loaded["notify"] then opts.title = vim.trim(opts.icon .. opts.title) end
+
+	return vim.notify(vim.trim(body), vim.log.levels[level:upper()], opts)
 end
 
 ---checks if command was successful, if not, notifies
