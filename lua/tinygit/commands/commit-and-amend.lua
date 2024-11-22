@@ -393,15 +393,16 @@ function M.smartCommit(opts, msgNeedsFixing)
 	-- conditions is fulfilled, we can safely push after committing.
 	local cleanAfterCommit = hasNoUnstagedChanges() or doStageAllChanges
 
-	local title = "Commit"
-	if doStageAllChanges then title = "Stage All · " .. title end
-	if cleanAfterCommit and opts.pushIfClean then title = title .. " · Push" end
-	title = vim.trim("󰊢 " .. title)
+	local prompt = "Commit"
+	if doStageAllChanges then prompt = "Stage All · " .. prompt end
+	if cleanAfterCommit and opts.pushIfClean then prompt = prompt .. " · Push" end
+	local icon = require("tinygit.config").config.mainIcon
+	prompt = vim.trim(icon .. " " .. prompt)
 
 	showCommitPreview()
 	setupInputField("smartCommit")
 
-	vim.ui.input({ prompt = title, default = prefillMsg }, function(commitMsg)
+	vim.ui.input({ prompt = prompt, default = prefillMsg }, function(commitMsg)
 		closeNotifications()
 
 		-- abort
@@ -500,7 +501,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 
 	setupInputField()
 	local icon = require("tinygit.config").config.mainIcon
-	local prompt = vim.trim(icon .. "Amend only message")
+	local prompt = vim.trim(icon .. " Amend only message")
 	vim.ui.input({ prompt = prompt, default = msgNeedsFixing }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
 		local validMsg, processedMsg = processCommitMsg(commitMsg)
