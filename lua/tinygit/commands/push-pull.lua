@@ -32,6 +32,7 @@ local function pushCmd(opts)
 		vim.schedule_wrap(function(result)
 			local out = vim.trim((result.stdout or "") .. (result.stderr or "")):gsub("\n%s+", "\n") -- fix leading spacing
 			local commitRange = out:match("%x+%.%.%x+")
+			local ft
 
 			-- notify
 			if result.code == 0 then
@@ -40,9 +41,10 @@ local function pushCmd(opts)
 					local plural = numOfPushedCommits ~= "1" and "s" or ""
 					-- `[]` together with `ft=markdown` -> simple highlighting for `snacks.nvim`
 					out = out .. ("\n[%s commit%s]"):format(numOfPushedCommits, plural)
+					ft = "markdown" -- markdown to highlight the `[x commits]`
 				end
 			end
-			u.notify(out, result.code == 0 and "info" or "error", "Push", { ft = "markdown" })
+			u.notify(out, result.code == 0 and "info" or "error", "Push", { ft = ft })
 
 			-- sound
 			if config.confirmationSound and jit.os == "OSX" then
