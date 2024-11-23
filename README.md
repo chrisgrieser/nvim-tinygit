@@ -296,7 +296,7 @@ require("tinygit.statusline").branchState()
 The `setup` call is optional.
 
 > [!NOTE]
-> Recently, the config structure has been overhauled:
+> Recently (2024-11-23), the config structure has been overhauled:
 > - `staging` → `stage`
 > - `commitMsg` → `commit`
 >   + `commitMsg.commitPreview` → `commit.preview`

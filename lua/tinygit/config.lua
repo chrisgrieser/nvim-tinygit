@@ -106,7 +106,7 @@ function M.setupPlugin(userConfig)
 		or (M.config.commit and (M.config.commit.commitPreview or M.config.commit.insertIssuesOnHash))
 	then
 		---@diagnostic enable: undefined-field
-		local msg = [[Recently, the config structure has been overhauled:
+		local msg = [[The config structure has been overhauled:
 - `staging` → `stage`
 - `commitMsg` → `commit`
   - `commitMsg.commitPreview` → `commit.preview`
