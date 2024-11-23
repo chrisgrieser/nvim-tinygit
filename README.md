@@ -360,7 +360,7 @@ require("tinygit").setup {
 			ignoreAuthors = {}, -- hide component if these authors (useful for bots)
 			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
 			maxMsgLen = 40,
-			icon = "ﰖ ",
+			icon = "ﰖ",
 		},
 		branchState = {
 			icons = {
