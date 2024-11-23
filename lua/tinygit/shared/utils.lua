@@ -11,11 +11,11 @@ function M.notify(body, level, title, extraOpts)
 	local baseOpts = {
 		title = title and "tinygit: " .. title or "tinygit",
 		ft = "text", -- `ft` and `icon` only for `snacks.nvim`
-		icon = require("tinygit.config").config.mainIcon,
+		icon = require("tinygit.config").config.appearance.mainIcon,
 	}
 	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
 
-	-- since nvim-notify does not support the `icon` field that snacks.nvim
+	-- since `nvim-notify` does not support the `icon` field that snacks.nvim
 	if package.loaded["notify"] then opts.title = vim.trim(opts.icon .. opts.title) end
 
 	return vim.notify(vim.trim(body), vim.log.levels[level:upper()], opts)

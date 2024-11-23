@@ -45,7 +45,7 @@ local function repoIsShallow(callback)
 	if state.unshallowingRunning then return false end
 	if not u.inShallowRepo() then return false end
 
-	local config = require("tinygit.config").config.historySearch
+	local config = require("tinygit.config").config.history
 	if config.autoUnshallowIfNeeded then
 		notify("Auto-unshallowing: fetching repo history…")
 		state.unshallowingRunning = true
@@ -105,7 +105,7 @@ local function showDiff(commitIdx)
 	local type = state.type
 	local date = u.syncShellCmd { "git", "log", "--max-count=1", "--format=(%cr)", hash }
 	local commitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%s", hash }
-	local config = require("tinygit.config").config.historySearch
+	local config = require("tinygit.config").config.history
 
 	-- DETERMINE FILENAME (in case of renaming)
 	local filenameInPresent = state.absPath
@@ -295,7 +295,7 @@ local function selectFromCommits(commitList)
 	-- select commit
 	local autocmdId = selectCommit.setupAppearance()
 	local searchMode = state.query == "" and vim.fs.basename(state.absPath) or state.query
-	local icon = require("tinygit.config").config.mainIcon
+	local icon = require("tinygit.config").config.appearance.mainIcon
 	vim.ui.select(commits, {
 		prompt = vim.trim(("%s Commits that changed %q"):format(icon, searchMode)),
 		format_item = selectCommit.selectorFormatter,
@@ -328,7 +328,7 @@ function M.searchFileHistory()
 		end,
 	})
 
-	local icon = require("tinygit.config").config.mainIcon
+	local icon = require("tinygit.config").config.appearance.mainIcon
 	local prompt = vim.trim(icon .. " Search File History")
 	vim.ui.input({ prompt = prompt }, function(query)
 		if not query then return end -- aborted
@@ -363,7 +363,7 @@ function M.searchFileHistory()
 end
 
 function M.functionHistory()
-	local icon = require("tinygit.config").config.mainIcon
+	local icon = require("tinygit.config").config.appearance.mainIcon
 
 	---@param funcname? string -- nil: aborted
 	local function selectFromFunctionHistory(funcname)

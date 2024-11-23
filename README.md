@@ -295,10 +295,21 @@ require("tinygit.statusline").branchState()
 ## Configuration
 The `setup` call is optional.
 
+> [!NOTE]
+> Recently, the config structure has been overhauled:
+> - `staging` → `stage`
+> - `commitMsg` → `commit`
+>   + `commitMsg.commitPreview` → `commit.preview`
+>   + `commitMsg.insertIssuesOnHash` → `commit.insertIssuesOnHashSign`
+> - `historySearch` → `history`
+> - `issueIcons` → `github.icons`
+> - `backdrop` → `appearance.backdrop`
+> - `mainIcon` → `appearance.mainIcon`
+
 ```lua
 -- default config
 require("tinygit").setup {
-	staging = { -- requires telescope
+	stage = { -- requires `telescope.nvim`
 		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
 		stagedIndicator = "󰐖",
 		keymaps = { -- insert & normal mode
@@ -308,8 +319,8 @@ require("tinygit").setup {
 		},
 		moveToNextHunkOnStagingToggle = false,
 	},
-	commitMsg = {
-		commitPreview = true, -- requires `nvim-notify` or `snacks.nvim`
+	commit = {
+		preview = true, -- requires `nvim-notify` or `snacks.nvim`
 		spellcheck = false,
 		keepAbortedMsgSecs = 300,
 		inputFieldWidth = 72, -- `false` to use dressing.nvim config
@@ -321,9 +332,9 @@ require("tinygit").setup {
 				"perf", "style", "revert", "ci", "break", "improv",
 			},
 		},
-		insertIssuesOnHash = {
+		insertIssuesOnHashSign = {
 			-- Typing `#` will insert the most recent open issue.
-			-- Requires nvim-notify or snacks.nvim.
+			-- Requires `nvim-notify` or `snacks.nvim`.
 			enabled = false,
 			next = "<Tab>", -- insert & normal mode
 			prev = "<S-Tab>",
@@ -334,26 +345,35 @@ require("tinygit").setup {
 		preventPushingFixupOrSquashCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
 
-		-- Pushed commits contain references to issues, open those issues. 
+		-- Pushed commits contain references to issues, open those issues.
 		-- Not used when using force-push.
-		openReferencedIssues = false, 
+		openReferencedIssues = false,
 	},
-	historySearch = {
+	github = {
+		icons = {
+			openIssue = "🟢",
+			closedIssue = "🟣",
+			notPlannedIssue = "⚪",
+			openPR = "🟩",
+			mergedPR = "🟪",
+			draftPR = "⬜",
+			closedPR = "🟥",
+		},
+	},
+	history = {
 		diffPopup = {
-			width = 0.8, -- float, 0 to 1
+			width = 0.8, -- between 0-1
 			height = 0.8,
 			border = "single",
 		},
 		autoUnshallowIfNeeded = false,
 	},
-	issueIcons = {
-		openIssue = "🟢",
-		closedIssue = "🟣",
-		notPlannedIssue = "⚪",
-		openPR = "🟩",
-		mergedPR = "🟪",
-		draftPR = "⬜",
-		closedPR = "🟥",
+	appearance = { -- general plugin appearance
+		backdrop = {
+			enabled = true,
+			blend = 50, -- 0-100
+		},
+		mainIcon = "󰊢",
 	},
 	statusline = {
 		blame = {
@@ -370,11 +390,6 @@ require("tinygit").setup {
 			},
 		},
 	},
-	backdrop = {
-		enabled = true,
-		blend = 50, -- 0-100
-	},
-	mainIcon = "󰊢",
 }
 ```
 

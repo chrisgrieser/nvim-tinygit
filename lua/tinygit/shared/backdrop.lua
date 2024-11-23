@@ -7,8 +7,8 @@ local backdropName = "TinygitBackdrop"
 ---@param referenceZindex? number zindex of the reference window, where the backdrop should be placed below
 function M.new(referenceBuf, referenceZindex)
 	local config = require("tinygit.config").config
-	if not config.backdrop.enabled then return end
-	local blend = config.backdrop.blend
+	if not config.appearance.backdrop.enabled then return end
+	local blend = config.appearance.backdrop.blend
 
 	-- `DressingInput` has a zindex of 49: https://github.com/stevearc/dressing.nvim/blob/e3714c8049b2243e792492c4149e4cc395c68eb9/lua/dressing/input.lua#L369
 	-- `DressingSelect` has a zindex of 150: https://github.com/stevearc/dressing.nvim/blob/e3714c8049b2243e792492c4149e4cc395c68eb9/lua/dressing/select/builtin.lua#L96

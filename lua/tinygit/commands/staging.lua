@@ -30,7 +30,7 @@ function M.getContextSize()
 	-- hunks as with `gitsigns.nvim`. Since many small hunks are actually abit
 	-- cumbersome, and since it's discouraged by git anyway, we simply disallow
 	-- context=0 for now.
-	local contextSize = require("tinygit.config").config.staging.contextSize
+	local contextSize = require("tinygit.config").config.stage.contextSize
 	if contextSize < 1 then contextSize = 0 end
 	return contextSize
 end

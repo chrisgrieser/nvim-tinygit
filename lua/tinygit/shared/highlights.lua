@@ -19,7 +19,7 @@ function M.commitMsg(mode)
 	---manually mark conventional commits keywords, the parser assume the keyword to
 	---be the first word in the buffer, while we want to highlight it in lists of
 	---commits or in buffers where the commit message is placee somewhere else.
-	local cc = require("tinygit.config").config.commitMsg.conventionalCommits.keywords
+	local cc = require("tinygit.config").config.commit.conventionalCommits.keywords
 	local ccRegex = [[\v(]] .. table.concat(cc, "|") .. [[)(\(.{-}\))?!?\ze: ]]
 	vim.fn.matchadd("Title", ccRegex)
 

@@ -67,7 +67,7 @@ end
 ---@return boolean -- is the commit message valid?
 ---@return string -- the (modified) commit message
 local function processCommitMsg(commitMsg)
-	local config = require("tinygit.config").config.commitMsg
+	local config = require("tinygit.config").config.commit
 	commitMsg = vim.trim(commitMsg)
 	local commitMaxLen = 72
 
@@ -142,7 +142,7 @@ local function setupIssueInsertion(bufnr)
 	M.state.openIssues = {}
 	require("tinygit.commands.github").getOpenIssuesAsync()
 
-	local conf = require("tinygit.config").config.commitMsg.insertIssuesOnHash
+	local conf = require("tinygit.config").config.commit.insertIssuesOnHashSign
 	local keymap = vim.keymap.set
 
 	keymap("i", "#", function() insertIssueNumber("first") end, { buffer = bufnr })
@@ -152,7 +152,7 @@ end
 
 ---@param commitType? "smartCommit"
 local function setupInputField(commitType)
-	local opts = require("tinygit.config").config.commitMsg
+	local opts = require("tinygit.config").config.commit
 	local commitMaxLen = 72 -- hard git limit
 
 	local function overwriteDressingWidth(winid)
@@ -217,7 +217,9 @@ local function setupInputField(commitType)
 
 			-- fetch the issues now, so they are later available when typing `#`
 			local hasNotifyPlugin = (package.loaded["notify"] or package.loaded["snacks"])
-			if opts.insertIssuesOnHash.enabled and hasNotifyPlugin then setupIssueInsertion(bufnr) end
+			if opts.insertIssuesOnHashSign.enabled and hasNotifyPlugin then
+				setupIssueInsertion(bufnr)
+			end
 
 			-- activates styling for statusline plugins (e.g., filename icons)
 			vim.api.nvim_buf_set_name(bufnr, "COMMIT_EDITMSG")
@@ -275,8 +277,8 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 end
 
 local function showCommitPreview()
-	local config = require("tinygit.config").config.commitMsg
-	if not (config.commitPreview and (package.loaded["notify"] or package.loaded["snacks"])) then
+	local config = require("tinygit.config").config.commit
+	if not (config.preview and (package.loaded["notify"] or package.loaded["snacks"])) then
 		return
 	end
 
@@ -357,8 +359,8 @@ local function showCommitPreview()
 end
 
 local function closeNotifications()
-	local opts = require("tinygit.config").config.commitMsg
-	if not (opts.commitPreview or M.state.issueNotif) then return end
+	local opts = require("tinygit.config").config.commit
+	if not (opts.preview or M.state.issueNotif) then return end
 
 	if package.loaded["notify"] then
 		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
@@ -396,7 +398,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 	local prompt = "Commit"
 	if doStageAllChanges then prompt = "Stage All · " .. prompt end
 	if cleanAfterCommit and opts.pushIfClean then prompt = prompt .. " · Push" end
-	local icon = require("tinygit.config").config.mainIcon
+	local icon = require("tinygit.config").config.appearance.mainIcon
 	prompt = vim.trim(icon .. " " .. prompt)
 
 	showCommitPreview()
@@ -500,7 +502,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	end
 
 	setupInputField()
-	local icon = require("tinygit.config").config.mainIcon
+	local icon = require("tinygit.config").config.appearance.mainIcon
 	local prompt = vim.trim(icon .. " Amend only message")
 	vim.ui.input({ prompt = prompt, default = msgNeedsFixing }, function(commitMsg)
 		if not commitMsg then return end -- aborted input modal
@@ -552,7 +554,7 @@ function M.fixupCommit(opts)
 	showCommitPreview()
 	local autocmdId = selectCommit.setupAppearance()
 	local title = opts.squashInstead and "Squash" or "Fixup"
-	local icon = require("tinygit.config").config.mainIcon
+	local icon = require("tinygit.config").config.appearance.mainIcon
 	local prompt = vim.trim(("%s Select commit to %s"):format(icon, title))
 	vim.ui.select(commits, {
 		prompt = prompt,

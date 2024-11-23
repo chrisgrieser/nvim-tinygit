@@ -69,7 +69,7 @@ end
 ---@param issue table
 ---@return string
 local function issueListFormatter(issue)
-	local icons = require("tinygit.config").config.issueIcons
+	local icons = require("tinygit.config").config.github.issueIcons
 	local icon
 	if issue.pull_request then
 		if issue.draft then
@@ -146,7 +146,7 @@ function M.issuesAndPrs(opts)
 
 	local type = opts.type == "all" and "Issue/PR" or opts.type
 	local autocmdId = issueListAppearance()
-	local icon = require("tinygit.config").config.mainIcon
+	local icon = require("tinygit.config").config.appearance.mainIcon
 	vim.ui.select(issues, {
 		prompt = vim.trim(("%s Select %s (%s)"):format(icon, type, opts.state)),
 		kind = "tinygit.githubIssue",
@@ -191,7 +191,8 @@ end
 ---@async
 function M.getOpenIssuesAsync()
 	local repo = M.getGithubRemote("silent")
-	local numberToFetch = require("tinygit.config").config.commitMsg.insertIssuesOnHash.issuesToFetch
+	local numberToFetch =
+		require("tinygit.config").config.commit.insertIssuesOnHashSign.issuesToFetch
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
 	local baseUrl = ("https://api.github.com/repos/%s/issues"):format(repo)
