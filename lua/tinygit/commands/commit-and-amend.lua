@@ -479,7 +479,7 @@ function M.amendNoEdit(opts)
 	local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 	local extraInfo
 	if opts.forcePushIfDiverged and prevCommitWasPushed then
-		extraInfo = "Force Pushing…"
+		extraInfo = "Force pushing…"
 		push({ forceWithLease = true }, true)
 	end
 	postCommitNotif("Amend-no-edit", doStageAllChanges, lastCommitMsg, extraInfo)
