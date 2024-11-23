@@ -30,6 +30,7 @@ local state = {
 ---@param level? Tinygit.notifyLevel
 ---@param opts? Tinygit.notifyOpts
 local function notify(msg, level, opts)
+	if not opts then opts = {} end
 	opts.title = "History"
 	u.notify(msg, level, opts)
 end
