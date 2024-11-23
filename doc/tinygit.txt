@@ -314,9 +314,9 @@ CONFIGURATION                             *tinygit-nvim-tinygit-configuration*
 The `setup` call is optional.
 
 
-  [!NOTE] Recently, the config structure has been overhauled: - `staging` →
-  `stage` - `commitMsg` → `commit` + `commitMsg.commitPreview` →
-  `commit.preview` + `commitMsg.insertIssuesOnHash` →
+  [!NOTE] Recently (2024-11-23), the config structure has been overhauled: -
+  `staging` → `stage` - `commitMsg` → `commit` + `commitMsg.commitPreview`
+  → `commit.preview` + `commitMsg.insertIssuesOnHash` →
   `commit.insertIssuesOnHashSign` - `historySearch` → `history` - `issueIcons`
   → `github.icons` - `backdrop` → `appearance.backdrop` - `mainIcon` →
   `appearance.mainIcon`
