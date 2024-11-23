@@ -205,7 +205,6 @@ local function showDiff(commitIdx)
 
 	-- KEYMAPS
 	-- keymaps: closing
-	local keymap = vim.keymap.set
 	local opts = { buffer = bufnr, nowait = true }
 	local function closePopup()
 		if vim.api.nvim_win_is_valid(winnr) then vim.api.nvim_win_close(winnr, true) end
@@ -213,7 +212,7 @@ local function showDiff(commitIdx)
 		vim.o.ignorecase = ignoreCaseBefore
 		vim.o.smartcase = smartCaseBefore
 	end
-	keymap("n", "q", closePopup, opts)
+	vim.keymap.set("n", "q", closePopup, opts)
 
 	-- also close the popup on leaving buffer, ensures there is not leftover
 	-- buffer when user closes popup in a different way, such as `:close`.
@@ -223,7 +222,7 @@ local function showDiff(commitIdx)
 	})
 
 	-- keymaps: next/prev commit
-	keymap("n", "<Tab>", function()
+	vim.keymap.set("n", "<Tab>", function()
 		if commitIdx == #hashList then
 			notify("Already on last commit.", "warn")
 			return
@@ -231,7 +230,7 @@ local function showDiff(commitIdx)
 		closePopup()
 		showDiff(commitIdx + 1)
 	end, opts)
-	keymap("n", "<S-Tab>", function()
+	vim.keymap.set("n", "<S-Tab>", function()
 		if commitIdx == 1 then
 			notify("Already on first commit.", "warn")
 			return
@@ -240,13 +239,13 @@ local function showDiff(commitIdx)
 		showDiff(commitIdx - 1)
 	end, opts)
 
-	keymap("n", "R", function()
+	vim.keymap.set("n", "R", function()
 		closePopup()
 		restoreFileToCommit(hash)
 	end, opts)
 
 	-- keymaps: yank hash
-	keymap("n", "yh", function()
+	vim.keymap.set("n", "yh", function()
 		vim.fn.setreg("+", hash)
 		notify("Copied hash: " .. hash)
 	end, opts)
