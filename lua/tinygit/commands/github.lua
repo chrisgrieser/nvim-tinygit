@@ -140,7 +140,8 @@ function M.issuesAndPrs(opts)
 	if #issues == 0 then
 		local state = opts.state == "all" and "" or opts.state .. " "
 		local type = opts.type == "all" and "issues or PRs " or opts.type .. "s "
-		u.notify(("There are no %s%sfor this repo."):format(state, type), "warn")
+		local msg = ("There are no %s%sfor this repo."):format(state, type)
+		u.notify(msg, "warn")
 		return
 	end
 
@@ -165,7 +166,7 @@ function M.openIssueUnderCursor()
 	local cword = vim.fn.expand("<cword>")
 	if not cword:match("^#%d+$") then
 		local msg = "Word under cursor is not an issue id of the form `#123`"
-		u.notify(msg, "warn", nil, { ft = "markdown" })
+		u.notify(msg, "warn", { ft = "markdown" })
 		return
 	end
 

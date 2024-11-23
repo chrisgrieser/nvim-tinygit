@@ -11,7 +11,7 @@ function M.undoLastCommitOrAmend()
 	local lastChangeType = vim.trim(vim.split(lastReflogLine, ":")[2])
 	if not lastChangeType:find("commit") then
 		local msg = ("Aborting: Last operation was %q, not a commit or amend."):format(lastChangeType)
-		u.notify(msg, "warn", "Undo Last Commit/Amend")
+		u.notify(msg, "warn", { title = "Undo last commit/amend" })
 		return
 	end
 
@@ -19,7 +19,7 @@ function M.undoLastCommitOrAmend()
 	if u.nonZeroExit(result) then return end
 	local infoText = vim.trim(result.stdout)
 
-	u.notify(infoText, "info", "Undo Last Commit/Amend")
+	u.notify(infoText, "info", { title = "Undo last commit/amend" })
 	vim.cmd.checktime() -- updates the current buffer
 	updateStatusline()
 end

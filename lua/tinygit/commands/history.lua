@@ -27,11 +27,11 @@ local state = {
 --------------------------------------------------------------------------------
 
 ---@param msg string
----@param level? "info"|"trace"|"debug"|"warn"|"error"
----@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
-local function notify(msg, level, extraOpts)
-	---@diagnostic disable-next-line: param-type-mismatch diagnostic is wrong
-	u.notify(msg, level, "Git History", extraOpts)
+---@param level? Tinygit.notifyLevel
+---@param opts? Tinygit.notifyOpts
+local function notify(msg, level, opts)
+	opts.title = "History"
+	u.notify(msg, level, opts)
 end
 
 ---If `autoUnshallowIfNeeded = true`, will also run `git fetch --unshallow` and

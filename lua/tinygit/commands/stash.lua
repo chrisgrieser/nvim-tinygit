@@ -10,7 +10,7 @@ function M.stashPush()
 	local infoText = vim.trim(result.stdout):gsub("^Saved working directory and index state ", "")
 	local stashStat = u.syncShellCmd { "git", "stash", "show", "0" }
 
-	u.notify(infoText .. "\n" .. stashStat, "info", "Stash Push")
+	u.notify(infoText .. "\n" .. stashStat, "info", { title = "Stash push" })
 	vim.cmd.checktime() -- reload this file from disk
 end
 
@@ -21,7 +21,7 @@ function M.stashPop()
 	if u.nonZeroExit(result) then return end
 	local infoText = vim.trim(result.stdout)
 
-	u.notify(infoText, "info", "Stash Pop")
+	u.notify(infoText, "info", { title = "Stash pop" })
 	vim.cmd.checktime() -- reload this file from disk
 end
 

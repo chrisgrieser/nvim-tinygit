@@ -13,9 +13,12 @@ local u = require("tinygit.shared.utils")
 ---@field fileMode Tinygit.FileMode
 
 ---@param msg string
----@param level? "info"|"trace"|"debug"|"warn"|"error"
----@param extraOpts? { on_open?: function, timeout?: boolean|number, animate?: boolean }
-local function notify(msg, level, extraOpts) u.notify(msg, level, "Staging", extraOpts) end
+---@param level? Tinygit.notifyLevel
+---@param opts? Tinygit.notifyOpts
+local function notify(msg, level, opts)
+	opts.title = "Staging"
+	u.notify(msg, level, opts)
+end
 
 --------------------------------------------------------------------------------
 

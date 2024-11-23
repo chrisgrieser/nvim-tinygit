@@ -1,19 +1,30 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----@param body string
----@param level? "info"|"trace"|"debug"|"warn"|"error"
----@param title? string
----@param extraOpts? table for `nvim-notify` / `snacks.nvim`
-function M.notify(body, level, title, extraOpts)
-	if not level then level = "info" end
+---@alias Tinygit.notifyLevel "info"|"trace"|"debug"|"warn"|"error"
 
-	local baseOpts = {
-		title = title and "tinygit: " .. title or "tinygit",
-		ft = "text", -- `ft` and `icon` only for `snacks.nvim`
-		icon = require("tinygit.config").config.appearance.mainIcon,
-	}
-	local opts = vim.tbl_extend("force", baseOpts, extraOpts or {})
+---@class Tinygit.notifyOpts
+---@field title? string
+---@field timeout? number|boolean
+---@field ft? string snacks.nvim
+---@field icon? string snacks.nvim
+---@field id? string snacks.nvim
+---@field animate? boolean nvim-notify
+---@field on_open? function nvim-notify
+---@field replace? number nvim-notify
+
+---@param body string
+---@param level? Tinygit.notifyLevel
+---@param opts? Tinygit.notifyOpts
+function M.notify(body, level, opts)
+	if not level then level = "info" end
+	if not opts then opts = {} end
+
+	opts.title = opts.title and "tinygit: " .. opts.title or "tinygit"
+
+	-- `ft` and `icon` only for `snacks.nvim`
+	if not opts.ft then opts.ft = "text" end
+	if not opts.icon then opts.icon = require("tinygit.config").config.appearance.mainIcon end
 
 	-- since `nvim-notify` does not support the `icon` field that snacks.nvim
 	if package.loaded["notify"] then opts.title = vim.trim(opts.icon .. opts.title) end
@@ -36,7 +47,7 @@ end
 ---@return boolean
 function M.notInGitRepo()
 	local notInRepo = vim.system({ "git", "rev-parse", "--is-inside-work-tree" }):wait().code ~= 0
-	if notInRepo then M.notify("Not in Git Repo", "error") end
+	if notInRepo then M.notify("Not in a git repo", "error") end
 	return notInRepo
 end
 

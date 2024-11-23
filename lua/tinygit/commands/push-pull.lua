@@ -44,7 +44,7 @@ local function pushCmd(opts)
 					ft = "markdown" -- markdown to highlight the `[x commits]`
 				end
 			end
-			u.notify(out, result.code == 0 and "info" or "error", "Push", { ft = ft })
+			u.notify(out, result.code == 0 and "info" or "error", { ft = ft, title = "Push" })
 
 			-- sound
 			if config.confirmationSound and jit.os == "OSX" then
@@ -77,16 +77,16 @@ function M.push(opts, calledByCommitFunc)
 			u.syncShellCmd { "git", "log", "--oneline", "--grep=^fixup!", "--grep=^squash!" }
 		if fixupOrSquashCommits ~= "" then
 			local msg = "Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits
-			u.notify(msg, "warn", "Push")
+			u.notify(msg, "warn", { title = "Push" })
 			return
 		end
 	end
 	if not opts then opts = {} end
-	local title = opts.forceWithLease and "Force Push" or "Push"
+	local title = opts.forceWithLease and "Force push" or "Push"
 
 	-- extra notification when called by user
 	if not calledByCommitFunc then
-		if opts.pullBefore then title = "Pull & " .. title end
+		if opts.pullBefore then title = "Pull & " .. title:lower() end
 		u.notify(title .. "…", "info")
 	end
 
@@ -103,12 +103,12 @@ function M.push(opts, calledByCommitFunc)
 		local noAutoSetupRemote = u.syncShellCmd { "git", "config", "--get", "push.autoSetupRemote" }
 			== "false"
 		if noAutoSetupRemote then
-			u.notify("There is no tracking branch. Aborting push.", "warn", title)
+			u.notify("There is no tracking branch. Aborting push.", "warn", { title = title })
 			return
 		end
 		if opts.pullBefore then
 			local msg = "Not pulling since not tracking any branch. Skipping to push."
-			u.notify(msg, "info", title)
+			u.notify(msg, "info", { title = title })
 			pushCmd(opts)
 			return
 		end
@@ -128,7 +128,7 @@ function M.push(opts, calledByCommitFunc)
 				or out:find("Successfully rebased and updated")
 			if not silenceMsg then
 				local severity = result.code == 0 and "info" or "error"
-				u.notify(out, severity, "Pull")
+				u.notify(out, severity, { title = "Pull" })
 			end
 
 			-- update buffer in case the pull changed it

@@ -115,7 +115,7 @@ function M.setupPlugin(userConfig)
 - `issueIcons` → `github.icons`
 - `backdrop` → `appearance.backdrop`
 - `mainIcon` → `appearance.mainIcon`]]
-		require("tinygit.shared.utils").notify(msg, "warn", nil, { ft = "markdown" })
+		require("tinygit.shared.utils").notify(msg, "warn", { ft = "markdown" })
 	end
 
 	-- VALIDATE border `none` does not work with and title/footer used by this plugin

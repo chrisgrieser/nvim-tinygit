@@ -72,10 +72,10 @@ local function processCommitMsg(commitMsg)
 	local commitMaxLen = 72
 
 	if #commitMsg > commitMaxLen then
-		u.notify("Commit Message too long.", "warn")
+		u.notify("Commit message too long.", "warn")
 		return false, commitMsg
 	elseif commitMsg == "" then
-		u.notify("Commit Message empty.", "warn")
+		u.notify("Commit message empty.", "warn")
 		return false, ""
 	end
 
@@ -119,7 +119,8 @@ local function insertIssueNumber(mode)
 	-- notification
 	setupNotificationHighlights(highlight.issueText)
 	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
-	M.state.issueNotif = u.notify(msg, "info", "Referenced Issue", {
+	M.state.issueNotif = u.notify(msg, "info", {
+		title = "Referenced issue",
 		timeout = false,
 		id = "tinygit.issue-notification", -- only `snacks.nvim`
 		-- `replace` only for `nvim-notify`
@@ -256,7 +257,7 @@ local function setupInputField(commitType)
 	end
 end
 
----@param title string title for nvim-notify
+---@param title string
 ---@param stagedAllChanges? boolean
 ---@param commitMsg string
 ---@param extraInfo? string extra lines to display
@@ -273,7 +274,7 @@ local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
 		if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
 	end)
 
-	u.notify(text, "info", title)
+	u.notify(text, "info", { title = title })
 end
 
 local function showCommitPreview()
@@ -319,14 +320,14 @@ local function showCommitPreview()
 
 	-- get changes
 	local gitStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. tostring(width) }
-	local title = "Commit Preview"
+	local title = "Commit preview"
 	local willStageAllChanges = hasNoStagedChanges()
 	local changes
 	local specialWhitespace = " " -- HACK to force nvim-notify to keep the blank line
 	if willStageAllChanges then
 		u.intentToAddUntrackedFiles() -- include new files in diff stats
 
-		title = "Stage & " .. title
+		title = "Stage & " .. title:lower()
 		changes = cleanupStatsOutput(gitStatsCmd)
 	else
 		local notStaged = cleanupStatsOutput(gitStatsCmd)
@@ -351,7 +352,8 @@ local function showCommitPreview()
 		end
 	end)
 
-	u.notify(changes, "info", title, {
+	u.notify(changes, "info", {
+		title = title,
 		timeout = false, -- keep shown, only remove when input window closed
 		id = "tinygit.commit-preview", -- only `snacks.nvim`
 		animate = false, -- only `nvim-notify`
@@ -396,8 +398,8 @@ function M.smartCommit(opts, msgNeedsFixing)
 	local cleanAfterCommit = hasNoUnstagedChanges() or doStageAllChanges
 
 	local prompt = "Commit"
-	if doStageAllChanges then prompt = "Stage All · " .. prompt end
-	if cleanAfterCommit and opts.pushIfClean then prompt = prompt .. " · Push" end
+	if doStageAllChanges then prompt = "Stage all · " .. prompt:lower() end
+	if cleanAfterCommit and opts.pushIfClean then prompt = prompt .. " · push" end
 	local icon = require("tinygit.config").config.appearance.mainIcon
 	prompt = vim.trim(icon .. " " .. prompt)
 
@@ -436,7 +438,7 @@ function M.smartCommit(opts, msgNeedsFixing)
 		elseif opts.pushIfClean and not cleanAfterCommit then
 			extra = "Not pushing since repo still dirty."
 		end
-		postCommitNotif("Smart Commit", doStageAllChanges, processedMsg, extra)
+		postCommitNotif("Smart commit", doStageAllChanges, processedMsg, extra)
 
 		-- push
 		if opts.pushIfClean and cleanAfterCommit then
@@ -480,7 +482,7 @@ function M.amendNoEdit(opts)
 		extraInfo = "Force Pushing…"
 		push({ forceWithLease = true }, true)
 	end
-	postCommitNotif("Amend-No-Edit", doStageAllChanges, lastCommitMsg, extraInfo)
+	postCommitNotif("Amend-no-edit", doStageAllChanges, lastCommitMsg, extraInfo)
 	updateStatusline()
 end
 
@@ -491,7 +493,7 @@ function M.amendOnlyMsg(opts, msgNeedsFixing)
 	-- GUARD
 	if u.notInGitRepo() then return end
 	if not hasNoStagedChanges() then
-		u.notify("Aborting: There are staged changes.", "warn", "Amend Only Msg")
+		u.notify("Aborting: There are staged changes.", "warn", { title = "Amend only message" })
 		return
 	end
 	if not opts then opts = {} end
@@ -579,7 +581,7 @@ function M.fixupCommit(opts)
 		-- commit
 		local commitResult = vim.system({ "git", "commit", fixupOrSquash, hash }):wait()
 		if u.nonZeroExit(commitResult) then return end
-		u.notify(commitResult.stdout, "info", title .. " Commit")
+		u.notify(commitResult.stdout, "info", { title = title .. " commit" })
 
 		-- rebase
 		if opts.autoRebase then
@@ -594,7 +596,7 @@ function M.fixupCommit(opts)
 				hash .. "^", -- rebase up until the selected commit
 			}):wait()
 			if u.nonZeroExit(_result) then return end
-			u.notify("Auto-rebase applied.", "info", title .. " Commit")
+			u.notify("Auto-rebase applied.", "info", { title = title .. " commit" })
 		end
 		updateStatusline()
 	end)
