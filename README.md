@@ -300,7 +300,7 @@ The `setup` call is optional.
 require("tinygit").setup {
 	staging = { -- requires telescope
 		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
-		stagedIndicator = "✜ ",
+		stagedIndicator = "󰐖",
 		keymaps = { -- insert & normal mode
 			stagingToggle = "<Space>", -- stage/unstage hunk
 			gotoHunk = "<CR>",

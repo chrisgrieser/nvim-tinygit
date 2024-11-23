@@ -47,6 +47,7 @@ local function newFinder(hunks)
 				end
 				local status = h.alreadyStaged and conf.stagedIndicator
 					or (" "):rep(vim.api.nvim_strwidth(conf.stagedIndicator))
+				status = status .. " " -- padding
 
 				local out = status .. name .. location .. added .. del
 				local statPos = #status + #name + #location
