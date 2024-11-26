@@ -1,6 +1,17 @@
 *nvim-tinygit.txt*           For Neovim          Last change: 2024 November 26
 
 ==============================================================================
+Table of Contents                             *nvim-tinygit-table-of-contents*
+
+1. nvim-tinygit                                    |nvim-tinygit-nvim-tinygit|
+  - Feature Overview              |nvim-tinygit-nvim-tinygit-feature-overview|
+  - Installation                      |nvim-tinygit-nvim-tinygit-installation|
+  - Commands                              |nvim-tinygit-nvim-tinygit-commands|
+  - Statusline Components    |nvim-tinygit-nvim-tinygit-statusline-components|
+  - Configuration                    |nvim-tinygit-nvim-tinygit-configuration|
+  - Credits                                |nvim-tinygit-nvim-tinygit-credits|
+
+==============================================================================
 1. nvim-tinygit                                    *nvim-tinygit-nvim-tinygit*
 
 
