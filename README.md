@@ -181,7 +181,9 @@ require("tinygit").undoLastCommitOrAmend()
 - If there was a `push` operation done as a followup (such as `.smartCommit {
   pushIfClean = false }`), the last commit is not undone.
 
+<!-- LTeX: enabled=false -->
 ### GitHub interaction
+<!-- LTeX: enabled=true -->
 **Search issues & PRs**
 - Requires `curl`.
 
@@ -245,10 +247,11 @@ The type of history search depends on the mode `.searchHistory` is called from:
 	* Note that [`git` uses heuristics to determine the enclosing function of
 	  a change](https://news.ycombinator.com/item?id=38153309), so this is not
 	  100% perfect and has varying reliability across languages.
-	- Another caveat is that for function history, git unfortunately does not
-	  support searching across file renamings.
+	- Caveat: for function history, git does not support to follow renamings of
+	  the file or function name.
 - **Visual line mode**: line range history (`git log -L`).
 	- Uses the selected lines as the line range.
+	- Caveat: for line history, git does not support to follow file renamings.
 
 **Keymaps in the diff popup**
 - `<Tab>`: show older commit
@@ -267,7 +270,9 @@ require("tinygit").stashPop()
 
 ## Statusline components
 
+<!-- LTeX: enabled=false -->
 ### git blame
+<!-- LTeX: enabled=true -->
 Shows the message and date (`git blame`) of the last commit that changed the
 current *file* (not line).
 
@@ -368,12 +373,12 @@ require("tinygit").setup {
 		},
 		autoUnshallowIfNeeded = false,
 	},
-	appearance = { -- general plugin appearance
+	appearance = {
+		mainIcon = "󰊢",
 		backdrop = {
 			enabled = true,
 			blend = 50, -- 0-100
 		},
-		mainIcon = "󰊢",
 	},
 	statusline = {
 		blame = {

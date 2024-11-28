@@ -376,8 +376,8 @@ local function functionHistory()
 	state.query = funcname
 
 	-- select from commits
+	-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 	local result = vim.system({
-		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 		"git",
 		"log",
 		"--format=" .. selectCommit.gitlogFormat,
@@ -405,8 +405,8 @@ local function lineHistory()
 	state.lnum = lnum
 	state.offset = offset
 
+	-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 	local result = vim.system({
-		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
 		"git",
 		"log",
 		"--format=" .. selectCommit.gitlogFormat,

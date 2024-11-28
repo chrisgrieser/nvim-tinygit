@@ -62,12 +62,12 @@ local defaultConfig = {
 		},
 		autoUnshallowIfNeeded = false,
 	},
-	appearance = { -- general plugin appearance
+	appearance = {
+		mainIcon = "󰊢",
 		backdrop = {
 			enabled = true,
 			blend = 50, -- 0-100
 		},
-		mainIcon = "󰊢",
 	},
 	statusline = {
 		blame = {
@@ -94,7 +94,7 @@ M.config = defaultConfig -- in case user does not call `setup`
 function M.setupPlugin(userConfig)
 	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig or {})
 
-	-- DEPRECATION
+	-- DEPRECATION (2024-11-23)
 	---@diagnostic disable: undefined-field
 	if
 		M.config.staging
