@@ -221,28 +221,34 @@ require("tinygit").push {
 require("tinygit").createGitHubPr()
 ```
 
-### Explore the History of a File, Function, or Line ("git pickaxe")
-Search the git history. Select from the matching commits to open a popup with a
-diffview of the changes.
+### Search file history
+Search the git history of the current file. Select from the matching commits to
+open a popup with a diffview of the changes.
 
-- Search the git **history of the current file** (`git log -G`).
-	* The search is case-insensitive and supports regex.
-	* Correctly follows file renamings, and displays past file names in the commit
-	  selection.
+If the config `history.autoUnshallowIfNeeded` is set to `true`, will also
+automatically un-shallow the repo if needed.
+
+```lua
+require("tinygit").fileHistory()
+```
+
+The type of history search depends on the mode `.searchHistory` is called from:
+- **Normal mode**: search history for a string (`git log -G`)
+	- Correctly follows file renamings, and displays past file names in the
+	  commit selection.
+	* The search input is case-insensitive and supports regex.
 	* Leave the input field empty to display *all* commits that changed the
 	  current file.
-- Explore the **history of a function in the current file** (`git log -L`).
-	* The search is literal.
-	* If the current buffer has an LSP with support for document symbols
-	  attached, you can select a function. (Otherwise, you are prompted to
-	  enter a function name.)
-	* Note that [`git` uses heuristics to determine the enclosing function of a
-	  change](https://news.ycombinator.com/item?id=38153309), so this is not
+- **Visual mode**: function history (`git log -L`).
+	- The selected text is assumed to be the name of the function whose history
+	  you want to explore.
+	* Note that [`git` uses heuristics to determine the enclosing function of
+	  a change](https://news.ycombinator.com/item?id=38153309), so this is not
 	  100% perfect and has varying reliability across languages.
-- Go through the **history of the current line (range)** (`git log -L`).
-	* In normal mode, searches the history of the line under the cursor.
-	* When called in visual mode, searches the history of the selected line
-	  range.
+	- Another caveat is that for function history, git unfortunately does not
+	  support searching across file renamings.
+- **Visual line mode**: line range history (`git log -L`).
+	- Uses the selected lines as the line range.
 
 **Keymaps in the diff popup**
 - `<Tab>`: show older commit
@@ -250,12 +256,6 @@ diffview of the changes.
 - `yh`: yank the commit hash to the system clipboard
 - `R`: restore file to state at commit
 - `n`/`N`: go to the next/previous occurrence of the query (only file history)
-
-```lua
-require("tinygit").searchFileHistory()
-require("tinygit").functionHistory()
-require("tinygit").lineHistory()
-```
 
 ### Stash
 Simple wrappers around `git stash push` and `git stash pop`.
@@ -299,8 +299,8 @@ The `setup` call is optional.
 > Recently (2024-11-23), the config structure has been overhauled:
 > - `staging` → `stage`
 > - `commitMsg` → `commit`
->   + `commitMsg.commitPreview` → `commit.preview`
->   + `commitMsg.insertIssuesOnHash` → `commit.insertIssuesOnHashSign`
+>   * `commitMsg.commitPreview` → `commit.preview`
+>   * `commitMsg.insertIssuesOnHash` → `commit.insertIssuesOnHashSign`
 > - `historySearch` → `history`
 > - `issueIcons` → `github.icons`
 > - `backdrop` → `appearance.backdrop`

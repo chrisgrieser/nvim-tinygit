@@ -6,14 +6,14 @@ local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@class (exact) Tinygit.historyState
----@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field absPath string
----@field query string search query pickaxed for
 ---@field ft string
+---@field type? "stringSearch"|"function"|"line"
 ---@field unshallowingRunning boolean
+---@field query string search query or function name
+---@field hashList string[] ordered list of all hashes where the string/function was found
 ---@field lnum? number only for line history
 ---@field offset? number only for line history
----@field type? "file"|"function"|"line"
 
 ---@type Tinygit.historyState
 local state = {
@@ -42,33 +42,33 @@ end
 ---called once the auto-unshallowing is done.
 ---@param callback? function called when auto-unshallowing is done
 ---@return boolean whether the repo is shallow
+---@async
 local function repoIsShallow(callback)
-	if state.unshallowingRunning then return false end
-	if not u.inShallowRepo() then return false end
+	if state.unshallowingRunning or not u.inShallowRepo() then return false end
 
-	local config = require("tinygit.config").config.history
-	if config.autoUnshallowIfNeeded then
-		notify("Auto-unshallowing: fetching repo history…")
-		state.unshallowingRunning = true
-
-		-- run async, to allow user input while waiting for the command
-		vim.system(
-			{ "git", "fetch", "--unshallow" },
-			{},
-			vim.schedule_wrap(function(out)
-				if u.nonZeroExit(out) then return end
-				state.unshallowingRunning = false
-				notify("Auto-unshallowing done.")
-				if callback then callback() end
-			end)
-		)
-		if callback then return true end -- original call can be aborting, since callback is called
-		return false
-	else
+	local autoUnshallow = require("tinygit.config").config.history.autoUnshallowIfNeeded
+	if not autoUnshallow then
 		local msg = "Aborting: Repository is shallow.\nRun `git fetch --unshallow`."
 		notify(msg, "warn")
 		return true
 	end
+
+	notify("Auto-unshallowing: fetching repo history…")
+	state.unshallowingRunning = true
+
+	-- run async, to allow user input while waiting for the command
+	vim.system(
+		{ "git", "fetch", "--unshallow" },
+		{},
+		vim.schedule_wrap(function(out)
+			if u.nonZeroExit(out) then return end
+			state.unshallowingRunning = false
+			notify("Auto-unshallowing done.")
+			if callback then callback() end
+		end)
+	)
+	if callback then return true end -- original call aborted, callback will be called
+	return false
 end
 
 ---@param hash string
@@ -128,7 +128,7 @@ local function showDiff(commitIdx)
 	-- DIFF COMMAND
 	local diffCmd = { "git", "-C", gitroot }
 	local args = {}
-	if type == "file" then
+	if type == "stringSearch" then
 		args = { "show", "--format=", hash, "--", nameAtCommit }
 	elseif type == "function" or type == "line" then
 		args = { "log", "--format=", "--max-count=1", hash }
@@ -162,7 +162,7 @@ local function showDiff(commitIdx)
 		"yh: yank hash",
 		"R: restore to commit",
 	}
-	if query ~= "" and type == "file" then table.insert(footer, "n/N: next/prev occ.") end
+	if query ~= "" and type == "stringSearch" then table.insert(footer, "n/N: next/prev occ.") end
 	local footerText = table.concat(footer, "  ")
 
 	local maxMsgLen = absWidth - #date - 3
@@ -192,7 +192,7 @@ local function showDiff(commitIdx)
 	-- search for the query
 	local ignoreCaseBefore = vim.o.ignorecase
 	local smartCaseBefore = vim.o.smartcase
-	if query ~= "" and type == "file" then
+	if query ~= "" and type == "stringSearch" then
 		-- consistent with git's `--regexp-ignore-case`
 		vim.o.ignorecase = true
 		vim.o.smartcase = false
@@ -267,7 +267,7 @@ local function selectFromCommits(commitList)
 	-- This only compares basenames, file movements are not accounted
 	-- for, however this is for display purposes only, so this is not a problem.
 	local commits = {}
-	if state.type == "file" then
+	if state.type == "stringSearch" then
 		local oneCommitPer3Lines = vim.split(commitList, "\n")
 		for i = 1, #oneCommitPer3Lines, 3 do
 			local commitLine = oneCommitPer3Lines[i]
@@ -308,12 +308,11 @@ end
 
 --------------------------------------------------------------------------------
 
-function M.searchFileHistory()
-	if u.notInGitRepo() or repoIsShallow() then return end
-	state.absPath = vim.api.nvim_buf_get_name(0)
-	state.ft = vim.bo.filetype
-	state.type = "file"
+---@param prefill? string only needed when recursively calling this function
+local function searchHistoryForString(prefill)
+	if repoIsShallow() then return end
 
+	-- add backdrop and footer to input field
 	vim.api.nvim_create_autocmd("FileType", {
 		once = true,
 		pattern = "DressingInput",
@@ -328,15 +327,16 @@ function M.searchFileHistory()
 		end,
 	})
 
+	-- prompt for a search query
 	local icon = require("tinygit.config").config.appearance.mainIcon
 	local prompt = vim.trim(icon .. " Search File History")
-	vim.ui.input({ prompt = prompt }, function(query)
+	vim.ui.input({ prompt = prompt, default = prefill }, function(query)
 		if not query then return end -- aborted
 
 		-- GUARD loop back when unshallowing is still running
 		if state.unshallowingRunning then
 			notify("Unshallowing still running. Please wait a moment.", "warn")
-			M.searchFileHistory()
+			searchHistoryForString(query) -- call this function again, preserving current query
 			return
 		end
 
@@ -358,140 +358,52 @@ function M.searchFileHistory()
 		end
 		local result = vim.system(args):wait()
 		if u.nonZeroExit(result) then return end
+
 		selectFromCommits(result.stdout)
 	end)
 end
 
-function M.functionHistory()
-	local icon = require("tinygit.config").config.appearance.mainIcon
+local function functionHistory()
+	-- INFO in case of auto-unshallowing, will abort this call and be called
+	-- again once auto-unshallowing is done.
+	if repoIsShallow(functionHistory) then return end
 
-	---@param funcname? string -- nil: aborted
-	local function selectFromFunctionHistory(funcname)
-		if not funcname or funcname == "" then return end
+	-- get selection
+	local startLn, startCol = unpack(vim.api.nvim_buf_get_mark(0, "<"))
+	local endLn, endCol = unpack(vim.api.nvim_buf_get_mark(0, ">"))
+	local selection = vim.api.nvim_buf_get_text(0, startLn - 1, startCol, endLn - 1, endCol + 1, {})
+	local funcname = table.concat(selection, "\n")
+	state.query = funcname
 
-		local result = vim.system({
-			-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
-			"git",
-			"log",
-			"--format=" .. selectCommit.gitlogFormat,
-			("-L:%s:%s"):format(funcname, state.absPath),
-			"--no-patch",
-		}):wait()
-		if u.nonZeroExit(result) then return end
-		selectFromCommits(result.stdout)
-	end
+	-- select from commits
+	local result = vim.system({
+		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
+		"git",
+		"log",
+		"--format=" .. selectCommit.gitlogFormat,
+		("-L:%s:%s"):format(funcname, state.absPath),
+		"--no-patch",
+	}):wait()
+	if u.nonZeroExit(result) then return end
 
-	-- GUARD
-	if u.notInGitRepo() or repoIsShallow() then return end
-	if vim.tbl_contains({ "json", "yaml", "toml", "css" }, vim.bo.ft) then
-		notify(vim.bo.ft .. " does not have any functions.", "warn")
-		return
-	end
-
-	state.absPath = vim.api.nvim_buf_get_name(0)
-	state.ft = vim.bo.filetype
-	state.type = "function"
-
-	local lspWithSymbolSupport = false
-	local clients = vim.lsp.get_clients { bufnr = 0 }
-	for _, client in pairs(clients) do
-		if client.server_capabilities.documentSymbolProvider then
-			lspWithSymbolSupport = true
-			break
-		end
-	end
-
-	if not lspWithSymbolSupport then
-		local prompt = vim.trim(icon .. " Search function history")
-		vim.ui.input({ prompt = prompt }, function(funcname)
-			if not funcname then return end -- aborted
-
-			-- GUARD loop back when unshallowing is still running
-			if state.unshallowingRunning then
-				notify("Unshallowing still running. Please wait a moment.", "warn")
-				M.functionHistory()
-				return
-			end
-
-			state.query = funcname
-			selectFromFunctionHistory(funcname)
-		end)
-		return
-	end
-
-	vim.lsp.buf.document_symbol {
-		on_list = function(response)
-			-- filter by kind "function"/"method", prompt to select a name,
-			local funcsObjs = vim.tbl_filter(
-				function(item) return item.kind == "Function" or item.kind == "Method" end,
-				response.items
-			)
-			if #funcsObjs == 0 then
-				local client = vim.lsp.get_client_by_id(response.context.client_id)
-				notify(("LSP (%s) could not find any functions."):format(client), "warn")
-			end
-
-			local funcNames = vim.tbl_map(function(item)
-				if item.kind == "Function" then
-					return item.text:gsub("^%[Function%] ", "")
-				elseif item.kind == "Method" then
-					return item.text:match("%[Method%]%s+([^%(]+)")
-				end
-			end, funcsObjs)
-
-			-- prompt to select a commit that changed that function/method
-			local prompt = vim.trim(icon .. " Select function:")
-			vim.ui.select(
-				funcNames,
-				{ prompt = prompt, kind = "tinygit.functionSelect" },
-				function(funcname)
-					if not funcname then return end -- aborted
-
-					-- GUARD loop back when unshallowing is still running
-					if state.unshallowingRunning then
-						notify("Unshallowing still running. Please wait a moment.", "warn")
-						M.searchFileHistory()
-						return
-					end
-
-					state.query = funcname
-					selectFromFunctionHistory(funcname)
-				end
-			)
-		end,
-	}
+	selectFromCommits(result.stdout)
 end
 
-function M.lineHistory()
-	if u.notInGitRepo() then return end
-
-	-- GUARD in case of auto-unshallowing, will recursively call itself once done
-	-- As opposed to function and file history, no further input is needed by the
-	-- user, so that we have to abort here, and do a callback to this function
-	-- once the auto-unshallowing is done.
-	if repoIsShallow(M.lineHistory) then return end
+local function lineHistory()
+	-- INFO in case of auto-unshallowing, will abort this call and be called
+	-- again once auto-unshallowing is done.
+	if repoIsShallow(lineHistory) then return end
 
 	local lnum, offset
-	local mode = vim.fn.mode()
-	if mode == "n" then
-		lnum = vim.api.nvim_win_get_cursor(0)[1]
-		offset = 1
-		state.query = "Line " .. lnum
-	elseif mode:find("[Vv]") then
-		vim.cmd.normal { mode, bang = true } -- leave visual mode so marks are set
-		local startOfVisual = vim.api.nvim_buf_get_mark(0, "<")[1]
-		local endOfVisual = vim.api.nvim_buf_get_mark(0, ">")[1]
-		lnum = startOfVisual
-		offset = endOfVisual - startOfVisual + 1
-		local onlyOneLine = endOfVisual == startOfVisual
-		state.query = "L" .. startOfVisual .. (onlyOneLine and "" or "-L" .. endOfVisual)
-	end
+	local startOfVisual = vim.api.nvim_buf_get_mark(0, "<")[1]
+	local endOfVisual = vim.api.nvim_buf_get_mark(0, ">")[1]
+	lnum = startOfVisual
+	offset = endOfVisual - startOfVisual + 1
+	local onlyOneLine = endOfVisual == startOfVisual
+	state.query = "L" .. startOfVisual .. (onlyOneLine and "" or "-L" .. endOfVisual)
 
-	state.absPath = vim.api.nvim_buf_get_name(0)
-	state.ft = vim.bo.filetype
 	state.lnum = lnum
 	state.offset = offset
-	state.type = "line"
 
 	local result = vim.system({
 		-- CAVEAT `git log -L` does not support `--follow` and `--name-only`
@@ -504,6 +416,31 @@ function M.lineHistory()
 	if u.nonZeroExit(result) then return end
 
 	selectFromCommits(result.stdout)
+end
+
+--------------------------------------------------------------------------------
+
+function M.fileHistory()
+	if u.notInGitRepo() then return end
+
+	state.absPath = vim.api.nvim_buf_get_name(0)
+	state.ft = vim.bo.filetype
+	local mode = vim.fn.mode()
+
+	if mode == "n" then
+		state.type = "stringSearch"
+		searchHistoryForString()
+	elseif mode == "v" then
+		vim.cmd.normal { "v", bang = true } -- leave visual mode
+		state.type = "function"
+		functionHistory()
+	elseif mode == "V" then
+		vim.cmd.normal { "V", bang = true }
+		state.type = "line"
+		lineHistory()
+	else
+		notify("Unsupported mode: " .. mode, "warn")
+	end
 end
 
 --------------------------------------------------------------------------------
