@@ -11,10 +11,10 @@ operations.
 <img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/7000ca1e-199b-4632-802b-fe630589f8f5">
 <img alt="Showcase git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94">
 
-## Feature Overview
-- **Interactive Staging** of hunks (parts of a file). Displays hunk diffs with
+## Feature overview
+- **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
   proper syntax highlighting, and allows resetting or navigating to the hunk.
-- **Smart-Commit**: Open a popup to enter a commit message with syntax highlighting,
+- **Smart-commit**: Open a popup to enter a commit message with syntax highlighting,
   commit preview, automatic issue number insertion, and overlength indicators.
   If there are no staged changes, stages all changes before doing so (`git add
   -A`). Optionally trigger a `git push` afterward.
@@ -22,8 +22,8 @@ operations.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current line or selection.
 - **Explore the git history**: Search the file for a string ("git pickaxe"), or
-  examine a function's or line's history. Displays the results in a diff view
-  with syntax highlighting, correctly following file renamings.
+  examine the history of a function or line range. Displays the results in a
+  diff view with syntax highlighting, correctly following file renamings.
 - **Statusline components:** `git blame` of a file and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
   friction. For instance, the smart-commit command combines staging, committing,
@@ -34,36 +34,37 @@ operations.
 
 - [Installation](#installation)
 - [Commands](#commands)
-  * [Interactive Staging](#interactive-staging)
-  * [Smart-Commit](#smart-commit)
-  * [Amend, Fixup, and Squash Commits](#amend-fixup-and-squash-commits)
-  * [Undo Last Commit/Amend](#undo-last-commitamend)
-  * [GitHub Interaction](#github-interaction)
-  * [Push & PR](#push--pr)
-  * [Explore the History of a File, Function, or Line ("git pickaxe")](#explore-the-history-of-a-file-function-or-line-git-pickaxe)
-  * [Stash](#stash)
-- [Statusline Components](#statusline-components)
-  * [Git Blame](#git-blame)
-  * [Branch State](#branch-state)
+	* [Interactive staging](#interactive-staging)
+	* [Smart-commit](#smart-commit)
+	* [Amend, fixup, and squash commits](#amend-fixup-and-squash-commits)
+	* [Undo last commit/amend](#undo-last-commitamend)
+	* [GitHub interaction](#github-interaction)
+	* [Push & PRs](#push--prs)
+	* [Search file history](#search-file-history)
+	* [Stash](#stash)
+- [Statusline components](#statusline-components)
+	* [git blame](#git-blame)
+	* [Branch state](#branch-state)
 - [Configuration](#configuration)
 - [Credits](#credits)
 
 <!-- tocstop -->
 
 ## Installation
-**Hard Requirements**
+**Hard requirements**
 - nvim 0.10 or higher
 - `dressing.nvim`
+- `telescope` is required for interactive staging.
+- GitHub-related features require `curl`.
 
-**Optional/Recommended Requirements**
+**Optional/recommended requirements**
 - Treesitter parser for syntax highlighting: `TSInstall gitcommit`
-- `nvim-notify` OR `snacks.nvim` for the commit preview, issue number insertion,
-  and various notifications
+- [nvim-notify](http://github.com/rcarriga/nvim-notify) OR
+  [snacks.nvim](http://github.com/folke/snacks.nvim) for the commit preview,
+  issue number insertion, and various notifications.
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) OR
   [fzf-lua](https://github.com/ibhagwan/fzf-lua) for nicer UI when selecting
   commits, issues, or PRs.
-- `telescope` is required for interactive staging.
-- GitHub-related features require `curl`.
 
 ```lua
 -- lazy.nvim
@@ -81,7 +82,7 @@ use {
 
 ## Commands
 
-### Interactive Staging
+### Interactive staging
 - This feature requires
   [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
 - This command stages hunks, that is, *parts* of a file instead of the
@@ -99,7 +100,7 @@ use {
 require("tinygit").interactiveStaging()
 ```
 
-### Smart-Commit
+### Smart-commit
 - Open a commit popup, alongside a preview of what is going to be committed. If
   there are no staged changes, stage all changes (`git add --all`) before the
   commit.
@@ -135,7 +136,7 @@ vim.keymap.set("n", "gp", function() require("tinygit").push() end)
 Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
 
-### Amend, Fixup, and Squash Commits
+### Amend, fixup, and squash commits
 **Amending**
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
@@ -169,7 +170,7 @@ require("tinygit").fixupCommit {
 }
 ```
 
-### Undo Last Commit/Amend
+### Undo last commit/amend
 
 ```lua
 require("tinygit").undoLastCommitOrAmend()
@@ -180,7 +181,7 @@ require("tinygit").undoLastCommitOrAmend()
 - If there was a `push` operation done as a followup (such as `.smartCommit {
   pushIfClean = false }`), the last commit is not undone.
 
-### GitHub Interaction
+### GitHub interaction
 **Search issues & PRs**
 - Requires `curl`.
 
@@ -205,11 +206,10 @@ clipboard.
 require("tinygit").githubUrl("file")
 ```
 
-### Push & PR
+### Push & PRs
 - `push` can be combined with other actions, depending on the options.
-- `createGitHubPr` opens a PR from the current branch browser.
-	* This requires the repo to be a fork with sufficient information on the remote.
-	* This does not require the `gh` CLI, as it uses a GitHub web feature.
+- `createGitHubPr` opens a PR from the current branch browser. (This requires the
+  repo to be a fork with sufficient information on the remote.)
 
 ```lua
 -- options default to `false`
@@ -265,9 +265,9 @@ require("tinygit").stashPush()
 require("tinygit").stashPop()
 ```
 
-## Statusline Components
+## Statusline components
 
-### Git Blame
+### git blame
 Shows the message and date (`git blame`) of the last commit that changed the
 current *file* (not line).
 
@@ -283,7 +283,7 @@ require("tinygit.statusline").blame()
 The component can be configured with the `statusline.blame` options in the [plugin
 configuration](#configuration).
 
-### Branch State
+### Branch state
 Shows whether the local branch is ahead or behind of its remote counterpart.
 (Note that this component does not run `git fetch` for performance reasons, so
 the information may not be up-to-date with remote changes.)
@@ -394,16 +394,10 @@ require("tinygit").setup {
 ```
 
 The appearance of the commit preview and notifications is determined by
-[nvim-notify](https://github.com/rcarriga/nvim-notify). To change for example
-the width of the preview, use:
+[nvim-notify](https://github.com/rcarriga/nvim-notify) or
+[snacks.nvim](https://https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md)
+respectively.
 
-```lua
-require("notify").setup {
-	max_width = 60,
-}
-```
-
-<!-- vale Google.FirstPerson = NO -->
 ## Credits
 In my day job, I am a sociologist studying the social mechanisms underlying the
 digital economy. For my PhD project, I investigate the governance of the app
