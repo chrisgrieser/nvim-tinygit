@@ -254,10 +254,11 @@ mode**function history (`git log -L`). - The selected text is assumed to be the
 name of the function whose history you want to explore. Note that `git` uses
 heuristics to determine the enclosing function of a change
 <https://news.ycombinator.com/item?id=38153309>, so this is not 100% perfect
-and has varying reliability across languages. - Another caveat is that for
-function history, git unfortunately does not support searching across file
-renamings. - **Visual line mode**line range history (`git log -L`). - Uses the
-selected lines as the line range.
+and has varying reliability across languages. - Caveat: for function history,
+git does not support to follow renamings of the file or function name. -
+**Visual line mode**line range history (`git log -L`). - Uses the selected
+lines as the line range. - Caveat: for line history, git does not support to
+follow file renamings.
 
 **Keymaps in the diff popup** - `<Tab>`show older commit - `<S-Tab>`show newer
 commit - `yh`yank the commit hash to the system clipboard - `R`restore file to
@@ -379,12 +380,12 @@ The `setup` call is optional.
             },
             autoUnshallowIfNeeded = false,
         },
-        appearance = { -- general plugin appearance
+        appearance = {
+            mainIcon = "󰊢",
             backdrop = {
                 enabled = true,
                 blend = 50, -- 0-100
             },
-            mainIcon = "󰊢",
         },
         statusline = {
             blame = {
