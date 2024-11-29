@@ -69,7 +69,7 @@ end
 ---@param issue table
 ---@return string
 local function issueListFormatter(issue)
-	local icons = require("tinygit.config").config.github.issueIcons
+	local icons = require("tinygit.config").config.github.icons
 	local icon
 	if issue.pull_request then
 		if issue.draft then
