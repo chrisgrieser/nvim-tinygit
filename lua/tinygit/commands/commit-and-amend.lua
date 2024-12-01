@@ -42,18 +42,13 @@ local function setupNotificationHighlights(highlightingFunc)
 
 	-- determine snacks.nvim notification filetype
 	local snacksInstalled, snacks = pcall(require, "snacks")
-	local snacksFt = "snacks_notif"
-	if snacksInstalled then
-		local snacksOpts = snacks.config.get("styles", {})
-		local userFt = snacksOpts.notification
-			and snacksOpts.notification.bo
-			and snacksOpts.notification.bo.filetype
-		if userFt then snacksFt = userFt end
-	end
+	local snacksFt = snacksInstalled
+			and snacks.config.get("styles", { notification = { bo = { filetype = "snacks_notif" } } }).notification.bo.filetype
+		or nil
 
 	-- call highlighting function in notification buffer
 	vim.api.nvim_create_autocmd("FileType", {
-		pattern = { snacksFt, "noice", "notify" },
+		pattern = { "noice", "notify", snacksFt },
 		once = true,
 		callback = function(ctx)
 			vim.defer_fn(function() vim.api.nvim_buf_call(ctx.buf, highlightingFunc) end, 1)
@@ -308,14 +303,9 @@ local function showCommitPreview()
 			width = 50
 		end
 	elseif package.loaded["snacks"] then
-		local widthSetting = require("snacks").config.get("notifier", {})
-		if widthSetting and widthSetting.width and widthSetting.width.max then
-			width = widthSetting.width.max
-			if width < 1 then width = math.floor(vim.o.columns * width) end
-		else
-			-- default is 0.4 https://github.com/folke/snacks.nvim/blob/f5602e60c325f0c60eb6f2869a7222beb88a773c/lua/snacks/notifier.lua#L77C29-L77C32
-			width = math.floor(vim.o.columns * 0.4)
-		end
+		-- default is 0.4 https://github.com/folke/snacks.nvim/blob/f5602e60c325f0c60eb6f2869a7222beb88a773c/lua/snacks/notifier.lua#L77C29-L77C32
+		width = require("snacks").config.get("notifier", { width = { max = 0.4 } }).width.max
+		if width < 1 then width = math.floor(vim.o.columns * width) end
 	end
 
 	-- get changes
