@@ -21,13 +21,8 @@ function M.notify(body, level, opts)
 	if not opts then opts = {} end
 
 	opts.title = opts.title and "tinygit: " .. opts.title or "tinygit"
-
-	-- `ft` and `icon` only for `snacks.nvim`
-	if not opts.ft then opts.ft = "text" end
+	if not opts.ft then opts.ft = "text" end -- `ft` only for `snacks.nvim`
 	if not opts.icon then opts.icon = require("tinygit.config").config.appearance.mainIcon end
-
-	-- since `nvim-notify` does not support the `icon` field that snacks.nvim
-	if package.loaded["notify"] then opts.title = vim.trim(opts.icon .. opts.title) end
 
 	return vim.notify(vim.trim(body), vim.log.levels[level:upper()], opts)
 end
