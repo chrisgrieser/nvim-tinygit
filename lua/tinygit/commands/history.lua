@@ -329,7 +329,7 @@ local function searchHistoryForString(prefill)
 
 	-- prompt for a search query
 	local icon = require("tinygit.config").config.appearance.mainIcon
-	local prompt = vim.trim(icon .. " Search File History")
+	local prompt = vim.trim(icon .. " Search file history")
 	vim.ui.input({ prompt = prompt, default = prefill }, function(query)
 		if not query then return end -- aborted
 

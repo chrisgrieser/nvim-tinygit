@@ -105,9 +105,10 @@ end
 -- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
 ---@param hunks Tinygit.Hunk[]
 function M.pickHunk(hunks)
+	local icon = require("tinygit.config").config.appearance.mainIcon
 	pickers
 		.new({}, {
-			prompt_title = "Git Hunks",
+			prompt_title = vim.trim(icon .. " Git hunks"),
 			sorter = telescopeConf.generic_sorter {},
 
 			layout_strategy = "horizontal",
