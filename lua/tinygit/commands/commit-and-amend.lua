@@ -581,6 +581,7 @@ function M.fixupCommit(opts)
 				"sequence.editor=:", -- HACK ":" is a "no-op-"editor https://www.reddit.com/r/git/comments/uzh2no/what_is_the_utility_of_noninteractive_rebase/
 				"rebase",
 				"--interactive",
+				"--committer-date-is-author-date", -- preserves dates
 				"--autostash",
 				"--autosquash",
 				hash .. "^", -- rebase up until the selected commit
