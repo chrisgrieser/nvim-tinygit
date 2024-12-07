@@ -34,6 +34,8 @@ local function pushCmd(opts)
 			local out = vim.trim((result.stdout or "") .. (result.stderr or ""))
 			out = out:gsub("\n%s+", "\n") -- remove padding
 			local commitRange = out:match("%x+%.%.%x+")
+			-- force-push `+` would get md-lhighlight
+			local ft = opts.forceWithLease and "text" or "markdown"
 
 			-- notify
 			if result.code == 0 then
@@ -44,7 +46,7 @@ local function pushCmd(opts)
 					out = out .. ("\n[%d commit%s]"):format(numOfPushedCommits, plural)
 				end
 			end
-			u.notify(out, result.code == 0 and "info" or "error", { title = title })
+			u.notify(out, result.code == 0 and "info" or "error", { title = title, ft = ft })
 
 			-- sound
 			if config.confirmationSound and jit.os == "OSX" then
