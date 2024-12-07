@@ -232,8 +232,8 @@ local function setupInputField(commitType)
 	if commitType == "smartCommit" then
 		vim.api.nvim_create_autocmd("WinClosed", {
 			callback = function(ctx)
-				local ft = vim.api.nvim_get_option_value("filetype", { buf = ctx.buf })
-				if not (ft == "gitcommit" or ft == "DressingInput") then return end
+				local ft = vim.bo[ctx.buf].filetype
+				if ft ~= "gitcommit" and ft ~= "DressingInput" then return end
 
 				local cwd = vim.uv.cwd() or ""
 				M.state.abortedCommitMsg[cwd] = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1]

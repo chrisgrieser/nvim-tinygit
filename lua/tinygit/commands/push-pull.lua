@@ -24,13 +24,15 @@ end
 local function pushCmd(opts)
 	local config = require("tinygit.config").config.push
 	local gitCommand = { "git", "push" }
+	local title = opts.forceWithLease and "Force push" or "Push"
 	if opts.forceWithLease then table.insert(gitCommand, "--force-with-lease") end
 
 	vim.system(
 		gitCommand,
-		{ detach = true, text = true },
+		{ detach = true },
 		vim.schedule_wrap(function(result)
-			local out = vim.trim((result.stdout or "") .. (result.stderr or "")):gsub("\n%s+", "\n") -- fix leading spacing
+			local out = vim.trim((result.stdout or "") .. (result.stderr or ""))
+			out = out:gsub("\n%s+", "\n") -- remove padding
 			local commitRange = out:match("%x+%.%.%x+")
 
 			-- notify
@@ -38,11 +40,11 @@ local function pushCmd(opts)
 				local numOfPushedCommits = u.syncShellCmd { "git", "rev-list", "--count", commitRange }
 				if numOfPushedCommits ~= "" then
 					local plural = numOfPushedCommits ~= "1" and "s" or ""
-					-- `[]` together with `ft=markdown` -> simple highlighting for `snacks.nvim`
-					out = out .. ("\n[%s commit%s]"):format(numOfPushedCommits, plural)
+					-- `[]` -> simple highlighting for `snacks.nvim`
+					out = out .. ("\n[%d commit%s]"):format(numOfPushedCommits, plural)
 				end
 			end
-			u.notify(out, result.code == 0 and "info" or "error", { ft = ft, title = "Push" })
+			u.notify(out, result.code == 0 and "info" or "error", { title = title })
 
 			-- sound
 			if config.confirmationSound and jit.os == "OSX" then
@@ -67,6 +69,8 @@ end
 ---@param calledByCommitFunc? boolean
 function M.push(opts, calledByCommitFunc)
 	local config = require("tinygit.config").config.push
+	if not opts then opts = {} end
+	local title = opts.forceWithLease and "Force push" or "Push"
 
 	-- GUARD
 	if u.notInGitRepo() then return end
@@ -75,12 +79,10 @@ function M.push(opts, calledByCommitFunc)
 			u.syncShellCmd { "git", "log", "--oneline", "--grep=^fixup!", "--grep=^squash!" }
 		if fixupOrSquashCommits ~= "" then
 			local msg = "Aborting: There are fixup or squash commits.\n\n" .. fixupOrSquashCommits
-			u.notify(msg, "warn", { title = "Push" })
+			u.notify(msg, "warn", { title = title })
 			return
 		end
 	end
-	if not opts then opts = {} end
-	local title = opts.forceWithLease and "Force push" or "Push"
 
 	-- extra notification when called by user
 	if not calledByCommitFunc then
@@ -115,7 +117,7 @@ function M.push(opts, calledByCommitFunc)
 	-- Pull & Push
 	vim.system(
 		{ "git", "pull" },
-		{ detach = true, text = true },
+		{ detach = true },
 		vim.schedule_wrap(function(result)
 			-- Git messaging is weird and sometimes puts normal messages into
 			-- stderr, thus we need to merge stdout and stderr.
