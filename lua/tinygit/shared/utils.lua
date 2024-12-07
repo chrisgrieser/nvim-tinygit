@@ -5,9 +5,9 @@ local M = {}
 
 ---@class Tinygit.notifyOpts
 ---@field title? string
+---@field icon? string
 ---@field timeout? number|boolean
 ---@field ft? string snacks.nvim
----@field icon? string snacks.nvim
 ---@field id? string snacks.nvim
 ---@field animate? boolean nvim-notify
 ---@field on_open? function nvim-notify

@@ -94,7 +94,7 @@ use {
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
   from `gitsigns.nvim`.) A context size between 1 and 4 is recommended.
-- Limitations: `contextSize=0` (= no merging at all) is currently not supported.
+- Limitations: `contextSize=0` (= no merging at all) is not supported.
 
 ```lua
 require("tinygit").interactiveStaging()
@@ -111,7 +111,7 @@ require("tinygit").interactiveStaging()
   You can see at glance whether all changes are going to be committed, or whether
   there a `git push` is triggered afterward, so there are no surprises.
 - Typing `#` inserts the most recent issue number, `<Tab>` cycles through the
-  issues (currently opt-in, see plugin configuration).
+  issues (opt-in, see plugin configuration).
 - Only supports the commit subject line (no commit body).
 
 ```lua
