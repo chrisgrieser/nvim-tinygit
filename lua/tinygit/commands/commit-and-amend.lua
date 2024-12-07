@@ -525,11 +525,8 @@ end
 function M.fixupCommit(opts)
 	vim.cmd("silent update")
 	if u.notInGitRepo() or hasNoChanges() then return end
-	local defaultOpts = {
-		selectFromLastXCommits = 15,
-		squashInstead = false,
-		autoRebase = false,
-	}
+
+	local defaultOpts = { selectFromLastXCommits = 15, autoRebase = false }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	-- get commits
@@ -545,21 +542,16 @@ function M.fixupCommit(opts)
 	-- user selection of commit
 	showCommitPreview()
 	local autocmdId = selectCommit.setupAppearance()
-	local title = opts.squashInstead and "Squash" or "Fixup"
 	local icon = require("tinygit.config").config.appearance.mainIcon
-	local prompt = vim.trim(("%s Select commit to %s"):format(icon, title))
+	local prompt = vim.trim(icon .. " Select commit to fixup")
 	vim.ui.select(commits, {
 		prompt = prompt,
 		format_item = selectCommit.selectorFormatter,
 		kind = "tinygit.fixupCommit",
 	}, function(commit)
 		closeNotifications()
-
 		vim.api.nvim_del_autocmd(autocmdId)
 		if not commit then return end
-
-		local hash = commit:match("^%w+")
-		local fixupOrSquash = opts.squashInstead and "--squash" or "--fixup"
 
 		-- stage
 		local doStageAllChanges = hasNoStagedChanges()
@@ -569,9 +561,10 @@ function M.fixupCommit(opts)
 		end
 
 		-- commit
-		local commitResult = vim.system({ "git", "commit", fixupOrSquash, hash }):wait()
+		local hash = commit:match("^%w+")
+		local commitResult = vim.system({ "git", "commit", "--fixup", hash }):wait()
 		if u.nonZeroExit(commitResult) then return end
-		u.notify(commitResult.stdout, "info", { title = title .. " commit" })
+		u.notify(commitResult.stdout, "info", { title = "Fixup commit" })
 
 		-- rebase
 		if opts.autoRebase then
@@ -587,7 +580,7 @@ function M.fixupCommit(opts)
 				hash .. "^", -- rebase up until the selected commit
 			}):wait()
 			if u.nonZeroExit(_result) then return end
-			u.notify("Auto-rebase applied.", "info", { title = title .. " commit" })
+			u.notify("Auto-rebase applied.", "info", { title = "Fixup commit" })
 		end
 		updateStatusline()
 	end)

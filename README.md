@@ -136,7 +136,7 @@ vim.keymap.set("n", "gp", function() require("tinygit").push() end)
 Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
 
-### Amend, fixup, and squash commits
+### Amend and fixup commits
 **Amending**
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
@@ -151,21 +151,19 @@ require("tinygit").amendOnlyMsg { forcePushIfDiverged = false }
 require("tinygit").amendNoEdit { forcePushIfDiverged = false, stageAllIfNothingStaged = true }
 ```
 
-**Fixup or Squash Commits**
+**Fixup commits**
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
   commit --fixup` on the selected commit.
 - If there are no staged changes, stages all changes (`git add --all`), like
   `smartCommit`.
-- Use `squashInstead = true` to squash instead of fixup (`git commit --squash`).
 - `autoRebase = true` automatically runs rebase with `--autosquash` and
 `--autostash` afterward, confirming all fixups and squashes **without opening a
-rebase view**. (Note that this can potentially result in conflicts.)
+rebase to do editor**. Note that this can potentially result in conflicts.
 
 ```lua
 -- options show default values
 require("tinygit").fixupCommit {
 	selectFromLastXCommits = 15,
-	squashInstead = false,
 	autoRebase = false,
 }
 ```
