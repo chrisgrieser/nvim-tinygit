@@ -579,8 +579,11 @@ function M.fixupCommit(opts)
 				hash .. "^", -- rebase up until the selected commit
 			}):wait()
 			if u.nonZeroExit(_result) then return end
+
+			vim.cmd.checktime() -- reload in case of conflicts
 			u.notify("Auto-rebase applied.", "info", { title = "Fixup commit" })
 		end
+
 		updateStatusline()
 	end)
 end
