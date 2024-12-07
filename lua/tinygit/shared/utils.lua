@@ -21,7 +21,6 @@ function M.notify(body, level, opts)
 	if not opts then opts = {} end
 
 	opts.title = opts.title and "tinygit: " .. opts.title or "tinygit"
-	if not opts.ft then opts.ft = "text" end -- `ft` only for `snacks.nvim`
 	if not opts.icon then opts.icon = require("tinygit.config").config.appearance.mainIcon end
 
 	return vim.notify(vim.trim(body), vim.log.levels[level:upper()], opts)
