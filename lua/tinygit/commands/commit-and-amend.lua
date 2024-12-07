@@ -346,6 +346,7 @@ local function showCommitPreview()
 		timeout = false, -- keep shown, only remove when input window closed
 		id = "tinygit.commit-preview", -- only `snacks.nvim`
 		animate = false, -- only `nvim-notify`
+		ft = "text", -- only `snacks.nvim`, `+` and `-` would be markdown highlighted otherwise
 	})
 end
 
