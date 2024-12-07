@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*           For Neovim          Last change: 2024 November 28
+*nvim-tinygit.txt*           For Neovim          Last change: 2024 December 07
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -103,7 +103,7 @@ INTERACTIVE STAGING ~
     Larger context size is going to "merge" changes that are close to one another
     into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
     from `gitsigns.nvim`.) A context size between 1 and 4 is recommended.
-- Limitations: `contextSize=0` (= no merging at all) is currently not supported.
+- Limitations: `contextSize=0` (= no merging at all) is not supported.
 
 >lua
     require("tinygit").interactiveStaging()
@@ -122,7 +122,7 @@ SMART-COMMIT ~
     You can see at glance whether all changes are going to be committed, or whether
     there a `git push` is triggered afterward, so there are no surprises.
 - Typing `#` inserts the most recent issue number, `<Tab>` cycles through the
-    issues (currently opt-in, see plugin configuration).
+    issues (opt-in, see plugin configuration).
 - Only supports the commit subject line (no commit body).
 
 >lua
@@ -147,7 +147,7 @@ Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
 
 
-AMEND, FIXUP, AND SQUASH COMMITS ~
+AMEND AND FIXUP COMMITS ~
 
 **Amending** - `amendOnlyMsg` just opens the commit popup to change the last
 commit message, and does not stage any changes. - `amendNoEdit` keeps the last
@@ -162,20 +162,17 @@ pushed).
     require("tinygit").amendNoEdit { forcePushIfDiverged = false, stageAllIfNothingStaged = true }
 <
 
-**Fixup or Squash Commits** - `fixupCommit` lets you select a commit from the
-last X commits and runs `git commit --fixup` on the selected commit. - If there
-are no staged changes, stages all changes (`git add --all`), like
-`smartCommit`. - Use `squashInstead = true` to squash instead of fixup (`git
-commit --squash`). - `autoRebase = true` automatically runs rebase with
-`--autosquash` and `--autostash` afterward, confirming all fixups and squashes
-**without opening a rebase view**. (Note that this can potentially result in
-conflicts.)
+**Fixup commits** - `fixupCommit` lets you select a commit from the last X
+commits and runs `git commit --fixup` on the selected commit. - If there are no
+staged changes, stages all changes (`git add --all`), like `smartCommit`. -
+`autoRebase = true` automatically runs rebase with `--autosquash` and
+`--autostash` afterward, confirming all fixups and squashes **without opening a
+rebase to do editor**. Note that this can potentially result in conflicts.
 
 >lua
     -- options show default values
     require("tinygit").fixupCommit {
         selectFromLastXCommits = 15,
-        squashInstead = false,
         autoRebase = false,
     }
 <
@@ -335,7 +332,7 @@ The `setup` call is optional.
             preview = true, -- requires `nvim-notify` or `snacks.nvim`
             spellcheck = false,
             keepAbortedMsgSecs = 300,
-            inputFieldWidth = 72, -- `false` to use dressing.nvim config
+            inputFieldWidth = 72,
             conventionalCommits = {
                 enforce = false,
                 -- stylua: ignore
