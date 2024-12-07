@@ -152,7 +152,6 @@ local function setupInputField(commitType)
 	local commitMaxLen = 72 -- hard git limit
 
 	local function overwriteDressingWidth(winid)
-		if not opts.inputFieldWidth then return end -- keep dressings default
 		local width = math.max(opts.inputFieldWidth, 20) + 1
 		vim.api.nvim_win_set_config(winid, {
 			relative = "editor",

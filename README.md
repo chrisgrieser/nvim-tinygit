@@ -326,7 +326,7 @@ require("tinygit").setup {
 		preview = true, -- requires `nvim-notify` or `snacks.nvim`
 		spellcheck = false,
 		keepAbortedMsgSecs = 300,
-		inputFieldWidth = 72, -- `false` to use dressing.nvim config
+		inputFieldWidth = 72,
 		conventionalCommits = {
 			enforce = false,
 			-- stylua: ignore
