@@ -23,8 +23,9 @@ end
 ---opens current buffer in the browser & copies the link to the clipboard
 ---normal mode: link to file
 ---visual mode: link to selected lines
----@param justRepo any -- don't link to file with a specific commit, just link to repo
-function M.githubUrl(justRepo)
+---@param what? "file"|"repo"
+function M.githubUrl(what)
+	if what ~= "repo" then what = "file" end
 	if u.notInGitRepo() then return end
 
 	local filepath = vim.api.nvim_buf_get_name(0)
@@ -42,9 +43,9 @@ function M.githubUrl(justRepo)
 	local mode = vim.fn.mode()
 	local url = "https://github.com/" .. repo
 
-	if not justRepo and mode == "n" then
+	if what == "file" and mode == "n" then
 		url = url .. ("/blob/%s/%s"):format(branch, pathInRepoEncoded)
-	elseif not justRepo and mode:find("[Vv]") then
+	elseif what == "file" and mode:find("[Vv]") then
 		vim.cmd.normal { "V", bang = true } -- leave visual mode, so marks are set
 		local startLn = vim.api.nvim_buf_get_mark(0, "<")[1]
 		local endLn = vim.api.nvim_buf_get_mark(0, ">")[1]
