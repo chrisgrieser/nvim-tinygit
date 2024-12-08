@@ -187,6 +187,7 @@ local function showDiff(commitIdx)
 		zindex = historyZindex,
 	})
 	vim.wo[winnr].winfixheight = true
+	vim.wo[winnr].conceallevel = 0 -- do not hide chars in markdown/json
 	backdrop.new(bufnr, historyZindex)
 
 	-- search for the query

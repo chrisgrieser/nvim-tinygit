@@ -131,6 +131,7 @@ function M.pickHunk(hunks)
 					local diffLines = vim.split(hunk.patch, "\n")
 					local ft = getFiletype(hunk.absPath)
 					setDiffBuffer(bufnr, diffLines, ft, false)
+					vim.wo[self.state.winid].conceallevel = 0 -- do not hide chars in markdown/json
 				end,
 				---@param entry { value: Tinygit.Hunk }
 				dyn_title = function(_, entry)
