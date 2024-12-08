@@ -92,11 +92,11 @@ local function getFiletype(absPath)
 	-- typescript), so we need the actual buffer to determine the filetype.
 	local bufnr = vim.iter(vim.api.nvim_list_bufs())
 		:find(function(buf) return vim.api.nvim_buf_get_name(buf) == absPath end)
-	if bufnr then return vim.filetype.match { buf = bufnr } end
 
 	-- If there are changes in files that are not loaded as buffer, we have to
 	-- add file to a buffer to be able to determine the filetype from it.
-	bufnr = vim.fn.bufadd(absPath)
+	if not bufnr then bufnr = vim.fn.bufadd(absPath) end
+
 	return vim.filetype.match { buf = bufnr }
 end
 
