@@ -313,25 +313,10 @@ end
 local function searchHistoryForString(prefill)
 	if repoIsShallow() then return end
 
-	-- add backdrop and footer to input field
-	vim.api.nvim_create_autocmd("FileType", {
-		once = true,
-		pattern = "DressingInput",
-		callback = function(ctx)
-			backdrop.new(ctx.buf)
-			local winid = vim.api.nvim_get_current_win()
-			local footerText = "empty = all commits"
-			vim.api.nvim_win_set_config(winid, {
-				footer = { { " " .. footerText .. " ", "FloatBorder" } },
-				footer_pos = "right",
-			})
-		end,
-	})
-
 	-- prompt for a search query
 	local icon = require("tinygit.config").config.appearance.mainIcon
 	local prompt = vim.trim(icon .. " Search file history")
-	require("dressing.input")({ prompt = prompt, default = prefill }, function(query)
+	vim.ui.input({ prompt = prompt, default = prefill }, function(query)
 		if not query then return end -- aborted
 
 		-- GUARD loop back when unshallowing is still running
