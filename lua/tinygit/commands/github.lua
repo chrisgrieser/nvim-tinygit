@@ -44,7 +44,7 @@ function M.githubUrl(what)
 	local url = "https://github.com/" .. repo
 
 	if what == "file" and mode == "n" then
-		url = url .. ("/blob/%s/%s"):format(branch, pathInRepoEncoded)
+		url = url .. ("/blob/%s/%s"):format(hash, pathInRepoEncoded)
 	elseif what == "file" and mode:find("[Vv]") then
 		vim.cmd.normal { mode, bang = true } -- leave visual mode, so marks are set
 		local startLn = vim.api.nvim_buf_get_mark(0, "<")[1]
