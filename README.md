@@ -24,10 +24,10 @@ operations.
 - **Explore the git history**: Search the file for a string ("git pickaxe"), or
   examine the history of a function or line range. Displays the results in a
   diff view with syntax highlighting, correctly following file renamings.
-- **Statusline components:** `git blame` of a file and branch state.
+- **Status line components:** `git blame` of a file and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
   friction. For instance, the smart-commit command combines staging, committing,
-  and pushing, and searching the file history combines unshallowing, searching,
+  and pushing, and searching the file history combines un-shallowing, searching,
   and navigating diffs.
 
 <!-- toc -->
@@ -266,7 +266,7 @@ require("tinygit").stashPush()
 require("tinygit").stashPop()
 ```
 
-## Statusline components
+## Status line components
 
 <!-- LTeX: enabled=false -->
 ### git blame
@@ -279,8 +279,8 @@ require("tinygit.statusline").blame()
 ```
 
 > [!TIP]
-> Some status line plugins also allow you to put components into the tabline or
-> winbar. If your status line is too crowded, you can add the blame-component to
+> Some status line plugins also allow you to put components into the tab line or
+> win bar. If your status line is too crowded, you can add the blame-component to
 > one of those bars instead.
 
 The component can be configured with the `statusline.blame` options in the [plugin
