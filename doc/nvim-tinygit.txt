@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*           For Neovim          Last change: 2024 December 07
+*nvim-tinygit.txt*           For Neovim          Last change: 2024 December 12
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -7,7 +7,7 @@ Table of Contents                             *nvim-tinygit-table-of-contents*
   - Feature overview              |nvim-tinygit-nvim-tinygit-feature-overview|
   - Installation                      |nvim-tinygit-nvim-tinygit-installation|
   - Commands                              |nvim-tinygit-nvim-tinygit-commands|
-  - Statusline components    |nvim-tinygit-nvim-tinygit-statusline-components|
+  - Status line components  |nvim-tinygit-nvim-tinygit-status-line-components|
   - Configuration                    |nvim-tinygit-nvim-tinygit-configuration|
   - Credits                                |nvim-tinygit-nvim-tinygit-credits|
 
@@ -35,10 +35,10 @@ FEATURE OVERVIEW                  *nvim-tinygit-nvim-tinygit-feature-overview*
 - **Explore the git history**Search the file for a string ("git pickaxe"), or
     examine the history of a function or line range. Displays the results in a
     diff view with syntax highlighting, correctly following file renamings.
-- **Statusline components:** `git blame` of a file and branch state.
+- **Status line components:** `git blame` of a file and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
     friction. For instance, the smart-commit command combines staging, committing,
-    and pushing, and searching the file history combines unshallowing, searching,
+    and pushing, and searching the file history combines un-shallowing, searching,
     and navigating diffs.
 
 - |nvim-tinygit-installation|
@@ -203,9 +203,12 @@ GITHUB INTERACTION ~
     require("tinygit").openIssueUnderCursor()
 <
 
-**GitHub URL** Opens the current file at GitHub in the browser and copy the URL
-to the system clipboard. - Normal mode: open the current file or repo. - Visual
-mode: open selected lines.
+**GitHub URL** Creates a permalink to the current file/lines at GitHub. The
+link is opened in the browser and copied to the system clipboard.
+
+- Normal mode: current file
+- Visual mode: selected lines
+- Using `"repo"` as argument, will just the repo URL instead
 
 >lua
     -- file|repo (default: file)
@@ -273,7 +276,7 @@ Simple wrappers around `git stash push` and `git stash pop`.
 <
 
 
-STATUSLINE COMPONENTS        *nvim-tinygit-nvim-tinygit-statusline-components*
+STATUS LINE COMPONENTS      *nvim-tinygit-nvim-tinygit-status-line-components*
 
 
 GIT BLAME ~
@@ -286,8 +289,8 @@ current _file_ (not line).
 <
 
 
-  [!TIP] Some status line plugins also allow you to put components into the
-  tabline or winbar. If your status line is too crowded, you can add the
+  [!TIP] Some status line plugins also allow you to put components into the tab
+  line or win bar. If your status line is too crowded, you can add the
   blame-component to one of those bars instead.
 The component can be configured with the `statusline.blame` options in the
 |nvim-tinygit-plugin-configuration|.
