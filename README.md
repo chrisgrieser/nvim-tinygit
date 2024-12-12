@@ -196,10 +196,12 @@ require("tinygit").openIssueUnderCursor()
 ```
 
 **GitHub URL**
-Opens the current file at GitHub in the browser and copy the URL to the system
-clipboard.
-- Normal mode: open the current file or repo.
-- Visual mode: open selected lines.
+Creates a permalink to the current file/lines at GitHub. The link is opened in
+the browser and copied to the system clipboard.
+
+- Normal mode: current file
+- Visual mode: selected lines
+- Using `"repo"` as argument, will just the repo URL instead
 
 ```lua
 -- file|repo (default: file)

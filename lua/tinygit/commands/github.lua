@@ -34,29 +34,25 @@ function M.githubUrl(what)
 	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
 
 	local repo = M.getGithubRemote()
-	if not repo then return end
+	if not repo then return end -- not on github
 	local hash = u.syncShellCmd { "git", "rev-parse", "HEAD" }
-	local branch = u.syncShellCmd { "git", "branch", "--show-current" }
-	-- if on branch, uses branch, if detached HEAD, falls back to HEAD's hash
-	if branch == "" then branch = hash end
+	local url = "https://github.com/" .. repo
+	local location = ""
 
 	local mode = vim.fn.mode()
-	local url = "https://github.com/" .. repo
-
-	if what == "file" and mode == "n" then
-		url = url .. ("/blob/%s/%s"):format(hash, pathInRepoEncoded)
-	elseif what == "file" and mode:find("[Vv]") then
+	if what == "file" and mode:find("[Vv]") then
 		vim.cmd.normal { mode, bang = true } -- leave visual mode, so marks are set
 		local startLn = vim.api.nvim_buf_get_mark(0, "<")[1]
 		local endLn = vim.api.nvim_buf_get_mark(0, ">")[1]
-		local location
 		if startLn == endLn then -- one-line-selection
-			location = "#L" .. tostring(startLn)
+			location = "#L" .. startLn
 		elseif startLn < endLn then
-			location = "#L" .. tostring(startLn) .. "-L" .. tostring(endLn)
+			location = "#L" .. startLn .. "-L" .. endLn
 		else
-			location = "#L" .. tostring(endLn) .. "-L" .. tostring(startLn)
+			location = "#L" .. endLn .. "-L" .. startLn
 		end
+	end
+	if what == "file" then
 		url = url .. ("/blob/%s/%s%s"):format(hash, pathInRepoEncoded, location)
 	end
 
