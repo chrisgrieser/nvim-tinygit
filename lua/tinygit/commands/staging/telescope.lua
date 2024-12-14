@@ -105,19 +105,14 @@ end
 -- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
 ---@param hunks Tinygit.Hunk[]
 function M.pickHunk(hunks)
-	local icon = require("tinygit.config").config.appearance.mainIcon
-	pickers
-		.new({}, {
-			prompt_title = vim.trim(icon .. " Git hunks"),
-			sorter = telescopeConf.generic_sorter {},
+	local config = require("tinygit.config").config
+	local title = vim.trim(config.appearance.mainIcon .. " Git hunks")
+	local telescopeOpts = config.stage.telescopeOpts
 
-			layout_strategy = "horizontal",
-			layout_config = {
-				horizontal = {
-					preview_width = 0.65,
-					height = { 0.7, min = 20 },
-				},
-			},
+	pickers
+		.new(telescopeOpts, {
+			prompt_title = title,
+			sorter = telescopeConf.generic_sorter(telescopeOpts),
 
 			finder = newFinder(hunks),
 

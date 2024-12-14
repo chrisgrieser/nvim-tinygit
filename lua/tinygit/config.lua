@@ -12,6 +12,17 @@ local defaultConfig = {
 			resetHunk = "<C-r>",
 		},
 		moveToNextHunkOnStagingToggle = false,
+
+		-- accepts the common telescope picker config
+		telescopeOpts = { 
+			layout_strategy = "horizontal",
+			layout_config = {
+				horizontal = {
+					preview_width = 0.65,
+					height = { 0.7, min = 20 },
+				},
+			},
+		},
 	},
 	commit = {
 		preview = true, -- requires `nvim-notify` or `snacks.nvim`
