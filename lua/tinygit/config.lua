@@ -14,7 +14,7 @@ local defaultConfig = {
 		moveToNextHunkOnStagingToggle = false,
 
 		-- accepts the common telescope picker config
-		telescopeOpts = { 
+		telescopeOpts = {
 			layout_strategy = "horizontal",
 			layout_config = {
 				horizontal = {
