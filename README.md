@@ -20,7 +20,8 @@ operations.
   -A`). Optionally trigger a `git push` afterward.
 - Quick commands for amend, stash, fixup, or undoing commits.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
-- Open the **GitHub URL** of the current line or selection.
+- Open the **GitHub URL** of the current file, repo, or selection. Also supports
+  opening the blame view.
 - **Explore the git history**: Search the file for a string ("git pickaxe"), or
   examine the history of a function or line range. Displays the results in a
   diff view with syntax highlighting, correctly following file renamings.
@@ -197,15 +198,15 @@ require("tinygit").openIssueUnderCursor()
 
 **GitHub URL**
 Creates a permalink to the current file/lines at GitHub. The link is opened in
-the browser and copied to the system clipboard.
-
-- Normal mode: current file
-- Visual mode: selected lines
-- Using `"repo"` as argument, will just the repo URL instead
+the browser and copied to the system clipboard. In normal mode, uses the current
+file, in visual mode, uses the selected lines.
+- `"file"`: code view
+- `"blame"`: blame view
+- `"repo"`: repo root
 
 ```lua
--- file|repo (default: file)
-require("tinygit").githubUrl("file")
+-- file|repo|blame (default: file)
+require("tinygit").githubUrl()
 ```
 
 ### Push & PRs

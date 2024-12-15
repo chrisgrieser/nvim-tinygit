@@ -23,9 +23,9 @@ end
 ---opens current buffer in the browser & copies the link to the clipboard
 ---normal mode: link to file
 ---visual mode: link to selected lines
----@param what? "file"|"repo"
+---@param what? "file"|"repo"|"blame"
 function M.githubUrl(what)
-	if what ~= "repo" then what = "file" end
+	if not what then what = "file" end
 	if u.notInGitRepo() then return end
 
 	local filepath = vim.api.nvim_buf_get_name(0)
@@ -40,7 +40,7 @@ function M.githubUrl(what)
 	local location = ""
 
 	local mode = vim.fn.mode()
-	if what == "file" and mode:find("[Vv]") then
+	if what ~= "repo" and mode:find("[Vv]") then
 		vim.cmd.normal { mode, bang = true } -- leave visual mode, so marks are set
 		local startLn = vim.api.nvim_buf_get_mark(0, "<")[1]
 		local endLn = vim.api.nvim_buf_get_mark(0, ">")[1]
@@ -52,8 +52,9 @@ function M.githubUrl(what)
 			location = "#L" .. endLn .. "-L" .. startLn
 		end
 	end
-	if what == "file" then
-		url = url .. ("/blob/%s/%s%s"):format(hash, pathInRepoEncoded, location)
+	if what ~= "repo" then
+		local type = what == "blame" and "blame" or "blob"
+		url = url .. ("/%s/%s/%s%s"):format(type, hash, pathInRepoEncoded, location)
 	end
 
 	vim.ui.open(url)
