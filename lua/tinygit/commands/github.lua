@@ -25,21 +25,22 @@ end
 ---visual mode: link to selected lines
 ---@param what? "file"|"repo"|"blame"
 function M.githubUrl(what)
-	if not what then what = "file" end
+	-- GUARD 
 	if u.notInGitRepo() then return end
+	local repo = M.getGithubRemote()
+	if not repo then return end -- not on github
 
+	-- PARAMETERS
+	if not what then what = "file" end
 	local filepath = vim.api.nvim_buf_get_name(0)
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	local pathInRepo = filepath:sub(#gitroot + 2)
 	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
-
-	local repo = M.getGithubRemote()
-	if not repo then return end -- not on github
 	local hash = u.syncShellCmd { "git", "rev-parse", "HEAD" }
 	local url = "https://github.com/" .. repo
 	local location = ""
-
 	local mode = vim.fn.mode()
+
 	if what ~= "repo" and mode:find("[Vv]") then
 		vim.cmd.normal { mode, bang = true } -- leave visual mode, so marks are set
 		local startLn = vim.api.nvim_buf_get_mark(0, "<")[1]
