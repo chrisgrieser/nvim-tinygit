@@ -29,6 +29,11 @@ function M.githubUrl(what)
 	if u.notInGitRepo() then return end
 	local repo = M.getGithubRemote()
 	if not repo then return end -- not on github
+	local alreadyPushed = u.syncShellCmd { "git", "branch", "--remote", "--contains", "HEAD" } ~= ""
+	if not alreadyPushed then
+		u.notify("Cannot open at GitHub, current commit has not been pushed yet.", "warn")
+		return
+	end
 
 	-- PARAMETERS
 	if not what then what = "file" end
