@@ -25,7 +25,7 @@ end
 ---visual mode: link to selected lines
 ---@param what? "file"|"repo"|"blame"
 function M.githubUrl(what)
-	-- GUARD 
+	-- GUARD
 	if u.notInGitRepo() then return end
 	local repo = M.getGithubRemote()
 	if not repo then return end -- not on github
