@@ -29,6 +29,16 @@ function M.githubUrl(what)
 	if u.notInGitRepo() then return end
 	local repo = M.getGithubRemote()
 	if not repo then return end -- not on github
+
+	-- just open repo url
+	if what == "repo" then
+		local url = "https://github.com/" .. repo
+		vim.ui.open(url)
+		vim.fn.setreg("+", url)
+		return
+	end
+
+	-- GUARD unpushed commits
 	local alreadyPushed = u.syncShellCmd { "git", "branch", "--remote", "--contains", "HEAD" } ~= ""
 	if not alreadyPushed then
 		u.notify("Cannot open at GitHub, current commit has not been pushed yet.", "warn")
@@ -36,7 +46,6 @@ function M.githubUrl(what)
 	end
 
 	-- PARAMETERS
-	if not what then what = "file" end
 	local filepath = vim.api.nvim_buf_get_name(0)
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	local pathInRepo = filepath:sub(#gitroot + 2)
@@ -46,7 +55,7 @@ function M.githubUrl(what)
 	local location = ""
 	local mode = vim.fn.mode()
 
-	if what ~= "repo" and mode:find("[Vv]") then
+	if mode:find("[Vv]") then
 		vim.cmd.normal { mode, bang = true } -- leave visual mode, so marks are set
 		local startLn = vim.api.nvim_buf_get_mark(0, "<")[1]
 		local endLn = vim.api.nvim_buf_get_mark(0, ">")[1]
@@ -58,10 +67,8 @@ function M.githubUrl(what)
 			location = "#L" .. endLn .. "-L" .. startLn
 		end
 	end
-	if what ~= "repo" then
-		local type = what == "blame" and "blame" or "blob"
-		url = url .. ("/%s/%s/%s%s"):format(type, hash, pathInRepoEncoded, location)
-	end
+	local type = what == "blame" and "blame" or "blob"
+	url = url .. ("/%s/%s/%s%s"):format(type, hash, pathInRepoEncoded, location)
 
 	vim.ui.open(url)
 	vim.fn.setreg("+", url) -- copy to clipboard
