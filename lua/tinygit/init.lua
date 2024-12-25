@@ -41,6 +41,10 @@ setmetatable(M, {
 			end
 
 			local module = M.cmdToModuleMap[key]
+			if not module then
+				u.notify(("Unknown command `%s`."):format(key), "warn")
+				return function() end -- prevent function call throwing error
+			end
 			require("tinygit.commands." .. module)[key](...)
 		end
 	end,
