@@ -49,20 +49,4 @@ setmetatable(M, {
 })
 
 --------------------------------------------------------------------------------
-
-local wasNotifiedOnce = false
----@deprecated
-function M.undoLastCommit()
-	require("tinygit.commands.undo-commit-amend").undoLastCommitOrAmend()
-	if not wasNotifiedOnce then
-		wasNotifiedOnce = true
-		vim.notify(
-			"`require('tinygit').undoLastCommit()` is deprecated, use `.undoLastCommitOrAmend()` instead.",
-			vim.log.levels.WARN,
-			{ title = "tinygit" }
-		)
-	end
-end
-
---------------------------------------------------------------------------------
 return M
