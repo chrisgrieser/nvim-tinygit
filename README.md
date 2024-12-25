@@ -83,6 +83,11 @@ use {
 ```
 
 ## Commands
+All commands are available via lua function or sub-command of `:Tinygit`, for
+example `require("tinygit").interactiveStaging()` and `:Tinygit
+interactiveStaging`. However, do note that the lua function is preferable,
+since the `:Tinygit` does not accept command-specific options and also does not
+trigger visual-mode specific changes to the commands.
 
 ### Interactive staging
 - This feature requires
@@ -200,7 +205,8 @@ require("tinygit").openIssueUnderCursor()
 **GitHub URL**
 Creates a permalink to the current file/lines at GitHub. The link is opened in
 the browser and copied to the system clipboard. In normal mode, uses the current
-file, in visual mode, uses the selected lines.
+file, in visual mode, uses the selected lines. (Note that visual mode detection
+requires you to use the lua function below instead of the `:Tinygit` ex-command.)
 - `"file"`: code view
 - `"blame"`: blame view
 - `"repo"`: repo root
@@ -254,6 +260,9 @@ The type of history search depends on the mode `.searchHistory` is called from:
 - **Visual line mode**: line range history (`git log -L`).
 	* Uses the selected lines as the line range.
 	* Caveat: for line history, git does not support to follow file renamings.
+
+Note that visual mode detection requires you to use the lua function above
+instead of the `:Tinygit` ex-command.
 
 **Keymaps in the diff popup**
 - `<Tab>`: show older commit

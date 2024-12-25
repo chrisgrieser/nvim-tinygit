@@ -13,26 +13,26 @@ local M = {}
 ---@param userConfig? Tinygit.Config
 function M.setup(userConfig) require("tinygit.config").setupPlugin(userConfig) end
 
+M.cmdToModuleMap = {
+	interactiveStaging = "staging",
+	smartCommit = "commit-and-amend",
+	fixupCommit = "commit-and-amend",
+	amendOnlyMsg = "commit-and-amend",
+	amendNoEdit = "commit-and-amend",
+	undoLastCommitOrAmend = "undo",
+	stashPop = "stash",
+	stashPush = "stash",
+	push = "push-pull",
+	githubUrl = "github",
+	issuesAndPrs = "github",
+	openIssueUnderCursor = "github",
+	createGitHubPr = "github",
+	fileHistory = "history",
+}
+
 setmetatable(M, {
 	__index = function(_, key)
 		return function(...)
-			local cmdToModuleMap = {
-				interactiveStaging = "staging",
-				smartCommit = "commit-and-amend",
-				fixupCommit = "commit-and-amend",
-				amendOnlyMsg = "commit-and-amend",
-				amendNoEdit = "commit-and-amend",
-				undoLastCommitOrAmend = "undo",
-				stashPop = "stash",
-				stashPush = "stash",
-				push = "push-pull",
-				githubUrl = "github",
-				issuesAndPrs = "github",
-				openIssueUnderCursor = "github",
-				createGitHubPr = "github",
-				fileHistory = "history",
-			}
-
 			-- DEPRECATION (2024-11-28)
 			local deprecated = { "searchFileHistory", "functionHistory", "lineHistory" }
 			if vim.tbl_contains(deprecated, key) then
@@ -42,7 +42,7 @@ setmetatable(M, {
 				return function() end -- prevent function call throwing error
 			end
 
-			local module = cmdToModuleMap[key]
+			local module = M.cmdToModuleMap[key]
 			require("tinygit.commands." .. module)[key](...)
 		end
 	end,
