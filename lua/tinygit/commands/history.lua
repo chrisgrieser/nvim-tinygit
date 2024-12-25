@@ -1,6 +1,4 @@
 local M = {}
-local backdrop = require("tinygit.shared.backdrop")
-local highlight = require("tinygit.shared.highlights")
 local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
@@ -73,24 +71,9 @@ end
 
 ---@param hash string
 local function restoreFileToCommit(hash)
-	-- restore
 	local out = vim.system({ "git", "restore", "--source=" .. hash, "--", state.absPath }):wait()
 	if u.nonZeroExit(out) then return end
-
-	-- notification
-	local commitMsg = u.syncShellCmd { "git", "log", "--max-count=1", "--format=%s", hash }
-	local restoreText = "Restored file to " .. hash .. ":"
-	notify(restoreText .. "\n" .. commitMsg, "info", {
-		on_open = function(win)
-			local buf = vim.api.nvim_win_get_buf(win)
-			vim.api.nvim_buf_call(buf, function()
-				highlight.commitMsg()
-				vim.fn.matchadd("Comment", restoreText)
-			end)
-		end,
-	})
-
-	-- reload buffer
+	notify(("Restored file to [%s]"):format(hash))
 	vim.cmd.checktime()
 end
 
@@ -142,17 +125,14 @@ local function showDiff(commitIdx)
 	local diff = assert(diffResult.stdout, "No diff output.")
 	local diffLines = vim.split(diff, "\n", { trimempty = true })
 
-	-- WINDOW STATS
+	-- WINDOW PARAMS
 	local relWidth = math.min(config.diffPopup.width, 1)
 	local relHeight = math.min(config.diffPopup.height, 1)
-	local vimWidth = vim.o.columns - 2
-	local vimHeight = vim.o.lines - 2
-	local absWidth = math.floor(relWidth * vimWidth)
+	local absWidth = math.floor(relWidth * vim.o.columns)
 
 	-- BUFFER
 	local bufnr = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_name(bufnr, hash .. " " .. nameAtCommit)
-	vim.bo[bufnr].buftype = "nofile"
 	setDiffBuffer(bufnr, diffLines, state.ft, absWidth)
 
 	-- TITLE
@@ -177,7 +157,7 @@ local function showDiff(commitIdx)
 		{ " restore to commit", hlgroup.desc },
 		{ " ", "FloatBorder" },
 	}
-	if query ~= "" and type == "stringSearch" then
+	if type == "stringSearch" and query ~= "" then
 		vim.list_extend(footer, {
 			{ " ", "FloatBorder" },
 			{ "n/N", hlgroup.key },
@@ -192,9 +172,9 @@ local function showDiff(commitIdx)
 		-- center of the editor
 		relative = "editor",
 		width = absWidth,
-		height = math.floor(relHeight * vimHeight),
-		row = math.ceil((1 - relHeight) * vimHeight / 2),
-		col = math.floor((1 - relWidth) * vimWidth / 2),
+		height = math.floor(relHeight * vim.o.lines),
+		row = math.floor((1 - relHeight) * vim.o.lines / 2),
+		col = math.floor((1 - relWidth) * vim.o.columns / 2),
 
 		title = title,
 		title_pos = "center",
@@ -205,7 +185,7 @@ local function showDiff(commitIdx)
 	})
 	vim.wo[winnr].winfixheight = true
 	vim.wo[winnr].conceallevel = 0 -- do not hide chars in markdown/json
-	backdrop.new(bufnr, historyZindex)
+	require("tinygit.shared.backdrop").new(bufnr, historyZindex)
 
 	-- search for the query
 	local ignoreCaseBefore = vim.o.ignorecase
@@ -217,21 +197,25 @@ local function showDiff(commitIdx)
 
 		vim.fn.matchadd("Search", query) -- highlight, CAVEAT: is case-sensitive
 		vim.fn.setreg("/", query) -- so `n` searches directly
-		pcall(vim.cmd.normal, { "n", bang = true }) -- move to first match
+
 		-- (pcall to prevent error when query cannot found, due to non-equivalent
-		-- case-sensitivity with git, because of git-regex, or due to file renamings)
+		-- case-sensitivity with git, because of git-regex or due to file renamings)
+		pcall(vim.cmd.normal, { "n", bang = true }) -- move to first match
 	end
 
 	-- KEYMAPS
+	local function keymap(lhs, rhs)
+		vim.keymap.set({ "n", "x" }, lhs, rhs, { buffer = bufnr, nowait = true })
+	end
+
 	-- keymaps: closing
-	local opts = { buffer = bufnr, nowait = true }
 	local function closePopup()
 		if vim.api.nvim_win_is_valid(winnr) then vim.api.nvim_win_close(winnr, true) end
 		if vim.api.nvim_buf_is_valid(bufnr) then vim.api.nvim_buf_delete(bufnr, { force = true }) end
 		vim.o.ignorecase = ignoreCaseBefore
 		vim.o.smartcase = smartCaseBefore
 	end
-	vim.keymap.set("n", "q", closePopup, opts)
+	keymap("q", closePopup)
 
 	-- also close the popup on leaving buffer, ensures there is not leftover
 	-- buffer when user closes popup in a different way, such as `:close`.
@@ -241,33 +225,33 @@ local function showDiff(commitIdx)
 	})
 
 	-- keymaps: next/prev commit
-	vim.keymap.set("n", "<Tab>", function()
+	keymap("<Tab>", function()
 		if commitIdx == #hashList then
 			notify("Already on last commit.", "warn")
 			return
 		end
 		closePopup()
 		showDiff(commitIdx + 1)
-	end, opts)
-	vim.keymap.set("n", "<S-Tab>", function()
+	end)
+	keymap("<S-Tab>", function()
 		if commitIdx == 1 then
 			notify("Already on first commit.", "warn")
 			return
 		end
 		closePopup()
 		showDiff(commitIdx - 1)
-	end, opts)
+	end)
 
-	vim.keymap.set("n", "R", function()
+	keymap("R", function()
 		closePopup()
 		restoreFileToCommit(hash)
-	end, opts)
+	end)
 
 	-- keymaps: yank hash
-	vim.keymap.set("n", "yh", function()
+	keymap("yh", function()
 		vim.fn.setreg("+", hash)
 		notify("Copied hash: " .. hash)
-	end, opts)
+	end)
 end
 
 ---Given a list of commits, prompt user to select one
