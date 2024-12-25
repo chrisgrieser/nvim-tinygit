@@ -102,7 +102,7 @@ local defaultConfig = {
 M.config = defaultConfig -- in case user does not call `setup`
 
 ---@param userConfig? Tinygit.Config
-function M.setupPlugin(userConfig)
+function M.setup(userConfig)
 	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig or {})
 
 	-- DEPRECATION (2024-11-23)

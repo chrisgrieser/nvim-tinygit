@@ -126,16 +126,16 @@ require("tinygit").interactiveStaging()
 require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = true }
 ```
 
-**Example Workflow**
+**Example workflow**
 Assuming these keybindings:
 
 ```lua
-vim.keymap.set("n", "ga", "<cmd>Gitsigns add_hunk<CR>") -- gitsigns.nvim
-vim.keymap.set("n", "gc", function() require("tinygit").smartCommit() end)
-vim.keymap.set("n", "gp", function() require("tinygit").push() end)
+vim.keymap.set("n", "<leader>ga", function() require("tinygit").interactiveStaging() end, { desc = "git add" })
+vim.keymap.set("n", "<leader>gc", function() require("tinygit").smartCommit() end, { desc = "git commit" })
+vim.keymap.set("n", "<leader>gp", function() require("tinygit").push() end, { desc = "git push" })
 ```
 
-1. Stage some hunks (changes) via `ga`.
+1. Stage some changes via `ga`.
 2. Use `gc` to enter a commit message.
 3. Repeat 1 and 2.
 4. When done, `gp` to push the commits.
@@ -186,9 +186,7 @@ require("tinygit").undoLastCommitOrAmend()
 - If there was a `push` operation done as a followup (such as `.smartCommit {
   pushIfClean = false }`), the last commit is not undone.
 
-<!-- LTeX: enabled=false -->
 ### GitHub interaction
-<!-- LTeX: enabled=true -->
 **Search issues & PRs**
 - Requires `curl`.
 
