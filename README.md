@@ -2,7 +2,7 @@
 # nvim-tinygit
 <!-- LTeX: enabled=true -->
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
-<img src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat" /> </a>
+<img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat"/></a>
 
 A lightweight bundle of commands focused on swift and streamlined git
 operations.
@@ -37,13 +37,13 @@ operations.
 - [Commands](#commands)
 	* [Interactive staging](#interactive-staging)
 	* [Smart-commit](#smart-commit)
-	* [Amend, fixup, and squash commits](#amend-fixup-and-squash-commits)
+	* [Amend and fixup commits](#amend-and-fixup-commits)
 	* [Undo last commit/amend](#undo-last-commitamend)
 	* [GitHub interaction](#github-interaction)
 	* [Push & PRs](#push--prs)
 	* [Search file history](#search-file-history)
 	* [Stash](#stash)
-- [Statusline components](#statusline-components)
+- [Status line components](#status-line-components)
 	* [git blame](#git-blame)
 	* [Branch state](#branch-state)
 - [Configuration](#configuration)
@@ -53,10 +53,8 @@ operations.
 
 ## Installation
 **Hard requirements**
-- nvim 0.10 or higher
+- nvim 0.10+
 - `dressing.nvim`
-- `telescope` is required for interactive staging.
-- GitHub-related features require `curl`.
 
 **Optional/recommended requirements**
 - Treesitter parser for syntax highlighting: `TSInstall gitcommit`
@@ -66,6 +64,9 @@ operations.
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) OR
   [fzf-lua](https://github.com/ibhagwan/fzf-lua) for nicer UI when selecting
   commits, issues, or PRs.
+- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) is required
+  for interactive staging.
+- GitHub-related features require `curl`.
 
 ```lua
 -- lazy.nvim
@@ -237,22 +238,22 @@ require("tinygit").fileHistory()
 
 The type of history search depends on the mode `.searchHistory` is called from:
 - **Normal mode**: search history for a string (`git log -G`)
-	- Correctly follows file renamings, and displays past file names in the
+	* Correctly follows file renamings, and displays past file names in the
 	  commit selection.
 	* The search input is case-insensitive and supports regex.
 	* Leave the input field empty to display *all* commits that changed the
 	  current file.
 - **Visual mode**: function history (`git log -L`).
-	- The selected text is assumed to be the name of the function whose history
+	* The selected text is assumed to be the name of the function whose history
 	  you want to explore.
 	* Note that [`git` uses heuristics to determine the enclosing function of
 	  a change](https://news.ycombinator.com/item?id=38153309), so this is not
 	  100% perfect and has varying reliability across languages.
-	- Caveat: for function history, git does not support to follow renamings of
+	* Caveat: for function history, git does not support to follow renamings of
 	  the file or function name.
 - **Visual line mode**: line range history (`git log -L`).
-	- Uses the selected lines as the line range.
-	- Caveat: for line history, git does not support to follow file renamings.
+	* Uses the selected lines as the line range.
+	* Caveat: for line history, git does not support to follow file renamings.
 
 **Keymaps in the diff popup**
 - `<Tab>`: show older commit
