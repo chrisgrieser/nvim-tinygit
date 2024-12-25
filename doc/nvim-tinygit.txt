@@ -91,6 +91,12 @@ staging. - GitHub-related features require `curl`.
 
 COMMANDS                                  *nvim-tinygit-nvim-tinygit-commands*
 
+All commands are available via lua function or sub-command of `:Tinygit`, for
+example `require("tinygit").interactiveStaging()` and `:Tinygit
+interactiveStaging`. However, do note that the lua function is preferable,
+since the `:Tinygit` does not accept command-specific options and also does not
+trigger visual-mode specific changes to the commands.
+
 
 INTERACTIVE STAGING ~
 
@@ -132,15 +138,15 @@ SMART-COMMIT ~
     require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = true }
 <
 
-**Example Workflow** Assuming these keybindings:
+**Example workflow** Assuming these keybindings:
 
 >lua
-    vim.keymap.set("n", "ga", "<cmd>Gitsigns add_hunk<CR>") -- gitsigns.nvim
-    vim.keymap.set("n", "gc", function() require("tinygit").smartCommit() end)
-    vim.keymap.set("n", "gp", function() require("tinygit").push() end)
+    vim.keymap.set("n", "<leader>ga", function() require("tinygit").interactiveStaging() end, { desc = "git add" })
+    vim.keymap.set("n", "<leader>gc", function() require("tinygit").smartCommit() end, { desc = "git commit" })
+    vim.keymap.set("n", "<leader>gp", function() require("tinygit").push() end, { desc = "git push" })
 <
 
-1. Stage some hunks (changes) via `ga`.
+1. Stage some changes via `ga`.
 2. Use `gc` to enter a commit message.
 3. Repeat 1 and 2.
 4. When done, `gp` to push the commits.
@@ -207,8 +213,10 @@ GITHUB INTERACTION ~
 
 **GitHub URL** Creates a permalink to the current file/lines at GitHub. The
 link is opened in the browser and copied to the system clipboard. In normal
-mode, uses the current file, in visual mode, uses the selected lines. -
-`"file"`code view - `"blame"`blame view - `"repo"`repo root
+mode, uses the current file, in visual mode, uses the selected lines. (Note
+that visual mode detection requires you to use the lua function below instead
+of the `:Tinygit` ex-command.) - `"file"`code view - `"blame"`blame view -
+`"repo"`repo root
 
 >lua
     -- file|repo|blame (default: file)
@@ -259,6 +267,9 @@ does not support to follow renamings of the file or function name. - **Visual
 line mode**line range history (`git log -L`). Uses the selected lines as the
 line range. Caveat: for line history, git does not support to follow file
 renamings.
+
+Note that visual mode detection requires you to use the lua function above
+instead of the `:Tinygit` ex-command.
 
 **Keymaps in the diff popup** - `<Tab>`show older commit - `<S-Tab>`show newer
 commit - `yh`yank the commit hash to the system clipboard - `R`restore file to
