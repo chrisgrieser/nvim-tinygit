@@ -155,19 +155,36 @@ local function showDiff(commitIdx)
 	vim.bo[bufnr].buftype = "nofile"
 	setDiffBuffer(bufnr, diffLines, state.ft, absWidth)
 
-	-- FOOTER & TITLE
-	local footer = {
-		"q: close",
-		"(⇧)↹ : next/prev commit",
-		"yh: yank hash",
-		"R: restore to commit",
-	}
-	if query ~= "" and type == "stringSearch" then table.insert(footer, "n/N: next/prev occ.") end
-	local footerText = table.concat(footer, "  ")
-
+	-- TITLE
 	local maxMsgLen = absWidth - #date - 3
 	commitMsg = commitMsg:sub(1, maxMsgLen)
 	local title = (" %s %s "):format(commitMsg, date)
+
+	-- FOOTER
+	local hlgroup = { key = "Keyword", desc = "Comment" }
+	local footer = {
+		{ " ", "FloatBorder" },
+		{ "q", hlgroup.key },
+		{ " close", hlgroup.desc },
+		{ "  ", "FloatBorder" },
+		{ "<Tab>/<S-Tab>", hlgroup.key },
+		{ " next/prev commit", hlgroup.desc },
+		{ "  ", "FloatBorder" },
+		{ "yh", hlgroup.key },
+		{ " yank hash", hlgroup.desc },
+		{ "  ", "FloatBorder" },
+		{ "R", hlgroup.key },
+		{ " restore to commit", hlgroup.desc },
+		{ " ", "FloatBorder" },
+	}
+	if query ~= "" and type == "stringSearch" then
+		vim.list_extend(footer, {
+			{ " ", "FloatBorder" },
+			{ "n/N", hlgroup.key },
+			{ " next/prev occ.", hlgroup.desc },
+			{ " ", "FloatBorder" },
+		})
+	end
 
 	-- CREATE WINDOW
 	local historyZindex = 40 -- below nvim-notify, which has 50
@@ -183,7 +200,7 @@ local function showDiff(commitIdx)
 		title_pos = "center",
 		border = config.diffPopup.border,
 		style = "minimal",
-		footer = { { " " .. footerText .. " ", "FloatBorder" } },
+		footer = footer,
 		zindex = historyZindex,
 	})
 	vim.wo[winnr].winfixheight = true
