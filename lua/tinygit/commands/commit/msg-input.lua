@@ -3,14 +3,14 @@ local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
 
 local M = {}
+
 local state = {
-	---@type table<string, string[]> -- saves message per cwd
-	abortedCommitMsg = {},
-	---@type "commit"|"amend"|nil
-	commitMode = nil,
+	abortedCommitMsg = {}, ---@type table<string, string[]> -- saves message per cwd
+	commitMode = nil, ---@type "commit"|"amend"|nil
 	winid = -1,
 	bufnr = -1,
 }
+
 local MAX_TITLE_LEN = 72
 --------------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ local function setupKeymaps(confirmationCallback)
 			local cwd = vim.uv.cwd() or ""
 			state.abortedCommitMsg[cwd] = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)
 			vim.defer_fn(
-				function() M.state.abortedCommitMsg[cwd] = nil end,
+				function() state.abortedCommitMsg[cwd] = nil end,
 				1000 * conf.keepAbortedMsgSecs
 			)
 		end
