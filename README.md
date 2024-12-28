@@ -140,6 +140,9 @@ require("tinygit").interactiveStaging()
 - Input field contents of aborted commits are briefly kept, if you just want to
   fix a detail.
 - The first line is used as commit subject, the rest is as commit body.
+- The input buffer uses the `gitcommit` filetype, so you can customize it by
+  setting options for that filetype. For instance, to enable spell-checking, add
+  `vim.opt_local.spell = true` to `after/ftplugin/gitcommit.lua`.
 
 ```lua
 -- values shown are the defaults

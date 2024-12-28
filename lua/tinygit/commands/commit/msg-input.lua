@@ -213,13 +213,12 @@ function M.new(mode, prompt, confirmationCallback)
 		table.insert(msgLines, "")
 	end
 
-
 	-- FOOTER
 	local maps = config.commit.normalModeKeymaps
 	local hlgroup = { key = "Comment", desc = "NonText" }
 	local keymapHints = {
 		{ borderChar, "FloatBorder" }, -- extend border to align with padding
-		{ " normal mode: ", hlgroup.desc },
+		{ " normal: ", hlgroup.desc },
 		{ maps.confirm, hlgroup.key },
 		{ " confirm  ", hlgroup.desc },
 		{ maps.abort, hlgroup.key },
@@ -227,7 +226,7 @@ function M.new(mode, prompt, confirmationCallback)
 	}
 
 	local titleCharCount = {
-		{ borderChar:rep(5), "FloatBorder" },
+		{ borderChar:rep(3), "FloatBorder" },
 		{ borderChar, "FloatBorder" }, -- extend border if title count < 10
 		{ " 0", "FloatBorder" }, -- initial count
 		{ "/" .. MAX_TITLE_LEN .. " ", "FloatBorder" },
@@ -237,7 +236,6 @@ function M.new(mode, prompt, confirmationCallback)
 	-- CREATE WINDOW & BUFFER
 	local bufnr = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, msgLines)
-	vim.bo[bufnr].filetype = "gitcommit"
 	local winid = vim.api.nvim_open_win(bufnr, true, {
 		relative = "editor",
 		row = math.floor((vim.o.lines - height) / 2) - 3,
@@ -254,10 +252,18 @@ function M.new(mode, prompt, confirmationCallback)
 	vim.wo[winid].scrolloff = 0
 	vim.wo[winid].sidescrolloff = 1
 	vim.wo[winid].statuscolumn = " " -- just for left-padding
-	vim.wo[winid].colorcolumn = tostring(MAX_TITLE_LEN + 1)
-	vim.wo[winid].winhighlight = "@markup.heading.gitcommit:" -- no hl, our separator is enough
 	vim.wo[winid].list = true
 	vim.wo[winid].listchars = "precedes:…,extends:…"
+
+	vim.bo[bufnr].textwidth = MAX_TITLE_LEN
+	vim.wo[winid].colorcolumn = "+1"
+	vim.wo[winid].wrap = true
+
+	-- no highlight, since we do that more intuitively with our separator is enough
+	vim.wo[winid].winhighlight = "@markup.heading.gitcommit:,@markup.link.gitcommit:"
+
+	-- needs to be set after window creation to trigger local opts from ftplugin
+	vim.bo[bufnr].filetype = "gitcommit"
 
 	vim.cmd.startinsert { bang = true }
 	state.winid, state.bufnr = winid, bufnr
