@@ -90,14 +90,11 @@ operations.
 - nvim 0.10+
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
 - `curl` for GitHub-related features
-- *optional*: Treesitter parser for syntax highlighting: `TSInstall gitcommit`
+- *optional*: Treesitter parser for syntax highlighting `TSInstall gitcommit`
 
 ```lua
 -- lazy.nvim
-{
-	"chrisgrieser/nvim-tinygit",
-	dependencies = "nvim-telescope/telescope.nvim",
-},
+{ "chrisgrieser/nvim-tinygit" },
 
 -- packer
 use {
