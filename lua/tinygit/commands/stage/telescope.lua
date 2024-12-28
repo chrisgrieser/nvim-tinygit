@@ -144,14 +144,14 @@ function M.pickHunk(hunks)
 					local hunk = actionState.get_selected_entry().value
 					actions.close(prompt_bufnr)
 					-- hunk lnum starts at beginning of context, not change
-					local hunkStart = hunk.lnum + staging.getContextSize()
+					local hunkStart = hunk.lnum + stage.getContextSize()
 					vim.cmd(("edit +%d %s"):format(hunkStart, hunk.absPath))
 				end, { desc = "Goto Hunk" })
 
 				map({ "n", "i" }, conf.keymaps.stagingToggle, function()
 					local entry = actionState.get_selected_entry()
 					local hunk = entry.value
-					local success = staging.applyPatch(hunk, "toggle")
+					local success = stage.applyPatch(hunk, "toggle")
 					if success then
 						-- Change value for selected hunk in cached hunk-list
 						hunks[entry.index].alreadyStaged = not hunks[entry.index].alreadyStaged
@@ -168,12 +168,12 @@ function M.pickHunk(hunks)
 
 					-- a staged hunk cannot be reset, so we unstage it first
 					if hunk.alreadyStaged then
-						local success1 = staging.applyPatch(hunk, "toggle")
+						local success1 = stage.applyPatch(hunk, "toggle")
 						if not success1 then return end
 						hunk.alreadyStaged = false
 					end
 
-					local success2 = staging.applyPatch(hunk, "reset")
+					local success2 = stage.applyPatch(hunk, "reset")
 					if not success2 then return end
 					table.remove(hunks, entry.index) -- remove from list as not a hunk anymore
 					refreshPicker(hunks, prompt_bufnr)

@@ -21,11 +21,13 @@ operations.
 > ```
 
 ## TODO version 1.0
-- [ ] Commit msg module
+- [x] Commit msg module
+- [ ] Commit preview
 - [ ] Use `telescope` instead of `vim.ui.select`.
 - [ ] Commit preview for fixup commits?
 - [ ] Issue insertion module for `blink.cmp`?
 - [ ] Update docs.
+- [ ] New showcase screenshots.
 - [ ] Update issue templates.
 
 ## Screenshots
@@ -355,10 +357,12 @@ require("tinygit").setup {
 		},
 	},
 	commit = {
-		preview = true, -- requires `nvim-notify` or `snacks.nvim`
-		spellcheck = false,
 		keepAbortedMsgSecs = 300,
-		inputFieldWidth = 72,
+		border = "single",
+		normalModeKeymaps = {
+			abort = "q",
+			confirm = "<CR>",
+		},
 		conventionalCommits = {
 			enforce = false,
 			-- stylua: ignore

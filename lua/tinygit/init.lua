@@ -11,10 +11,10 @@ function M.setup(userConfig) require("tinygit.config").setup(userConfig) end
 
 M.cmdToModuleMap = {
 	interactiveStaging = "stage",
-	smartCommit = "commit-and-amend",
-	fixupCommit = "commit-and-amend",
-	amendOnlyMsg = "commit-and-amend",
-	amendNoEdit = "commit-and-amend",
+	smartCommit = "commit",
+	fixupCommit = "commit",
+	amendOnlyMsg = "commit",
+	amendNoEdit = "commit",
 	undoLastCommitOrAmend = "undo",
 	stashPop = "stash",
 	stashPush = "stash",
