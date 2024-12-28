@@ -21,14 +21,13 @@ operations.
 > ```
 
 ## TODO version 1.0
-- [x] Commit msg module
-- [ ] Commit preview
-- [ ] Use `telescope` instead of `vim.ui.select`.
-- [ ] Commit preview for fixup commits?
-- [ ] Issue insertion module for `blink.cmp`?
-- [ ] Update docs.
-- [ ] New showcase screenshots.
-- [ ] Update issue templates.
+- [x] commit msg module
+- [x] update docs
+- [x] update issue template
+- [ ] commit preview
+- [ ] use `telescope` instead of `vim.ui.select`
+- [ ] commit preview for fixup commits
+- [ ] new showcase screenshots
 
 ## Screenshots
 
@@ -83,6 +82,8 @@ operations.
 - The `commit.insertIssuesOnHashSign` feature has been removed. Since the commit
   creation window is now larger, much better issue insertion via plugins like
   [cmp-git](https://github.com/petertriho/cmp-git) now work there.
+- `smartCommit` was overhauled. Among other improvements, it now supports a
+  commit body.
 
 ## Installation
 **Requirements**
@@ -113,8 +114,6 @@ since the `:Tinygit` does not accept command-specific options and also does not
 trigger visual-mode specific changes to the commands.
 
 ### Interactive staging
-- This feature requires
-  [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim).
 - This command stages hunks, that is, *parts* of a file instead of the
   full file. It is roughly comparable to `git add -p`.
 - Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r` to
@@ -133,16 +132,14 @@ require("tinygit").interactiveStaging()
 ### Smart-commit
 - Open a commit popup, alongside a preview of what is going to be committed. If
   there are no staged changes, stage all changes (`git add --all`) before the
-  commit.
+  commit. Optionally run `git push` if the repo is clean after committing.
+- The window title of the input field displays what actions are going to be
+  performed. You can see at glance whether all changes are going to be
+  committed, or whether there a `git push` is triggered afterward, so there are
+  no surprises.
 - Input field contents of aborted commits are briefly kept, if you just want to
   fix a detail.
-- Optionally run `git push` if the repo is clean after committing.
-- The title of the input field displays what actions are going to be performed.
-  You can see at glance whether all changes are going to be committed, or whether
-  there a `git push` is triggered afterward, so there are no surprises.
-- Typing `#` inserts the most recent issue number, `<Tab>` cycles through the
-  issues (opt-in, see plugin configuration).
-- Only supports the commit subject line (no commit body).
+- The first line is used as commit subject, the rest is as commit body.
 
 ```lua
 -- values shown are the defaults
@@ -158,10 +155,10 @@ vim.keymap.set("n", "<leader>gc", function() require("tinygit").smartCommit() en
 vim.keymap.set("n", "<leader>gp", function() require("tinygit").push() end, { desc = "git push" })
 ```
 
-1. Stage some changes via `ga`.
-2. Use `gc` to enter a commit message.
+1. Stage some changes via `<leader>ga`.
+2. Use `<leader>gc` to enter a commit message.
 3. Repeat 1 and 2.
-4. When done, `gp` to push the commits.
+4. When done, `<leader>gp` to push the commits.
 
 Using `pushIfClean = true` allows you to combine staging, committing, and
 pushing into a single step, when it is the last commit you intend to make.
@@ -176,7 +173,7 @@ pushing into a single step, when it is the last commit you intend to make.
   diverged (that is, the amended commit was already pushed).
 
 ```lua
--- options default to `false`
+-- values shown are the defaults
 require("tinygit").amendOnlyMsg { forcePushIfDiverged = false }
 require("tinygit").amendNoEdit { forcePushIfDiverged = false, stageAllIfNothingStaged = true }
 ```
@@ -191,7 +188,7 @@ require("tinygit").amendNoEdit { forcePushIfDiverged = false, stageAllIfNothingS
 rebase to do editor**. Note that this can potentially result in conflicts.
 
 ```lua
--- options show default values
+-- values shown are the defaults
 require("tinygit").fixupCommit {
 	selectFromLastXCommits = 15,
 	autoRebase = false,
@@ -234,7 +231,7 @@ requires you to use the lua function below instead of the `:Tinygit` ex-command.
 
 ```lua
 -- file|repo|blame (default: file)
-require("tinygit").githubUrl()
+require("tinygit").githubUrl("file")
 ```
 
 ### Push & PRs
@@ -243,7 +240,7 @@ require("tinygit").githubUrl()
   repo to be a fork with sufficient information on the remote.)
 
 ```lua
--- options default to `false`
+-- values shown are the defaults
 require("tinygit").push {
 	pullBefore = false,
 	forceWithLease = false,
