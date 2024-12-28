@@ -1,11 +1,10 @@
 local M = {}
 
+local highlight = require("tinygit.shared.highlights")
 local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 local push = require("tinygit.commands.push-pull").push
 local updateStatusline = require("tinygit.statusline").updateAllComponents
-local highlight = require("tinygit.shared.highlights")
-
 --------------------------------------------------------------------------------
 
 ---@nodiscard
