@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*           For Neovim          Last change: 2024 December 25
+*nvim-tinygit.txt*           For Neovim          Last change: 2024 December 28
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -19,6 +19,17 @@ Table of Contents                             *nvim-tinygit-table-of-contents*
 A lightweight bundle of commands focused on swift and streamlined git
 operations.
 
+
+  [!NOTE] The upcoming version 1.0 will include several breaking changes. If you
+  want to keep using the current version, pin the tag `v0.9`.
+  >lua
+      -- lazy.nvim
+      {
+        "chrisgrieser/nvim-tinygit",
+        tag = "v0.9"
+        dependencies = "stevearc/dressing.nvim",
+      },
+  <
 
 
 
