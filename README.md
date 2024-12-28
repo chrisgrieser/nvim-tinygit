@@ -7,6 +7,19 @@
 A lightweight bundle of commands focused on swift and streamlined git
 operations.
 
+> [!NOTE]
+> The upcoming version 1.0 will include several breaking changes. If you want to
+> keep using the current version, pin the tag `v0.9`.
+>
+> ```lua
+> -- lazy.nvim
+> {
+> 	"chrisgrieser/nvim-tinygit",
+> 	tag = "v0.9"
+> 	dependencies = "stevearc/dressing.nvim",
+> },
+> ```
+
 <img alt="Showcase interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/3c055861-6b93-4065-8601-f79568d8ac28">
 <img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/7000ca1e-199b-4632-802b-fe630589f8f5">
 <img alt="Showcase git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94">
