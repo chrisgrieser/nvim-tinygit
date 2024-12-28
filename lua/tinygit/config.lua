@@ -41,7 +41,7 @@ local defaultConfig = {
 		},
 	},
 	push = {
-		preventPushingFixupOrSquashCommits = true,
+		preventPushingFixupCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
 
 		-- Pushed commits contain references to issues, open those issues.
@@ -76,7 +76,7 @@ local defaultConfig = {
 	},
 	statusline = {
 		blame = {
-			ignoreAuthors = {}, -- hide component if these authors (useful for bots)
+			ignoreAuthors = {}, -- hide component if from these authors (useful for bots)
 			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
 			maxMsgLen = 40,
 			icon = "ﰖ",
@@ -126,7 +126,7 @@ function M.setup(userConfig)
 	if M.config.commit.insertIssuesOnHashSign then
 		warn("The `commit.insertIssuesOnHashSign` feature has been removed. Since "
 			.. "the commit creation window is now larger, much better issue insertion "
-			.. "via plugins like `cmp-git` now work there.")
+			.. "via plugins like `cmp-git` now works there.")
 	end
 
 	-- DEPRECATION (2024-12-28)
@@ -139,6 +139,10 @@ function M.setup(userConfig)
 	if M.config.commit.spellcheck then
 		warn("The config `commit.spellcheck` has been removed. Configure via ftplugin for `gitcommit`.")
 	end
+	if M.config.push.preventPushingFixupOrSquashCommits then
+		warn("The config `push.preventPushingFixupOrSquashCommits` has moved to `push.preventPushingFixupCommits`.")
+	end
+
 	---@diagnostic enable: undefined-field
 
 	-- VALIDATE border `none` does not work with and title/footer used by this plugin

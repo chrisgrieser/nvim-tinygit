@@ -373,7 +373,7 @@ require("tinygit").setup {
 		},
 	},
 	push = {
-		preventPushingFixupOrSquashCommits = true,
+		preventPushingFixupCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
 
 		-- Pushed commits contain references to issues, open those issues.
@@ -408,7 +408,7 @@ require("tinygit").setup {
 	},
 	statusline = {
 		blame = {
-			ignoreAuthors = {}, -- hide component if these authors (useful for bots)
+			ignoreAuthors = {}, -- hide component if from these authors (useful for bots)
 			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
 			maxMsgLen = 40,
 			icon = "ﰖ",
