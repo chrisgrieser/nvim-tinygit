@@ -104,6 +104,7 @@ M.config = defaultConfig -- in case user does not call `setup`
 ---@param userConfig? Tinygit.Config
 function M.setup(userConfig)
 	M.config = vim.tbl_deep_extend("force", defaultConfig, userConfig or {})
+	local function warn(msg) require("tinygit.shared.utils").notify(msg, "warn", { ft = "markdown" }) end
 
 	-- DEPRECATION (2024-11-23)
 	---@diagnostic disable: undefined-field
@@ -126,7 +127,7 @@ function M.setup(userConfig)
 - `issueIcons` → `github.icons`
 - `backdrop` → `appearance.backdrop`
 - `mainIcon` → `appearance.mainIcon`]]
-		require("tinygit.shared.utils").notify(msg, "warn", { ft = "markdown" })
+		warn(msg)
 	end
 
 	-- VALIDATE border `none` does not work with and title/footer used by this plugin
@@ -134,7 +135,7 @@ function M.setup(userConfig)
 		local fallback = defaultConfig.history.diffPopup.border
 		M.config.history.diffPopup.border = fallback
 		local msg = ('Border type "none" is not supported, falling back to %q.'):format(fallback)
-		require("tinygit.shared.utils").notify(msg, "warn")
+		warn(msg)
 	end
 end
 

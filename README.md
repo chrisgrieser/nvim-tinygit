@@ -8,8 +8,8 @@ A lightweight bundle of commands focused on swift and streamlined git
 operations.
 
 > [!NOTE]
-> The upcoming version 1.0 will include several breaking changes. If you want to
-> keep using the current version, pin the tag `v0.9`.
+> [Version 1.0](#breaking-changes-in-v10) included several breaking changes. If
+> you want to keep using the previous version, pin the tag `v0.9`:
 >
 > ```lua
 > -- lazy.nvim
@@ -20,9 +20,19 @@ operations.
 > },
 > ```
 
-<img alt="Showcase interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/3c055861-6b93-4065-8601-f79568d8ac28">
-<img alt="Showcase smart commit" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/7000ca1e-199b-4632-802b-fe630589f8f5">
-<img alt="Showcase git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94">
+## TODO version 1.0
+- [ ] Commit msg module
+- [ ] Use `telescope` instead of `vim.ui.select`.
+- [ ] Commit preview for fixup commits?
+- [ ] Issue insertion module for `blink.cmp`?
+- [ ] Update docs.
+- [ ] Update issue templates.
+
+## Screenshots
+
+| Interactive staging                                                                                                                               | File History                                                                                                                              |
+|---------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| <img alt="interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/3c055861-6b93-4065-8601-f79568d8ac28"> | <img alt="git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94"> |
 
 ## Feature overview
 - **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
@@ -46,6 +56,7 @@ operations.
 
 <!-- toc -->
 
+- [Breaking changes in v1.0](#breaking-changes-in-v10)
 - [Installation](#installation)
 - [Commands](#commands)
 	* [Interactive staging](#interactive-staging)
@@ -64,34 +75,31 @@ operations.
 
 <!-- tocstop -->
 
-## Installation
-**Hard requirements**
-- nvim 0.10+
-- `dressing.nvim`
+## Breaking changes in v1.0
+- `dressing.nvim` and `nvim-notify` are **no longer dependencies****.
+- `telescope.nvim` is now an **always required dependency**.
+- The `commit.insertIssuesOnHashSign` feature has been removed. Since the commit
+  creation window is now larger, much better issue insertion via plugins like
+  [cmp-git](https://github.com/petertriho/cmp-git) now work there.
 
-**Optional/recommended requirements**
-- Treesitter parser for syntax highlighting: `TSInstall gitcommit`
-- [nvim-notify](http://github.com/rcarriga/nvim-notify) OR
-  [snacks.nvim](http://github.com/folke/snacks.nvim) for the commit preview,
-  issue number insertion, and various notifications.
-- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) OR
-  [fzf-lua](https://github.com/ibhagwan/fzf-lua) for nicer UI when selecting
-  commits, issues, or PRs.
-- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) is required
-  for interactive staging.
-- GitHub-related features require `curl`.
+## Installation
+**Requirements**
+- nvim 0.10+
+- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+- `curl` for GitHub-related features
+- *optional*: Treesitter parser for syntax highlighting: `TSInstall gitcommit`
 
 ```lua
 -- lazy.nvim
 {
 	"chrisgrieser/nvim-tinygit",
-	dependencies = "stevearc/dressing.nvim",
+	dependencies = "nvim-telescope/telescope.nvim",
 },
 
 -- packer
 use {
 	"chrisgrieser/nvim-tinygit",
-	requires = "stevearc/dressing.nvim",
+	requires = "nvim-telescope/telescope.nvim",
 }
 ```
 
@@ -321,17 +329,6 @@ require("tinygit.statusline").branchState()
 
 ## Configuration
 The `setup` call is optional.
-
-> [!NOTE]
-> Recently (2024-11-23), the config structure has been overhauled:
-> - `staging` → `stage`
-> - `commitMsg` → `commit`
->   * `commitMsg.commitPreview` → `commit.preview`
->   * `commitMsg.insertIssuesOnHash` → `commit.insertIssuesOnHashSign`
-> - `historySearch` → `history`
-> - `issueIcons` → `github.icons`
-> - `backdrop` → `appearance.backdrop`
-> - `mainIcon` → `appearance.mainIcon`
 
 ```lua
 -- default config
