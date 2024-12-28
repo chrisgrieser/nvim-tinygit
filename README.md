@@ -367,14 +367,6 @@ require("tinygit").setup {
 				"perf", "style", "revert", "ci", "break", "improv",
 			},
 		},
-		insertIssuesOnHashSign = {
-			-- Typing `#` will insert the most recent open issue.
-			-- Requires `nvim-notify` or `snacks.nvim`.
-			enabled = false,
-			next = "<Tab>", -- insert & normal mode
-			prev = "<S-Tab>",
-			issuesToFetch = 20,
-		},
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,

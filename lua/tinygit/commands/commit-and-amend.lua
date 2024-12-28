@@ -9,9 +9,6 @@ local highlight = require("tinygit.shared.highlights")
 
 M.state = {
 	abortedCommitMsg = {},
-	openIssues = {},
-	curIssue = nil,
-	issueNotif = nil,
 }
 
 --------------------------------------------------------------------------------
@@ -86,66 +83,6 @@ local function processCommitMsg(commitMsg)
 	return true, commitMsg
 end
 
----@param mode "first"|"next"|"prev"
-local function insertIssueNumber(mode)
-	-- cannot use `expr = true`, since it blocks line-editing APIs
-	local function insertText(str)
-		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-		local line = vim.api.nvim_get_current_line()
-		vim.api.nvim_set_current_line(line:sub(1, col) .. str .. line:sub(col + 1))
-		vim.api.nvim_win_set_cursor(0, { row, col + #str })
-	end
-
-	-- GUARD all hotkeys should still insert a `#` as fallback if there are no issues
-	if #M.state.openIssues == 0 then
-		insertText("#")
-		return
-	end
-
-	-- determine next issue
-	local increment = 0
-	if mode == "next" then increment = 1 end
-	if mode == "prev" then increment = -1 end
-	M.state.curIssue = M.state.curIssue + increment
-	if M.state.curIssue == 0 then M.state.curIssue = #M.state.openIssues end
-	if M.state.curIssue > #M.state.openIssues then M.state.curIssue = 1 end
-	local issue = M.state.openIssues[M.state.curIssue]
-
-	-- notification
-	setupNotificationHighlights(highlight.issueText)
-	local msg = string.format("#%d %s by %s", issue.number, issue.title, issue.user.login)
-	M.state.issueNotif = u.notify(msg, "info", {
-		title = "Referenced issue",
-		timeout = false,
-		id = "tinygit.issue-notification", -- only `snacks.nvim`
-		-- `replace` only for `nvim-notify`
-		replace = M.state.issueNotif and M.state.issueNotif.id, ---@diagnostic disable-line: undefined-field
-	})
-
-	-- update text
-	local line = vim.api.nvim_get_current_line()
-	local updated, found = line:gsub("(.*)#%d+", "%1#" .. issue.number) -- (.*): only last occurrence
-	if found == 0 or mode == "first" then
-		insertText("#" .. issue.number)
-	else
-		vim.api.nvim_set_current_line(updated)
-	end
-end
-
----@param bufnr number
-local function setupIssueInsertion(bufnr)
-	M.state.curIssue = 0
-	M.state.openIssues = {}
-	require("tinygit.commands.github").getOpenIssuesAsync()
-
-	local conf = require("tinygit.config").config.commit.insertIssuesOnHashSign
-	local keymap = vim.keymap.set
-
-	keymap("i", "#", function() insertIssueNumber("first") end, { buffer = bufnr })
-	keymap({ "n", "i" }, conf.next, function() insertIssueNumber("next") end, { buffer = bufnr })
-	keymap({ "n", "i" }, conf.prev, function() insertIssueNumber("prev") end, { buffer = bufnr })
-end
-
 ---@param commitType? "smartCommit"
 local function setupInputField(commitType)
 	local opts = require("tinygit.config").config.commit
@@ -209,12 +146,6 @@ local function setupInputField(commitType)
 			overwriteDressingWidth(winid)
 			setupHighlighting(winid)
 			charCountInFooter(bufnr, winid)
-
-			-- fetch the issues now, so they are later available when typing `#`
-			local hasNotifyPlugin = (package.loaded["notify"] or package.loaded["snacks"])
-			if opts.insertIssuesOnHashSign.enabled and hasNotifyPlugin then
-				setupIssueInsertion(bufnr)
-			end
 
 			-- activates styling for statusline plugins (e.g., filename icons)
 			vim.api.nvim_buf_set_name(bufnr, "COMMIT_EDITMSG")
@@ -352,15 +283,12 @@ end
 
 local function closeNotifications()
 	local opts = require("tinygit.config").config.commit
-	if not (opts.preview or M.state.issueNotif) then return end
+	if not (opts.preview) then return end
 
 	if package.loaded["notify"] then
 		-- can only dismiss all and not by ID: https://github.com/rcarriga/nvim-notify/issues/240
 		require("notify").dismiss() ---@diagnostic disable-line: missing-parameter
-		M.state.issueNotif = nil
 	elseif package.loaded["snacks"] then
-		-- https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md#snacksnotifierhide
-		require("snacks").notifier.hide("tinygit.issue-notification")
 		require("snacks").notifier.hide("tinygit.commit-preview")
 	end
 end

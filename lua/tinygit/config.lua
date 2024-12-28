@@ -37,14 +37,6 @@ local defaultConfig = {
 				"perf", "style", "revert", "ci", "break", "improv",
 			},
 		},
-		insertIssuesOnHashSign = {
-			-- Typing `#` will insert the most recent open issue.
-			-- Requires `nvim-notify` or `snacks.nvim`.
-			enabled = false,
-			next = "<Tab>", -- insert & normal mode
-			prev = "<S-Tab>",
-			issuesToFetch = 20,
-		},
 	},
 	push = {
 		preventPushingFixupOrSquashCommits = true,
@@ -127,6 +119,14 @@ function M.setup(userConfig)
 - `issueIcons` → `github.icons`
 - `backdrop` → `appearance.backdrop`
 - `mainIcon` → `appearance.mainIcon`]]
+		warn(msg)
+	end
+
+	-- DEPRECATION (2024-12-28)
+	if M.config.commit.insertIssuesOnHashSign then ---@diagnostic disable-line: undefined-field
+		local msg = "The `commit.insertIssuesOnHashSign` feature has been removed. Since "
+			.. "the commit creation window is now larger, much better issue insertion "
+			.. "via plugins like `cmp-git` now work there."
 		warn(msg)
 	end
 
