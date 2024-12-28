@@ -113,7 +113,7 @@ local function setupKeymaps(confirmationCallback)
 
 		-- confirm
 		local bodytext = vim
-			.iter(vim.api.nvim_buf_get_lines(bufnr, 1, -1, false))
+			.iter(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false))
 			:skip(1) -- skip title
 			:join("\n") -- join for shell command
 		local commitBody = vim.trim(bodytext) ~= "" and vim.trim(bodytext) or nil
@@ -212,6 +212,7 @@ function M.new(mode, prompt, confirmationCallback)
 	while #msgLines < 2 do -- so there is always a body
 		table.insert(msgLines, "")
 	end
+
 
 	-- FOOTER
 	local maps = config.commit.normalModeKeymaps
