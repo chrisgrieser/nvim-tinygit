@@ -3,19 +3,9 @@ local M = {}
 
 ---@alias Tinygit.notifyLevel "info"|"trace"|"debug"|"warn"|"error"
 
----@class Tinygit.notifyOpts
----@field title? string
----@field icon? string
----@field timeout? number|boolean
----@field ft? string snacks.nvim
----@field id? string snacks.nvim
----@field animate? boolean nvim-notify
----@field on_open? function nvim-notify
----@field replace? number nvim-notify
-
 ---@param body string
 ---@param level? Tinygit.notifyLevel
----@param opts? Tinygit.notifyOpts
+---@param opts? table
 function M.notify(body, level, opts)
 	if not level then level = "info" end
 	if not opts then opts = {} end

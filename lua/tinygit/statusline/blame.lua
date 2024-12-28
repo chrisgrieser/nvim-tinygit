@@ -1,7 +1,3 @@
--- INFO This file is required nowhere but in the snippet the user uses. That
--- means non of this code will be executed, if the user does not decide to use
--- this feature.
---------------------------------------------------------------------------------
 local M = {}
 
 local u = require("tinygit.shared.utils")

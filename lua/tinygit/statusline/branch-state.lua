@@ -1,7 +1,6 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----Returns info ahead, behind, and divergence of the local branch with the remote one
 ---@return string blame lualine stringifys result, so need to return empty string instead of nil
 ---@nodiscard
 local function getBranchState()
