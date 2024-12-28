@@ -56,7 +56,8 @@ end
 ---@param sepLength number|false -- false to not draw separators
 function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 	local ns = vim.api.nvim_create_namespace("tinygit.diffBuffer")
-	local sepChar = "═"
+	local sepChar = "┄"
+	local sepHlGroup = "Comment"
 	local diffLines, _, fileMode, rename = M.splitOffDiffHeader(diffLinesWithHeader)
 
 	-- context line is useless in this case
@@ -126,7 +127,7 @@ function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 		-- separator between hunks
 		if ln > 1 and sepLength then
 			vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
-				virt_lines = { { { sepChar:rep(sepLength), "FloatBorder" } } },
+				virt_lines = { { { sepChar:rep(sepLength), sepHlGroup } } },
 				virt_lines_above = true,
 			})
 		end
