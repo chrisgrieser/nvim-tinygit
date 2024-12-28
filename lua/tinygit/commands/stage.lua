@@ -191,7 +191,7 @@ function M.interactiveStaging()
 		pattern = "TelescopeResults",
 		callback = function(ctx) require("tinygit.shared.backdrop").new(ctx.buf) end,
 	})
-	require("tinygit.commands.staging.telescope").pickHunk(allHunks)
+	require("tinygit.commands.stage.telescope").pickHunk(allHunks)
 end
 --------------------------------------------------------------------------------
 return M

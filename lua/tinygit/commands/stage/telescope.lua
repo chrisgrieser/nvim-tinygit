@@ -7,7 +7,7 @@ local actions = require("telescope.actions")
 local finders = require("telescope.finders")
 local previewers = require("telescope.previewers")
 
-local staging = require("tinygit.commands.staging")
+local stage = require("tinygit.commands.stage")
 local conf = require("tinygit.config").config.stage
 local setDiffBuffer = require("tinygit.shared.diff").setDiffBuffer
 --------------------------------------------------------------------------------
