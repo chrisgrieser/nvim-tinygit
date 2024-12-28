@@ -47,6 +47,7 @@ local function getCommitPreview(willStageAllChanges, statsWidth)
 			:gsub(" Bin ", "    ") -- binary icon
 			:gsub("\n +", "\n") -- remove leading spaces
 	end
+
 	-----------------------------------------------------------------------------
 
 	-- get changes
@@ -80,7 +81,7 @@ local function setupKeymaps(confirmationCallback)
 		-- save msg
 		if state.mode ~= "amend" then
 			local cwd = vim.uv.cwd() or ""
-			state.abortedCommitMsg[cwd] = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)
+			state.abortedCommitMsg[cwd] = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 			vim.defer_fn(
 				function() state.abortedCommitMsg[cwd] = nil end,
 				1000 * conf.keepAbortedMsgSecs
@@ -196,7 +197,7 @@ function M.new(mode, prompt, confirmationCallback)
 	local border = config.commit.border
 	local borderChar = border == "double" and "═" or "─"
 	local height = 4
-	prompt = vim.trim(config.appearance.mainIcon .. " " .. prompt)
+	prompt = vim.trim(config.appearance.mainIcon .. "  " .. prompt)
 
 	-- PREFILL
 	local msgLines = {}
@@ -206,8 +207,7 @@ function M.new(mode, prompt, confirmationCallback)
 		msgLines = { lastCommitTitle, lastCommitBody }
 	elseif mode == "commit" then
 		local cwd = vim.uv.cwd() or ""
-		local lastCommitMsg = state.abortedCommitMsg[cwd]
-		msgLines = lastCommitMsg or {}
+		msgLines = state.abortedCommitMsg[cwd] or {}
 	end
 	while #msgLines < 2 do -- so there is always a body
 		table.insert(msgLines, "")
