@@ -8,12 +8,13 @@ local finders = require("telescope.finders")
 local previewers = require("telescope.previewers")
 
 local stage = require("tinygit.commands.stage")
-local conf = require("tinygit.config").config.stage
 local setDiffBuffer = require("tinygit.shared.diff").setDiffBuffer
 --------------------------------------------------------------------------------
 
 ---@param hunks Tinygit.Hunk[]
 local function newFinder(hunks)
+	local conf = require("tinygit.config").config.stage
+
 	return finders.new_table {
 		results = hunks,
 		entry_maker = function(hunk)
@@ -105,21 +106,19 @@ end
 -- DOCS https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md
 ---@param hunks Tinygit.Hunk[]
 function M.pickHunk(hunks)
-	local config = require("tinygit.config").config
-	local title = vim.trim(config.appearance.mainIcon .. " Git hunks")
-	local telescopeOpts = config.stage.telescopeOpts
+	local icon = require("tinygit.config").config.appearance.mainIcon
+	local conf = require("tinygit.config").config.stage
 
 	pickers
-		.new(telescopeOpts, {
-			prompt_title = title,
-			sorter = telescopeConf.generic_sorter(telescopeOpts),
+		.new(conf.telescopeOpts, {
+			prompt_title = vim.trim(icon .. " Git hunks"),
+			sorter = telescopeConf.generic_sorter(conf.telescopeOpts),
 
 			finder = newFinder(hunks),
 
 			-- DOCS `:help telescope.previewers`
 			previewer = previewers.new_buffer_previewer {
-				---@param self table
-				---@param entry { value: Tinygit.Hunk }
+				---@type fun(self: table, entry: { value: Tinygit.Hunk })
 				define_preview = function(self, entry)
 					local bufnr = self.state.bufnr
 					local hunk = entry.value
@@ -144,9 +143,9 @@ function M.pickHunk(hunks)
 					local hunk = actionState.get_selected_entry().value
 					actions.close(prompt_bufnr)
 					-- hunk lnum starts at beginning of context, not change
-					local hunkStart = hunk.lnum + stage.getContextSize()
+					local hunkStart = hunk.lnum + conf.contextSize
 					vim.cmd(("edit +%d %s"):format(hunkStart, hunk.absPath))
-				end, { desc = "Goto Hunk" })
+				end, { desc = "Goto hunk" })
 
 				map({ "n", "i" }, conf.keymaps.stagingToggle, function()
 					local entry = actionState.get_selected_entry()
@@ -160,7 +159,7 @@ function M.pickHunk(hunks)
 						end
 						refreshPicker(hunks, prompt_bufnr)
 					end
-				end, { desc = "Staging Toggle" })
+				end, { desc = "Toggle staged" })
 
 				map({ "n", "i" }, conf.keymaps.resetHunk, function()
 					local entry = actionState.get_selected_entry()
@@ -177,7 +176,7 @@ function M.pickHunk(hunks)
 					if not success2 then return end
 					table.remove(hunks, entry.index) -- remove from list as not a hunk anymore
 					refreshPicker(hunks, prompt_bufnr)
-				end, { desc = "Reset Hunk" })
+				end, { desc = "Reset hunk" })
 
 				return true -- keep default mappings
 			end,

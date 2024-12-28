@@ -1,4 +1,5 @@
 local M = {}
+local backdrop = require("tinygit.shared.backdrop")
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
@@ -22,22 +23,6 @@ local function notify(msg, level, opts)
 end
 
 --------------------------------------------------------------------------------
-
----@return number
-function M.getContextSize()
-	-- CAVEAT context=0 is not supported without `--unidiff-zero`
-	-- DOCS https://git-scm.com/docs/git-apply#Documentation/git-apply.txt---unidiff-zero
-	-- However, it is discouraged in the git manual, and the `git apply` tends to
-	-- fail quite often, probably as line count changes are not accounted for
-	-- when splitting up changes into hunks in `getHunksFromDiffOutput`.
-	-- Using context=1 works, but has the downside of not being 1:1 the same
-	-- hunks as with `gitsigns.nvim`. Since many small hunks are actually abit
-	-- cumbersome, and since it's discouraged by git anyway, we simply disallow
-	-- context=0 for now.
-	local contextSize = require("tinygit.config").config.stage.contextSize
-	if contextSize < 1 then contextSize = 0 end
-	return contextSize
-end
 
 ---@param diffCmdStdout string
 ---@param diffIsOfStaged boolean
@@ -156,15 +141,9 @@ end
 --------------------------------------------------------------------------------
 
 function M.interactiveStaging()
-	vim.cmd("silent! update")
-
-	-- GUARD prerequisites not met
-	local installed = pcall(require, "telescope")
-	if not installed then
-		notify("This feature requires `nvim-telescope`.", "warn")
-		return
-	end
+	-- GUARD
 	if u.notInGitRepo() then return end
+	vim.cmd("silent! update")
 	local noChanges = u.syncShellCmd { "git", "status", "--porcelain" } == ""
 	if noChanges then
 		notify("There are no staged or unstaged changes.", "warn")
@@ -173,8 +152,8 @@ function M.interactiveStaging()
 
 	-- GET ALL HUNKS
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
-
-	local diffArgs = { "git", "diff", "--unified=" .. M.getContextSize(), "--diff-filter=ADMR" }
+	local contextSize = require("tinygit.config").config.stage.contextSize
+	local diffArgs = { "git", "diff", "--unified=" .. contextSize, "--diff-filter=ADMR" }
 	-- no trimming, since trailing empty lines can be blank context lines in diff output
 	local changesDiff = u.syncShellCmd(diffArgs, "notrim")
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
@@ -189,7 +168,7 @@ function M.interactiveStaging()
 	vim.api.nvim_create_autocmd("FileType", {
 		once = true,
 		pattern = "TelescopeResults",
-		callback = function(ctx) require("tinygit.shared.backdrop").new(ctx.buf) end,
+		callback = function(ctx) backdrop.new(ctx.buf) end,
 	})
 	require("tinygit.commands.stage.telescope").pickHunk(allHunks)
 end

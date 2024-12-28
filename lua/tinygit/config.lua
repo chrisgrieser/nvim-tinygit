@@ -147,6 +147,17 @@ function M.setup(userConfig)
 		M.config.history.diffPopup.border = fallback
 		warn(('Border type "none" is not supported, falling back to %q.'):format(fallback))
 	end
+
+	-- VALIDATE `context` > 0 (0 is not supported without `--unidiff-zero`)
+	-- DOCS https://git-scm.com/docs/git-apply#Documentation/git-apply.txt---unidiff-zero
+	-- However, it is discouraged in the git manual, and `git apply` tends to
+	-- fail quite often, probably as line count changes are not accounted for
+	-- when splitting up changes into hunks in `getHunksFromDiffOutput`.
+	-- Using context=1 works, but has the downside of not being 1:1 the same
+	-- hunks as with `gitsigns.nvim`. Since many small hunks are actually abit
+	-- cumbersome, and since it's discouraged by git anyway, we simply disallow
+	-- context=0 for now.
+	if M.config.stage.contextSize < 1 then M.config.stage.contextSize = 1 end
 end
 
 --------------------------------------------------------------------------------
