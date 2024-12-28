@@ -118,7 +118,7 @@ function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 		vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
 			virt_text = {
 				{ originalLnum .. ":", "diffLine" },
-				{ " ", "None_Padding" },
+				{ " " },
 			},
 			virt_text_pos = "inline",
 			line_hl_group = "DiffText",
@@ -127,7 +127,9 @@ function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 		-- separator between hunks
 		if ln > 1 and sepLength then
 			vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
-				virt_lines = { { { sepChar:rep(sepLength), sepHlGroup } } },
+				virt_lines = {
+					{ { sepChar:rep(sepLength), sepHlGroup } },
+				},
 				virt_lines_above = true,
 			})
 		end
@@ -136,7 +138,9 @@ function M.setDiffBuffer(bufnr, diffLinesWithHeader, filetype, sepLength)
 	-- separator below last hunk for clarity
 	if sepLength then
 		vim.api.nvim_buf_set_extmark(bufnr, ns, #diffLines, 0, {
-			virt_lines = { { { sepChar:rep(sepLength), "FloatBorder" } } },
+			virt_lines = {
+				{ { sepChar:rep(sepLength), sepHlGroup } },
+			},
 			virt_lines_above = true,
 		})
 	end

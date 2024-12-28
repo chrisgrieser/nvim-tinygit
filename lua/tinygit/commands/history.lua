@@ -128,7 +128,8 @@ local function showDiff(commitIdx)
 	-- WINDOW PARAMS
 	local relWidth = math.min(config.diffPopup.width, 1)
 	local relHeight = math.min(config.diffPopup.height, 1)
-	local absWidth = math.floor(relWidth * vim.o.columns)
+	local absWidth = math.floor(relWidth * vim.o.columns) - 2
+	local absHeight = math.floor(relHeight * vim.o.lines) - 2
 
 	-- BUFFER
 	local bufnr = vim.api.nvim_create_buf(false, true)
@@ -141,7 +142,7 @@ local function showDiff(commitIdx)
 	local title = (" %s %s "):format(commitMsg, date)
 
 	-- FOOTER
-	local hlgroup = { key = "Keyword", desc = "Comment" }
+	local hlgroup = { key = "Comment", desc = "NonText" }
 	local footer = {
 		{ " ", "FloatBorder" },
 		{ "q", hlgroup.key },
@@ -169,13 +170,11 @@ local function showDiff(commitIdx)
 	-- CREATE WINDOW
 	local historyZindex = 40 -- below nvim-notify, which has 50
 	local winnr = vim.api.nvim_open_win(bufnr, true, {
-		-- center of the editor
 		relative = "editor",
 		width = absWidth,
-		height = math.floor(relHeight * vim.o.lines),
-		row = math.floor((1 - relHeight) * vim.o.lines / 2),
-		col = math.floor((1 - relWidth) * vim.o.columns / 2),
-
+		height = absHeight,
+		row = math.ceil((1 - relHeight) * vim.o.lines / 2),
+		col = math.ceil((1 - relWidth) * vim.o.columns / 2),
 		title = title,
 		title_pos = "center",
 		border = config.diffPopup.border,
