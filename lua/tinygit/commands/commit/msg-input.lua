@@ -1,4 +1,5 @@
 local backdrop = require("tinygit.shared.backdrop")
+local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
 
 local M = {}
@@ -262,6 +263,7 @@ function M.new(mode, prompt, confirmationCallback)
 
 	-- AUTOCMDS
 	backdrop.new(bufnr)
+	vim.api.nvim_win_call(winid, function() highlight.commitMsg("only-inline-code-and-issues") end)
 	setupKeymaps(confirmationCallback)
 	setupTitleCharCount(borderChar)
 	setupUnmount()
