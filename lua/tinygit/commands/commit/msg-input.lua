@@ -16,52 +16,6 @@ local MAX_TITLE_LEN = 72
 ---@param msg string
 local function warn(msg) u.notify(msg, "warn", { title = "Commit message" }) end
 
-local function diffStatsHighlights()
-	vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
-	vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
-	vim.fn.matchadd("Keyword", [[(new.*)]])
-	vim.fn.matchadd("Keyword", [[(gone.*)]])
-	vim.fn.matchadd("Comment", "│") -- vertical separator
-	vim.fn.matchadd("Function", ".*/") -- directory of a file
-	vim.fn.matchadd("WarningMsg", "/")
-end
-
----@param willStageAllChanges boolean
----@param statsWidth number
----@return string
----@nodiscard
-local function getCommitPreview(willStageAllChanges, statsWidth)
-	---@param gitStatsArgs string[]
-	local function cleanupStatsOutput(gitStatsArgs)
-		return u
-			.syncShellCmd(gitStatsArgs)
-			:gsub("\n[^\n]*$", "") -- remove summary line (footer)
-			:gsub(" | ", " │ ") -- pipes to full vertical bars
-			:gsub(" Bin ", "    ") -- binary icon
-			:gsub("\n +", "\n") -- remove leading spaces
-	end
-
-	-----------------------------------------------------------------------------
-
-	-- get changes
-	local gitStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. statsWidth }
-	local title = "Commit preview"
-	local changes
-	if willStageAllChanges then
-		u.intentToAddUntrackedFiles() -- include new files in diff stats
-		title = "Stage & " .. title:lower()
-		changes = cleanupStatsOutput(gitStatsCmd)
-	else
-		local notStaged = cleanupStatsOutput(gitStatsCmd)
-		table.insert(gitStatsCmd, "--staged")
-		local staged = cleanupStatsOutput(gitStatsCmd)
-		changes = notStaged == "" and staged
-			or table.concat({ staged, "not staged:", notStaged }, "\n")
-	end
-
-	return changes
-end
-
 ---@param confirmationCallback fun(commitTitle: string, commitBody?: string)
 local function setupKeymaps(confirmationCallback)
 	local bufnr = state.bufnr
@@ -118,6 +72,7 @@ local function setupKeymaps(confirmationCallback)
 		-- close win
 		vim.cmd.bwipeout(bufnr)
 	end
+
 	map("n", conf.keymaps.normal.confirm, confirm)
 	map("i", conf.keymaps.insert.confirm, confirm)
 end
