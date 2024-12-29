@@ -6,7 +6,6 @@ local M = {}
 
 local state = {
 	abortedCommitMsg = {}, ---@type table<string, string[]> -- saves message per cwd
-	commitMode = nil, ---@type "commit"|"amend"|nil
 	winid = -1,
 	bufnr = -1,
 }
@@ -19,7 +18,7 @@ local MAX_TITLE_LEN = 72
 ---@param opts? table
 local function notify(msg, level, opts)
 	if not opts then opts = {} end
-	opts.title = state.commitMode
+	opts.title = "Commit message"
 	u.notify(msg, level, opts)
 end
 
@@ -189,8 +188,6 @@ end
 ---@param prompt string
 ---@param confirmationCallback fun(commitTitle: string, commitBody?: string)
 function M.new(mode, prompt, confirmationCallback)
-	state.commitMode = mode
-
 	-- PARAMS
 	local config = require("tinygit.config").config
 	local width = MAX_TITLE_LEN + 1

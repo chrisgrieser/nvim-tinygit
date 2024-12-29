@@ -153,13 +153,11 @@ end
 ---@param opts? { forcePushIfDiverged?: boolean }
 function M.amendOnlyMsg(opts)
 	if u.notInGitRepo() then return end
-	if not hasNoStagedChanges() then
-		u.notify("Aborting: There are staged changes.", "warn", { title = "Amend only message" })
-		return
-	end
 	if not opts then opts = {} end
 
-	require("tinygit.commands.commit.msg-input").new("amend", "Amend message", function(title, body)
+	local prompt = "Amend message"
+
+	require("tinygit.commands.commit.msg-input").new("amend", prompt, function(title, body)
 		-- commit
 		local commitArgs = { "git", "commit", "--amend", "--message=" .. title }
 		if body then table.insert(commitArgs, "--message=" .. body) end
@@ -170,7 +168,7 @@ function M.amendOnlyMsg(opts)
 		local branchInfo = u.syncShellCmd { "git", "branch", "--verbose" }
 		local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
 		local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force pushing…" or nil
-		postCommitNotif("Amend message", false, title, extra)
+		postCommitNotif(prompt, false, title, extra)
 		if opts.forcePushIfDiverged and prevCommitWasPushed then
 			push({ forceWithLease = true }, true)
 		end
