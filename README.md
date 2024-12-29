@@ -59,9 +59,10 @@ operations.
 
 - [Breaking changes in v1.0](#breaking-changes-in-v10)
 - [Installation](#installation)
+- [Configuration](#configuration)
 - [Commands](#commands)
 	* [Interactive staging](#interactive-staging)
-	* [Smart-commit](#smart-commit)
+	* [Smart commit](#smart-commit)
 	* [Amend and fixup commits](#amend-and-fixup-commits)
 	* [Undo last commit/amend](#undo-last-commitamend)
 	* [GitHub interaction](#github-interaction)
@@ -71,7 +72,6 @@ operations.
 - [Status line components](#status-line-components)
 	* [git blame](#git-blame)
 	* [Branch state](#branch-state)
-- [Configuration](#configuration)
 - [Credits](#credits)
 
 <!-- tocstop -->
@@ -103,6 +103,103 @@ use {
 }
 ```
 
+## Configuration
+The `setup` call is optional.
+
+```lua
+-- default config
+require("tinygit").setup {
+	stage = { -- requires `telescope.nvim`
+		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
+		stagedIndicator = "󰐖",
+		keymaps = { -- insert & normal mode
+			stagingToggle = "<Space>", -- stage/unstage hunk
+			gotoHunk = "<CR>",
+			resetHunk = "<C-r>",
+		},
+		moveToNextHunkOnStagingToggle = false,
+
+		-- accepts the common telescope picker config
+		telescopeOpts = { 
+			layout_strategy = "horizontal",
+			layout_config = {
+				horizontal = {
+					preview_width = 0.65,
+					height = { 0.7, min = 20 },
+				},
+			},
+		},
+	},
+	commit = {
+		keepAbortedMsgSecs = 300,
+		border = "single",
+		spellcheck = false, -- vim's builtin spellcheck
+		wrap = "hard", ---@type "hard"|"soft"|"none"
+		keymaps = {
+			normal = { abort = "q", confirm = "<CR>" },
+			insert = { confirm = "<C-CR>" },
+		},
+		conventionalCommits = {
+			enforce = false,
+			-- stylua: ignore
+			keywords = {
+				"fix", "feat", "chore", "docs", "refactor", "build", "test",
+				"perf", "style", "revert", "ci", "break",
+			},
+		},
+	},
+	push = {
+		preventPushingFixupCommits = true,
+		confirmationSound = true, -- currently macOS only, PRs welcome
+
+		-- If pushed commits contain references to issues, open them in the browser
+		-- (not used when using force-push).
+		openReferencedIssues = false,
+	},
+	github = {
+		icons = {
+			openIssue = "🟢",
+			closedIssue = "🟣",
+			notPlannedIssue = "⚪",
+			openPR = "🟩",
+			mergedPR = "🟪",
+			draftPR = "⬜",
+			closedPR = "🟥",
+		},
+	},
+	history = {
+		diffPopup = {
+			width = 0.8, -- between 0-1
+			height = 0.8,
+			border = "single",
+		},
+		autoUnshallowIfNeeded = false,
+	},
+	appearance = {
+		mainIcon = "󰊢",
+		backdrop = {
+			enabled = true,
+			blend = 50, -- 0-100
+		},
+	},
+	statusline = {
+		blame = {
+			ignoreAuthors = {}, -- hide component if from these authors (useful for bots)
+			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
+			maxMsgLen = 40,
+			icon = "ﰖ",
+		},
+		branchState = {
+			icons = {
+				ahead = "󰶣",
+				behind = "󰶡",
+				diverge = "󰃻",
+			},
+		},
+	},
+}
+```
+
 ## Commands
 All commands are available via lua function or sub-command of `:Tinygit`, for
 example `require("tinygit").interactiveStaging()` and `:Tinygit
@@ -126,7 +223,7 @@ trigger visual-mode specific changes to the commands.
 require("tinygit").interactiveStaging()
 ```
 
-### Smart-commit
+### Smart commit
 - Open a commit popup, alongside a preview of what is going to be committed. If
   there are no staged changes, stage all changes (`git add --all`) before the
   commit. Optionally run `git push` if the repo is clean after committing.
@@ -322,108 +419,6 @@ the information may not be up-to-date with remote changes.)
 ```lua
 require("tinygit.statusline").branchState()
 ```
-
-## Configuration
-The `setup` call is optional.
-
-```lua
--- default config
-require("tinygit").setup {
-	stage = { -- requires `telescope.nvim`
-		contextSize = 1, -- larger values "merge" hunks. 0 is not supported.
-		stagedIndicator = "󰐖",
-		keymaps = { -- insert & normal mode
-			stagingToggle = "<Space>", -- stage/unstage hunk
-			gotoHunk = "<CR>",
-			resetHunk = "<C-r>",
-		},
-		moveToNextHunkOnStagingToggle = false,
-
-		-- accepts the common telescope picker config
-		telescopeOpts = { 
-			layout_strategy = "horizontal",
-			layout_config = {
-				horizontal = {
-					preview_width = 0.65,
-					height = { 0.7, min = 20 },
-				},
-			},
-		},
-	},
-	commit = {
-		keepAbortedMsgSecs = 300,
-		border = "single",
-		spellcheck = false, -- vim's builtin spellcheck
-		wrap = "hard", ---@type "hard"|"soft"|"none"
-		keymaps = {
-			normal = { abort = "q", confirm = "<CR>" },
-			insert = { confirm = "<C-CR>" },
-		},
-		conventionalCommits = {
-			enforce = false,
-			-- stylua: ignore
-			keywords = {
-				"fix", "feat", "chore", "docs", "refactor", "build", "test",
-				"perf", "style", "revert", "ci", "break",
-			},
-		},
-	},
-	push = {
-		preventPushingFixupCommits = true,
-		confirmationSound = true, -- currently macOS only, PRs welcome
-
-		-- If pushed commits contain references to issues, open them in the browser
-		-- (not used when using force-push).
-		openReferencedIssues = false,
-	},
-	github = {
-		icons = {
-			openIssue = "🟢",
-			closedIssue = "🟣",
-			notPlannedIssue = "⚪",
-			openPR = "🟩",
-			mergedPR = "🟪",
-			draftPR = "⬜",
-			closedPR = "🟥",
-		},
-	},
-	history = {
-		diffPopup = {
-			width = 0.8, -- between 0-1
-			height = 0.8,
-			border = "single",
-		},
-		autoUnshallowIfNeeded = false,
-	},
-	appearance = {
-		mainIcon = "󰊢",
-		backdrop = {
-			enabled = true,
-			blend = 50, -- 0-100
-		},
-	},
-	statusline = {
-		blame = {
-			ignoreAuthors = {}, -- hide component if from these authors (useful for bots)
-			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
-			maxMsgLen = 40,
-			icon = "ﰖ",
-		},
-		branchState = {
-			icons = {
-				ahead = "󰶣",
-				behind = "󰶡",
-				diverge = "󰃻",
-			},
-		},
-	},
-}
-```
-
-The appearance of the commit preview and notifications is determined by
-[nvim-notify](https://github.com/rcarriga/nvim-notify) or
-[snacks.nvim](https://https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md)
-respectively.
 
 ## Credits
 In my day job, I am a sociologist studying the social mechanisms underlying the
