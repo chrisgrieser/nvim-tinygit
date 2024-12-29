@@ -4,11 +4,11 @@
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
 <img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat"/></a>
 
-A lightweight bundle of commands focused on swift and streamlined git
+Bundle of commands focused on swift and streamlined git
 operations.
 
 > [!NOTE]
-> [Version 1.0](#breaking-changes-in-v10) included several breaking changes. If
+> [Version 1.0 included several breaking changes.](#breaking-changes-in-v10) If
 > you want to keep using the previous version, pin the tag `v0.9`:
 >
 > ```lua
@@ -20,14 +20,16 @@ operations.
 > },
 > ```
 
-## TODO version 1.0
-- [x] commit msg module
+## TODO for version 1.0 release
+- [x] commit message module
 - [x] update docs
 - [x] update issue template
 - [ ] commit preview
 - [ ] use `telescope` instead of `vim.ui.select`
-- [ ] commit preview for fixup commits
+- [ ] preview for fixup commits
+- [ ] adaptive commit window height
 - [ ] new showcase screenshots
+- [ ] blink module for GitHub issues?
 
 ## Screenshots
 
@@ -37,23 +39,24 @@ operations.
 
 ## Feature overview
 - **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
-  proper syntax highlighting, and allows resetting or navigating to the hunk.
+  syntax highlighting, and allows resetting or navigating to the hunk.
 - **Smart-commit**: Open a popup to enter a commit message with syntax highlighting,
-  commit preview, automatic issue number insertion, and overlength indicators.
-  If there are no staged changes, stages all changes before doing so (`git add
-  -A`). Optionally trigger a `git push` afterward.
-- Quick commands for amend, stash, fixup, or undoing commits.
+  commit preview, and commit title length indicators. If there are no staged
+  changes, stages all changes before doing so (`git add -A`). Optionally trigger
+  a `git push` afterward.
+- Convenient commands for **amend, stash, fixup, or undoing** commits.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
-- Open the **GitHub URL** of the current file, repo, or selection. Also supports
-  opening the blame view.
-- **Explore the git history**: Search the file for a string ("git pickaxe"), or
-  examine the history of a function or line range. Displays the results in a
-  diff view with syntax highlighting, correctly following file renamings.
+- Open the **GitHub URL** of the current file, repo, or selected lines. Also
+  supports opening GitHub's blame view.
+- **Explore file history**: Search the git history of a file for a string ("git
+  pickaxe"), or examine the history of a function or line range. Displays the
+  results in a diff view with syntax highlighting, correctly following file
+  renamings.
 - **Status line components:** `git blame` of a file and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
   friction. For instance, the smart-commit command combines staging, committing,
   and pushing, and searching the file history combines un-shallowing, searching,
-  and navigating diffs.
+  and diff navigation.
 
 <!-- toc -->
 
@@ -67,7 +70,7 @@ operations.
 	* [Undo last commit/amend](#undo-last-commitamend)
 	* [GitHub interaction](#github-interaction)
 	* [Push & PRs](#push--prs)
-	* [Search file history](#search-file-history)
+	* [File history](#file-history)
 	* [Stash](#stash)
 - [Status line components](#status-line-components)
 	* [git blame](#git-blame)
@@ -343,7 +346,7 @@ require("tinygit").push {
 require("tinygit").createGitHubPr()
 ```
 
-### Search file history
+### File history
 Search the git history of the current file. Select from the matching commits to
 open a popup with a diffview of the changes.
 
@@ -405,8 +408,8 @@ require("tinygit.statusline").blame()
 
 > [!TIP]
 > Some status line plugins also allow you to put components into the tab line or
-> win bar. If your status line is too crowded, you can add the blame-component to
-> one of those bars instead.
+> win bar. If your status line is too crowded, you can add the blame-component
+> to one of those bars instead.
 
 The component can be configured with the `statusline.blame` options in the [plugin
 configuration](#configuration).
@@ -414,7 +417,7 @@ configuration](#configuration).
 ### Branch state
 Shows whether the local branch is ahead or behind of its remote counterpart.
 (Note that this component does not run `git fetch` for performance reasons, so
-the information may not be up-to-date with remote changes.)
+the component may not be up-to-date with remote changes.)
 
 ```lua
 require("tinygit.statusline").branchState()
