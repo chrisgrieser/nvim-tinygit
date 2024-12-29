@@ -69,6 +69,10 @@ local function setupKeymaps(confirmationCallback)
 		local commitBody = vim.trim(bodytext) ~= "" and vim.trim(bodytext) or nil
 		confirmationCallback(commitTitle, commitBody)
 
+		-- reset remembered message
+		local cwd = vim.uv.cwd() or ""
+		state.abortedCommitMsg[cwd] = nil
+
 		-- close win
 		vim.cmd.bwipeout(bufnr)
 	end
