@@ -13,33 +13,34 @@ local function diffStatsHighlights()
 	vim.fn.matchadd("WarningMsg", "/")
 end
 
----@param gitStatsArgs string[]
-local function cleanupStatsOutput(gitStatsArgs)
-	return u
-		.syncShellCmd(gitStatsArgs)
+---@param args string[]
+---@return string cleanedOutput
+local function runGitStatsAndCleanUp(args)
+	local cleanedOutput = u
+		.syncShellCmd(args)
 		:gsub("\n[^\n]*$", "") -- remove summary line (footer)
-		:gsub(" | ", " │ ") -- pipes to full vertical bars
-		:gsub(" Bin ", "    ") -- binary icon
+		:gsub(" | ", " │ ") -- full vertical bars instead of pipes
+		:gsub(" Bin ", "    ") -- icon for binaries
 		:gsub("\n +", "\n") -- remove leading spaces
+	return cleanedOutput
 end
 
 ---@param willStageAllChanges boolean
 ---@param statsWidth number
 ---@return string
 ---@nodiscard
-local function getCommitPreview(willStageAllChanges, statsWidth)
-	-- get changes
-	local gitStatsCmd = { "git", "diff", "--compact-summary", "--stat=" .. statsWidth }
-	local title = "Commit preview"
+function M.getCommitPreview(willStageAllChanges, statsWidth)
+	local gitStatsArgs = { "git", "diff", "--compact-summary", "--stat=" .. statsWidth }
+	local footer = "Commit preview"
 	local changes
 	if willStageAllChanges then
 		u.intentToAddUntrackedFiles() -- include new files in diff stats
-		title = "Stage & " .. title:lower()
-		changes = cleanupStatsOutput(gitStatsCmd)
+		footer = "Stage & " .. footer:lower()
+		changes = runGitStatsAndCleanUp(gitStatsArgs)
 	else
-		local notStaged = cleanupStatsOutput(gitStatsCmd)
-		table.insert(gitStatsCmd, "--staged")
-		local staged = cleanupStatsOutput(gitStatsCmd)
+		local notStaged = runGitStatsAndCleanUp(gitStatsArgs)
+		table.insert(gitStatsArgs, "--staged")
+		local staged = runGitStatsAndCleanUp(gitStatsArgs)
 		changes = notStaged == "" and staged
 			or table.concat({ staged, "not staged:", notStaged }, "\n")
 	end
