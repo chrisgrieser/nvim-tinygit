@@ -93,7 +93,7 @@ operations.
 - *optional*: Treesitter parser for syntax highlighting `TSInstall gitcommit`
 
 ```lua
--- lazy.nvim
+-- lazy.nvim (automatically takes care of dependencies)
 { "chrisgrieser/nvim-tinygit" },
 
 -- packer
@@ -137,9 +137,6 @@ require("tinygit").interactiveStaging()
 - Input field contents of aborted commits are briefly kept, if you just want to
   fix a detail.
 - The first line is used as commit subject, the rest is as commit body.
-- The input buffer uses the `gitcommit` filetype, so you can customize it by
-  setting options for that filetype. For instance, to enable spell-checking, add
-  `vim.opt_local.spell = true` to `after/ftplugin/gitcommit.lua`.
 
 ```lua
 -- values shown are the defaults
@@ -356,16 +353,18 @@ require("tinygit").setup {
 	commit = {
 		keepAbortedMsgSecs = 300,
 		border = "single",
-		normalModeKeymaps = {
-			abort = "q",
-			confirm = "<CR>",
+		spellcheck = false, -- vim's builtin spellcheck
+		wrap = "hard", ---@type "hard"|"soft"|"none"
+		keymaps = {
+			normal = { abort = "q", confirm = "<CR>" },
+			insert = { confirm = "<C-CR>" },
 		},
 		conventionalCommits = {
 			enforce = false,
 			-- stylua: ignore
 			keywords = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",
-				"perf", "style", "revert", "ci", "break", "improv",
+				"perf", "style", "revert", "ci", "break",
 			},
 		},
 	},
@@ -373,8 +372,8 @@ require("tinygit").setup {
 		preventPushingFixupCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
 
-		-- Pushed commits contain references to issues, open those issues.
-		-- Not used when using force-push.
+		-- If pushed commits contain references to issues, open them in the browser
+		-- (not used when using force-push).
 		openReferencedIssues = false,
 	},
 	github = {

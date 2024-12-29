@@ -14,13 +14,7 @@ local MAX_TITLE_LEN = 72
 --------------------------------------------------------------------------------
 
 ---@param msg string
----@param level? Tinygit.notifyLevel
----@param opts? table
-local function notify(msg, level, opts)
-	if not opts then opts = {} end
-	opts.title = "Commit message"
-	u.notify(msg, level, opts)
-end
+local function warn(msg) u.notify(msg, "warn", { title = "Commit message" }) end
 
 local function diffStatsHighlights()
 	vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
@@ -72,11 +66,13 @@ end
 local function setupKeymaps(confirmationCallback)
 	local bufnr = state.bufnr
 	local conf = require("tinygit.config").config.commit
-	local function map(lhs, rhs) vim.keymap.set("n", lhs, rhs, { buffer = bufnr, nowait = true }) end
+	local function map(mode, lhs, rhs)
+		vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, nowait = true })
+	end
 
 	-----------------------------------------------------------------------------
 
-	map(conf.normalModeKeymaps.abort, function()
+	map("n", conf.keymaps.normal.abort, function()
 		-- save msg
 		if state.mode ~= "amend" then
 			local cwd = vim.uv.cwd() or ""
@@ -87,25 +83,26 @@ local function setupKeymaps(confirmationCallback)
 			)
 		end
 
-		-- abort
 		vim.cmd.bwipeout(bufnr)
 	end)
 
-	map(conf.normalModeKeymaps.confirm, function()
+	-----------------------------------------------------------------------------
+
+	local function confirm()
 		-- validate commit title
 		local commitTitle = vim.trim(vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1])
 		if #commitTitle > MAX_TITLE_LEN then
-			notify("Commit title too long.", "warn")
+			warn("Title is too long.")
 			return
 		end
 		if #commitTitle == 0 then
-			notify("No commit title.", "warn")
+			warn("Title is empty.")
 			return
 		end
 		if conf.conventionalCommits.enforce then
 			local firstWord = commitTitle:match("^%w+")
 			if not vim.tbl_contains(conf.conventionalCommits.keywords, firstWord) then
-				notify("Not using a Conventional Commits keyword.", "warn")
+				warn("Not using a Conventional Commits keyword.")
 				return
 			end
 		end
@@ -120,7 +117,9 @@ local function setupKeymaps(confirmationCallback)
 
 		-- close win
 		vim.cmd.bwipeout(bufnr)
-	end)
+	end
+	map("n", conf.keymaps.normal.confirm, confirm)
+	map("i", conf.keymaps.insert.confirm, confirm)
 end
 
 ---@param borderChar string
@@ -189,12 +188,12 @@ end
 ---@param confirmationCallback fun(commitTitle: string, commitBody?: string)
 function M.new(mode, prompt, confirmationCallback)
 	-- PARAMS
-	local config = require("tinygit.config").config
-	local width = MAX_TITLE_LEN + 1
-	local border = config.commit.border
-	local borderChar = border == "double" and "═" or "─"
+	local conf = require("tinygit.config").config.commit
+	local icon = require("tinygit.config").config.appearance.mainIcon
+	local width = MAX_TITLE_LEN + 2
+	local borderChar = conf.border == "double" and "═" or "─"
 	local height = 4
-	prompt = vim.trim(config.appearance.mainIcon .. "  " .. prompt)
+	prompt = vim.trim(icon .. "  " .. prompt)
 
 	-- PREFILL
 	local msgLines = {}
@@ -211,14 +210,14 @@ function M.new(mode, prompt, confirmationCallback)
 	end
 
 	-- FOOTER
-	local maps = config.commit.normalModeKeymaps
+	local nmaps = conf.keymaps.normal
 	local hlgroup = { key = "Comment", desc = "NonText" }
 	local keymapHints = {
 		{ borderChar, "FloatBorder" }, -- extend border to align with padding
 		{ " normal: ", hlgroup.desc },
-		{ maps.confirm, hlgroup.key },
+		{ nmaps.confirm, hlgroup.key },
 		{ " confirm  ", hlgroup.desc },
-		{ maps.abort, hlgroup.key },
+		{ nmaps.abort, hlgroup.key },
 		{ " abort ", hlgroup.desc },
 	}
 
@@ -242,32 +241,48 @@ function M.new(mode, prompt, confirmationCallback)
 		title = " " .. prompt .. " ",
 		footer = footer,
 		footer_pos = "right",
-		border = border,
+		border = conf.border,
 		style = "minimal",
 	})
+
+	-- needs to be set after window creation to trigger local opts from ftplugin,
+	-- but before the plugin sets its options, so they aren't overridden by the
+	-- user's config
+	vim.bo[bufnr].filetype = "gitcommit"
+
 	vim.wo[winid].winfixbuf = true
+	vim.wo[winid].statuscolumn = " " -- just for left-padding (also makes line numbers not show up)
+
 	vim.wo[winid].scrolloff = 0
-	vim.wo[winid].sidescrolloff = 1
-	vim.wo[winid].statuscolumn = " " -- just for left-padding
+	vim.wo[winid].sidescrolloff = 0
 	vim.wo[winid].list = true
 	vim.wo[winid].listchars = "precedes:…,extends:…"
+	vim.wo[winid].spell = conf.spellcheck
 
+	-- wrapping
 	vim.bo[bufnr].textwidth = MAX_TITLE_LEN
-	vim.wo[winid].colorcolumn = "+1"
-	vim.wo[winid].wrap = true
+	vim.wo[winid].wrap = conf.wrap == "soft"
+	if conf.wrap == "hard" then
+		vim.bo[bufnr].formatoptions = vim.bo[bufnr].formatoptions .. "t" -- auto-wrap at textwidth
+	end
 
+	vim.cmd.startinsert { bang = true }
+
+	-- STYLING
 	-- no highlight, since we do that more intuitively with our separator is enough
 	vim.wo[winid].winhighlight = "@markup.heading.gitcommit:,@markup.link.gitcommit:"
 
-	-- needs to be set after window creation to trigger local opts from ftplugin
-	vim.bo[bufnr].filetype = "gitcommit"
-
-	vim.cmd.startinsert { bang = true }
-	state.winid, state.bufnr = winid, bufnr
+	vim.api.nvim_win_call(winid, function()
+		highlight.commitMsg("only-inline-code-and-issues")
+		-- overlength
+		-- * `\%<2l` to only highlight 1st line https://neovim.io/doc/user/pattern.html#search-range
+		-- * match only starts after `\zs` https://neovim.io/doc/user/pattern.html#%2Fordinary-atom
+		vim.fn.matchadd("ErrorMsg", [[\%<2l.\{]] .. MAX_TITLE_LEN .. [[}\zs.*]])
+	end)
 
 	-- AUTOCMDS
+	state.winid, state.bufnr = winid, bufnr
 	backdrop.new(bufnr)
-	vim.api.nvim_win_call(winid, function() highlight.commitMsg("only-inline-code-and-issues") end)
 	setupKeymaps(confirmationCallback)
 	setupTitleCharCount(borderChar)
 	setupUnmount()

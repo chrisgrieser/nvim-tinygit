@@ -28,44 +28,33 @@ local function hasNoChanges()
 	return noChanges
 end
 
----@param highlightingFunc function
-local function setupNotificationHighlights(highlightingFunc)
-	if not (package.loaded["snacks"] or package.loaded["notify"]) then return end
-
-	-- determine snacks.nvim notification filetype
-	local snacksInstalled, snacks = pcall(require, "snacks")
-	local snacksFt = snacksInstalled
-			and snacks.config.get("styles", { notification = { bo = { filetype = "snacks_notif" } } }).notification.bo.filetype
-		or nil
-
-	-- call highlighting function in notification buffer
-	vim.api.nvim_create_autocmd("FileType", {
-		pattern = { "noice", "notify", snacksFt },
-		once = true,
-		callback = function(ctx)
-			vim.defer_fn(function() vim.api.nvim_buf_call(ctx.buf, highlightingFunc) end, 1)
-		end,
-	})
-end
-
----@param title string
----@param stagedAllChanges? boolean
----@param commitMsg string
----@param extraInfo? string extra lines to display
-local function postCommitNotif(title, stagedAllChanges, commitMsg, extraInfo)
+---@param notifTitle string
+---@param doStageAllChanges boolean
+---@param commitTitle string
+---@param extraLines string
+local function postCommitNotif(notifTitle, doStageAllChanges, commitTitle, extraLines)
 	local stageAllText = "Staged all changes."
-	local lines = { commitMsg }
-	if stagedAllChanges then table.insert(lines, 1, stageAllText) end
-	if extraInfo then table.insert(lines, extraInfo) end
-	local text = table.concat(lines, "\n")
 
-	setupNotificationHighlights(function()
-		highlight.commitMsg()
-		if stagedAllChanges then vim.fn.matchadd("Comment", stageAllText) end
-		if extraInfo then vim.fn.matchadd("Comment", extraInfo) end
-	end)
+	-- if using `snacks.nvim` or `nvim-notify`, add extra highlighting to the notification
+	if package.loaded["snacks"] or package.loaded["notify"] then
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = { "noice", "notify", "snacks_notif" },
+			once = true,
+			callback = function(ctx)
+				vim.defer_fn(function()
+					vim.api.nvim_buf_call(ctx.buf, function()
+						highlight.commitMsg()
+						vim.fn.matchadd("Comment", stageAllText)
+						vim.fn.matchadd("Comment", extraLines)
+					end)
+				end, 1)
+			end,
+		})
+	end
 
-	u.notify(text, "info", { title = title })
+	local lines = { commitTitle, extraLines }
+	if doStageAllChanges then table.insert(lines, 1, stageAllText) end
+	u.notify(table.concat(lines, "\n"), "info", { title = notifTitle })
 end
 
 --------------------------------------------------------------------------------
@@ -98,7 +87,7 @@ function M.smartCommit(opts)
 		if u.nonZeroExit(result) then return end
 
 		-- notification
-		local extra = nil
+		local extra = ""
 		if opts.pushIfClean then
 			extra = cleanAfterCommit and "Pushing…" or "Not pushing since repo still dirty."
 		end
@@ -165,13 +154,14 @@ function M.amendOnlyMsg(opts)
 		if u.nonZeroExit(result) then return end
 
 		-- push & notification
-		local branchInfo = u.syncShellCmd { "git", "branch", "--verbose" }
-		local prevCommitWasPushed = branchInfo:find("%[ahead 1, behind 1%]") ~= nil
-		local extra = (opts.forcePushIfDiverged and prevCommitWasPushed) and "Force pushing…" or nil
-		postCommitNotif(prompt, false, title, extra)
+		local prevCommitWasPushed = u.syncShellCmd({ "git", "branch", "--verbose" })
+			:find("%[ahead 1, behind 1%]")
+		local extra = ""
 		if opts.forcePushIfDiverged and prevCommitWasPushed then
 			push({ forceWithLease = true }, true)
+			extra = "Force pushing…"
 		end
+		postCommitNotif(prompt, false, title, extra)
 
 		updateStatusline()
 	end)

@@ -27,16 +27,18 @@ local defaultConfig = {
 	commit = {
 		keepAbortedMsgSecs = 300,
 		border = "single",
-		normalModeKeymaps = {
-			abort = "q",
-			confirm = "<CR>",
+		spellcheck = false, -- vim's builtin spellcheck
+		wrap = "hard", ---@type "hard"|"soft"|"none"
+		keymaps = {
+			normal = { abort = "q", confirm = "<CR>" },
+			insert = { confirm = "<C-CR>" },
 		},
 		conventionalCommits = {
 			enforce = false,
 			-- stylua: ignore
 			keywords = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",
-				"perf", "style", "revert", "ci", "break", "improv",
+				"perf", "style", "revert", "ci", "break",
 			},
 		},
 	},
@@ -44,8 +46,8 @@ local defaultConfig = {
 		preventPushingFixupCommits = true,
 		confirmationSound = true, -- currently macOS only, PRs welcome
 
-		-- Pushed commits contain references to issues, open those issues.
-		-- Not used when using force-push.
+		-- If pushed commits contain references to issues, open them in the browser
+		-- (not used when using force-push).
 		openReferencedIssues = false,
 	},
 	github = {
@@ -135,9 +137,6 @@ function M.setup(userConfig)
 	end
 	if M.config.commit.inputFieldWidth then
 		warn("The config `commit.inputFieldWidth` has been removed, since there is no longer a need for it.")
-	end
-	if M.config.commit.spellcheck then
-		warn("The config `commit.spellcheck` has been removed. Configure via ftplugin for `gitcommit`.")
 	end
 	if M.config.push.preventPushingFixupOrSquashCommits then
 		warn("The config `push.preventPushingFixupOrSquashCommits` has moved to `push.preventPushingFixupCommits`.")
