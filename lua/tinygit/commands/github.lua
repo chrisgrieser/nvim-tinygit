@@ -105,16 +105,19 @@ local function issueListFormatter(issue)
 	return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
 end
 
----sets the appearance for TelescopeResults or DressingSelect
----@return number autocmdId
 local function issueListAppearance()
 	local autocmdId = vim.api.nvim_create_autocmd("FileType", {
-		once = true, -- to not affect other selectors
-		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
+		once = true,
+		pattern = { "DressingSelect", "TelescopeResults" },
 		callback = function(ctx)
 			require("tinygit.shared.backdrop").new(ctx.buf)
-			highlight.commitMsg() -- for PRs
-			highlight.issueText()
+			highlight.commitType()
+			highlight.inlineCodeAndIssueNumbers()
+			vim.api.nvim_buf_call(ctx.buf, function()
+				vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
+				vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
+				vim.fn.matchadd("Comment", [[\vby \w+\s*$]])
+			end)
 		end,
 	})
 	return autocmdId

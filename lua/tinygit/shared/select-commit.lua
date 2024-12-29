@@ -21,13 +21,15 @@ end
 -- highlights for the items in the selector
 function M.setupAppearance()
 	local autocmdId = vim.api.nvim_create_autocmd("FileType", {
-		once = true, -- to not affect other selectors
-		pattern = { "DressingSelect", "TelescopeResults" }, -- nui also uses `DressingSelect`
+		once = true,
+		pattern = { "DressingSelect", "TelescopeResults" },
 		callback = function(ctx)
-			require("tinygit.shared.highlights").commitMsg()
+			local highlight = require("tinygit.shared.highlights")
+			highlight.commitType()
+			highlight.inlineCodeAndIssueNumbers()
 			require("tinygit.shared.backdrop").new(ctx.buf)
 
-			-- detects date due to `M.gitlogFormat`
+
 			vim.fn.matchadd("Comment", [[\t.*$]])
 		end,
 	})

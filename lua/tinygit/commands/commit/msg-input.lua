@@ -273,7 +273,7 @@ function M.new(mode, prompt, confirmationCallback)
 	vim.wo[winid].winhighlight = "@markup.heading.gitcommit:,@markup.link.gitcommit:"
 
 	vim.api.nvim_win_call(winid, function()
-		highlight.commitMsg("only-inline-code-and-issues")
+		highlight.inlineCodeAndIssueNumbers()
 		-- overlength
 		-- * `\%<2l` to only highlight 1st line https://neovim.io/doc/user/pattern.html#search-range
 		-- * match only starts after `\zs` https://neovim.io/doc/user/pattern.html#%2Fordinary-atom
