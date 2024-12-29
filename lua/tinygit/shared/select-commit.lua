@@ -29,7 +29,6 @@ function M.setupAppearance()
 			highlight.inlineCodeAndIssueNumbers()
 			require("tinygit.shared.backdrop").new(ctx.buf)
 
-
 			vim.fn.matchadd("Comment", [[\t.*$]])
 		end,
 	})

@@ -77,7 +77,7 @@ operations.
 <!-- tocstop -->
 
 ## Breaking changes in v1.0
-- `dressing.nvim` and `nvim-notify` are **no longer dependencies****.
+- `dressing.nvim` and `nvim-notify` are **no longer dependencies**.
 - `telescope.nvim` is now an **always required dependency**.
 - The `commit.insertIssuesOnHashSign` feature has been removed. Since the commit
   creation window is now larger, much better issue insertion via plugins like

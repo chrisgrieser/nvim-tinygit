@@ -126,9 +126,11 @@ function M.setup(userConfig)
 
 	-- DEPRECATION (2024-12-28)
 	if M.config.commit.insertIssuesOnHashSign then
-		warn("The `commit.insertIssuesOnHashSign` feature has been removed. Since "
-			.. "the commit creation window is now larger, much better issue insertion "
-			.. "via plugins like `cmp-git` now works there.")
+		warn(
+			"The `commit.insertIssuesOnHashSign` feature has been removed. Since "
+				.. "the commit creation window is now larger, much better issue insertion "
+				.. "via plugins like `cmp-git` now works there."
+		)
 	end
 
 	-- DEPRECATION (2024-12-28)
@@ -136,10 +138,14 @@ function M.setup(userConfig)
 		warn("The config `commit.commitPreview` has been removed. It is now enabled by default.")
 	end
 	if M.config.commit.inputFieldWidth then
-		warn("The config `commit.inputFieldWidth` has been removed, since there is no longer a need for it.")
+		warn(
+			"The config `commit.inputFieldWidth` has been removed, since there is no longer a need for it."
+		)
 	end
 	if M.config.push.preventPushingFixupOrSquashCommits then
-		warn("The config `push.preventPushingFixupOrSquashCommits` has moved to `push.preventPushingFixupCommits`.")
+		warn(
+			"The config `push.preventPushingFixupOrSquashCommits` has moved to `push.preventPushingFixupCommits`."
+		)
 	end
 
 	---@diagnostic enable: undefined-field
