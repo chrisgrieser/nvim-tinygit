@@ -14,7 +14,7 @@ local u = require("tinygit.shared.utils")
 ---@field fileMode Tinygit.FileMode
 
 ---@param msg string
----@param level? Tinygit.notifyLevel
+---@param level? Tinygit.NotifyLevel
 ---@param opts? table
 local function notify(msg, level, opts)
 	if not opts then opts = {} end

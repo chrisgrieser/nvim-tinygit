@@ -3,7 +3,7 @@ local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
----@class (exact) Tinygit.historyState
+---@class (exact) Tinygit.HistoryState
 ---@field absPath string
 ---@field ft string
 ---@field type? "stringSearch"|"function"|"line"
@@ -13,7 +13,7 @@ local u = require("tinygit.shared.utils")
 ---@field lnum? number only for line history
 ---@field offset? number only for line history
 
----@type Tinygit.historyState
+---@type Tinygit.HistoryState
 local state = {
 	hashList = {},
 	absPath = "",
@@ -25,7 +25,7 @@ local state = {
 --------------------------------------------------------------------------------
 
 ---@param msg string
----@param level? Tinygit.notifyLevel
+---@param level? Tinygit.NotifyLevel
 ---@param opts? table
 local function notify(msg, level, opts)
 	if not opts then opts = {} end

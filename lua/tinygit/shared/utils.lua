@@ -1,10 +1,10 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----@alias Tinygit.notifyLevel "info"|"trace"|"debug"|"warn"|"error"
+---@alias Tinygit.NotifyLevel "info"|"trace"|"debug"|"warn"|"error"
 
 ---@param msg string
----@param level? Tinygit.notifyLevel
+---@param level? Tinygit.NotifyLevel
 ---@param opts? table
 function M.notify(msg, level, opts)
 	if not level then level = "info" end
