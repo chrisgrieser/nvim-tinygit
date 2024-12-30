@@ -74,7 +74,9 @@ function M.smartCommit(opts)
 	if doStageAllChanges then prompt = "Stage all · " .. prompt:lower() end
 	if cleanAfterCommit and opts.pushIfClean then prompt = prompt .. " · push" end
 
-	require("tinygit.commands.commit.msg-input").new("commit", prompt, function(title, body)
+	local inputMode = doStageAllChanges and "stage-all-and-commit" or "commit"
+
+	require("tinygit.commands.commit.msg-input").new(inputMode, prompt, function(title, body)
 		-- stage
 		if doStageAllChanges then
 			local result = vim.system({ "git", "add", "--all" }):wait()
@@ -147,7 +149,7 @@ function M.amendOnlyMsg(opts)
 
 	local prompt = "Amend message"
 
-	require("tinygit.commands.commit.msg-input").new("amend", prompt, function(title, body)
+	require("tinygit.commands.commit.msg-input").new("amend-msg", prompt, function(title, body)
 		-- commit
 		local commitArgs = { "git", "commit", "--amend", "--message=" .. title }
 		if body then table.insert(commitArgs, "--message=" .. body) end

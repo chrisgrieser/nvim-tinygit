@@ -1,4 +1,5 @@
 local backdrop = require("tinygit.shared.backdrop")
+local commitPreview = require("tinygit.commands.commit.preview")
 local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
 
@@ -11,12 +12,24 @@ local state = {
 }
 
 local MAX_TITLE_LEN = 72
+
+--------------------------------------------------------------------------------
+
+---@alias Tinygit.Input.ConfirmationCallback fun(commitTitle: string, commitBody?: string)
+
+---@class Tinygit.Input.WinConf
+---@field height number
+---@field width number
+---@field row number
+---@field col number
+---@field border string|string[]
+
 --------------------------------------------------------------------------------
 
 ---@param msg string
 local function warn(msg) u.notify(msg, "warn", { title = "Commit message" }) end
 
----@param confirmationCallback fun(commitTitle: string, commitBody?: string)
+---@param confirmationCallback Tinygit.Input.ConfirmationCallback
 local function setupKeymaps(confirmationCallback)
 	local bufnr = state.bufnr
 	local conf = require("tinygit.config").config.commit
@@ -111,6 +124,7 @@ local function setupUnmount()
 			local curWin = vim.api.nvim_get_current_win()
 			if curWin == state.winid then
 				vim.cmd.bwipeout(state.bufnr)
+				commitPreview.unmount()
 				return true -- deletes this autocmd
 			end
 		end,
@@ -142,30 +156,38 @@ end
 
 --------------------------------------------------------------------------------
 
----@param mode "commit"|"amend"
+---@param mode "stage-all-and-commit"|"commit"|"amend-msg"
 ---@param prompt string
----@param confirmationCallback fun(commitTitle: string, commitBody?: string)
+---@param confirmationCallback Tinygit.Input.ConfirmationCallback
 function M.new(mode, prompt, confirmationCallback)
 	-- PARAMS
 	local conf = require("tinygit.config").config.commit
 	local icon = require("tinygit.config").config.appearance.mainIcon
-	local width = MAX_TITLE_LEN + 2
-	local borderChar = conf.border == "double" and "═" or "─"
-	local height = 4
 	prompt = vim.trim(icon .. "  " .. prompt)
+	local borderChar = conf.border == "double" and "═" or "─"
+
+	local height = 4
+	local width = MAX_TITLE_LEN - 2
+	local winConf = { ---@type Tinygit.Input.WinConf
+		height = height,
+		width = width,
+		row = math.floor((vim.o.lines - height) / 2) - 3,
+		col = math.floor((vim.o.columns - width) / 2),
+		border = conf.border,
+	}
 
 	-- PREFILL
 	local msgLines = {}
-	if mode == "amend" then
+	if mode == "amend-msg" then
 		local lastCommitTitle = u.syncShellCmd { "git", "log", "--max-count=1", "--pretty=%s" }
 		local lastCommitBody = u.syncShellCmd { "git", "log", "--max-count=1", "--pretty=%b" }
 		msgLines = { lastCommitTitle, lastCommitBody }
-	elseif mode == "commit" then
+	else
 		local cwd = vim.uv.cwd() or ""
 		msgLines = state.abortedCommitMsg[cwd] or {}
-	end
-	while #msgLines < 2 do -- so there is always a body
-		table.insert(msgLines, "")
+		while #msgLines < 2 do -- so there is always a body
+			table.insert(msgLines, "")
+		end
 	end
 
 	-- FOOTER
@@ -188,21 +210,31 @@ function M.new(mode, prompt, confirmationCallback)
 	}
 	local footer = vim.list_extend(keymapHints, titleCharCount)
 
+	-- COMMIT PREVIEW
+	-- before the input window is created, since the last window created gets focus
+	if mode ~= "amend-msg" then
+		---@cast mode "stage-all-and-commit"|"commit" -- ensured above
+		commitPreview.createWin(mode, winConf)
+	end
+
 	-- CREATE WINDOW & BUFFER
 	local bufnr = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, msgLines)
 	local winid = vim.api.nvim_open_win(bufnr, true, {
 		relative = "editor",
-		row = math.floor((vim.o.lines - height) / 2) - 3,
-		col = math.floor((vim.o.columns - width) / 2),
-		width = width,
-		height = height,
+		row = winConf.row,
+		col = winConf.col,
+		width = winConf.width,
+		height = winConf.height,
+		border = winConf.border,
 		title = " " .. prompt .. " ",
 		footer = footer,
 		footer_pos = "right",
-		border = conf.border,
 		style = "minimal",
 	})
+	state.winid, state.bufnr = winid, bufnr
+
+	vim.cmd.startinsert { bang = true }
 
 	-- needs to be set after window creation to trigger local opts from ftplugin,
 	-- but before the plugin sets its options, so they aren't overridden by the
@@ -225,8 +257,6 @@ function M.new(mode, prompt, confirmationCallback)
 		vim.bo[bufnr].formatoptions = vim.bo[bufnr].formatoptions .. "t" -- auto-wrap at textwidth
 	end
 
-	vim.cmd.startinsert { bang = true }
-
 	-- STYLING
 	-- no highlight, since we do that more intuitively with our separator is enough
 	vim.wo[winid].winhighlight = "@markup.heading.gitcommit:,@markup.link.gitcommit:"
@@ -240,12 +270,11 @@ function M.new(mode, prompt, confirmationCallback)
 	end)
 
 	-- AUTOCMDS
-	state.winid, state.bufnr = winid, bufnr
 	backdrop.new(bufnr)
 	setupKeymaps(confirmationCallback)
 	setupTitleCharCount(borderChar)
 	setupUnmount()
-	setupSeparator(width)
+	setupSeparator(winConf.width)
 end
 
 --------------------------------------------------------------------------------

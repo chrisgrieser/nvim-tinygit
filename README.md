@@ -24,7 +24,7 @@ operations.
 - [x] commit message module
 - [x] update docs
 - [x] update issue template
-- [ ] commit preview
+- [x] commit preview
 - [ ] use `telescope` instead of `vim.ui.select`
 - [ ] preview for fixup commits
 - [ ] adaptive commit window height
