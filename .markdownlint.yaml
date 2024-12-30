@@ -13,7 +13,7 @@ line-length:
   tables: false
   code_blocks: false
 no-inline-html:
-  allowed_elements: [img, details, summary, kbd, a, br]
+  allowed_elements: [img, details, summary, kbd, a, br, table, td, tr, th]
 
 #─────────────────────────────────────────────────────────────────────────────
 # DISABLED

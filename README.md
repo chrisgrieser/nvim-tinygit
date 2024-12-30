@@ -30,19 +30,28 @@ operations.
 - [ ] preview for fixup commits
 - [ ] more showcase screenshots
 - [ ] plugin rename (it's not tiny anymore…)
-- [ ] blink module for GitHub issues?
-
-## Screenshots
-
-| Interactive staging                                                                                                                               | File History                                                                                                                              |
-|---------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| <img alt="interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/3c055861-6b93-4065-8601-f79568d8ac28"> | <img alt="git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94"> |
-
-| Smart commit                                                                                                              |                                                                                                                                           |
-|---------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| <img alt="smart commit" width=70% src="https://github.com/user-attachments/assets/8a908841-a6e0-4ddb-af63-a8d92ec8c577">  |                                                                                                                                           |
 
 ## Feature overview
+
+<table>
+	<tr>
+		<th>Interactive staging</th>
+		<th>Smart commit</th>
+	</tr>
+	<tr>
+		<td><img alt="interactive staging" src="https://github.com/user-attachments/assets/93812b73-7a0d-4496-b101-8551c41ee393"></td>
+		<td><img alt="smart commit" src="https://github.com/user-attachments/assets/8dfdaa83-2f5b-49ee-a4a7-a72ae07f5941"></td>
+	</tr>
+	<tr>
+		<th>File history</th>
+		<th></th>
+	</tr>
+	<tr>
+		<td><img alt="file history" src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94"></td>
+		<td></td>
+	</tr>
+ </table>
+
 - **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
   syntax highlighting, and allows resetting or navigating to the hunk.
 - **Smart-commit**: Open a popup to enter a commit message with syntax highlighting,
