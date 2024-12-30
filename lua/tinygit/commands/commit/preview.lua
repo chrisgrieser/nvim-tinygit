@@ -4,6 +4,8 @@ local u = require("tinygit.shared.utils")
 
 local state = {
 	bufnr = -1,
+	winid = -1,
+	diffHeight = -1,
 }
 --------------------------------------------------------------------------------
 
@@ -64,35 +66,32 @@ end
 --------------------------------------------------------------------------------
 
 ---@param mode "stage-all-and-commit"|"commit"
----@param inputWin Tinygit.Input.WinConf
-function M.createWin(mode, inputWin)
+---@param inputWinid number
+function M.createWin(mode, inputWinid)
 	-- PARAMS
-	---@type Tinygit.Input.WinConf
-	local preview = {
-		height = -1,
-		width = inputWin.width,
-		row = inputWin.row + inputWin.height + 2,
-		col = inputWin.col,
-		border = inputWin.border,
-	}
-	local diffStats = M.get(mode, preview.width - 2)
+	local inputWin = vim.api.nvim_win_get_config(inputWinid)
+	local width = inputWin.width
+	local diffStats = M.get(mode, width - 2)
 	local diffStatsLines = vim.split(diffStats, "\n")
-	preview.height = #diffStatsLines
 
 	-- CREATE WINDOW
 	local bufnr = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, diffStatsLines)
-	local winid = vim.api.nvim_open_win(bufnr, true, {
-		relative = "editor",
-		row = preview.row,
-		col = preview.col,
-		width = preview.width,
-		height = preview.height,
-		border = preview.border,
+	local winid = vim.api.nvim_open_win(bufnr, false, {
+		relative = "win",
+		win = inputWinid,
+		row = inputWin.height + 1,
+		col = -1,
+		width = width,
+		height = 1,
+		border = inputWin.border,
 		style = "minimal",
 		focusable = false,
 	})
 	state.bufnr = bufnr
+	state.winid = winid
+	state.diffHeight = #diffStatsLines
+	M.adaptWinPosition(inputWin)
 
 	-- SETTINGS
 	vim.bo[bufnr].filetype = "tinygit.diffstats"
@@ -100,9 +99,23 @@ function M.createWin(mode, inputWin)
 	vim.wo[winid].winfixbuf = true
 	vim.wo[winid].statuscolumn = " " -- = left-padding
 
-	-- HIGHLIGHT
-	vim.wo.winhighlight = "FloatBorder:Comment"
+	-- HIGHLIGHTS
+	vim.wo[winid].winhighlight = "FloatBorder:Comment"
 	vim.api.nvim_win_call(winid, M.diffStatsHighlights)
+end
+
+---@param inputWin vim.api.keyset.win_config
+function M.adaptWinPosition(inputWin)
+	if not vim.api.nvim_win_is_valid(state.winid) then return end
+
+	local winConf = vim.api.nvim_win_get_config(state.winid)
+
+	local borders = 4 -- this win & input win
+	local linesToBottomOfEditor = vim.o.lines - (inputWin.row + inputWin.height + borders)
+	winConf.height = math.min(state.diffHeight, linesToBottomOfEditor)
+	winConf.row = inputWin.height + 1
+
+	vim.api.nvim_win_set_config(state.winid, winConf)
 end
 
 function M.unmount()

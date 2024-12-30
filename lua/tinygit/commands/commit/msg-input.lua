@@ -12,17 +12,9 @@ local state = {
 }
 
 local MAX_TITLE_LEN = 72
-
---------------------------------------------------------------------------------
+local INPUT_WIN_HEIGHT = { small = 3, big = 6 }
 
 ---@alias Tinygit.Input.ConfirmationCallback fun(commitTitle: string, commitBody?: string)
-
----@class Tinygit.Input.WinConf
----@field height number
----@field width number
----@field row number
----@field col number
----@field border string|string[]
 
 --------------------------------------------------------------------------------
 
@@ -154,6 +146,24 @@ local function setupSeparator(width)
 	})
 end
 
+local function setupWinHeightUpdate()
+	local function updateWinHeight()
+		local winConf = vim.api.nvim_win_get_config(state.winid)
+		local bodyLines = vim.api.nvim_buf_line_count(state.bufnr) - 1
+		winConf.height = bodyLines > 1 and INPUT_WIN_HEIGHT.big or INPUT_WIN_HEIGHT.small
+
+		vim.api.nvim_win_set_config(state.winid, winConf)
+		commitPreview.adaptWinPosition(winConf)
+	end
+
+	updateWinHeight() -- initialize
+	vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+		desc = "Tinygit: update input window height",
+		buffer = state.bufnr,
+		callback = updateWinHeight,
+	})
+end
+
 --------------------------------------------------------------------------------
 
 ---@param mode "stage-all-and-commit"|"commit"|"amend-msg"
@@ -166,15 +176,8 @@ function M.new(mode, prompt, confirmationCallback)
 	prompt = vim.trim(icon .. "  " .. prompt)
 	local borderChar = conf.border == "double" and "═" or "─"
 
-	local height = 4
+	local height = INPUT_WIN_HEIGHT.small
 	local width = MAX_TITLE_LEN - 2
-	local winConf = { ---@type Tinygit.Input.WinConf
-		height = height,
-		width = width,
-		row = math.floor((vim.o.lines - height) / 2) - 3,
-		col = math.floor((vim.o.columns - width) / 2),
-		border = conf.border,
-	}
 
 	-- PREFILL
 	local msgLines = {}
@@ -210,23 +213,16 @@ function M.new(mode, prompt, confirmationCallback)
 	}
 	local footer = vim.list_extend(keymapHints, titleCharCount)
 
-	-- COMMIT PREVIEW
-	-- before the input window is created, since the last window created gets focus
-	if mode ~= "amend-msg" then
-		---@cast mode "stage-all-and-commit"|"commit" -- ensured above
-		commitPreview.createWin(mode, winConf)
-	end
-
 	-- CREATE WINDOW & BUFFER
 	local bufnr = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, msgLines)
 	local winid = vim.api.nvim_open_win(bufnr, true, {
 		relative = "editor",
-		row = winConf.row,
-		col = winConf.col,
-		width = winConf.width,
-		height = winConf.height,
-		border = winConf.border,
+		height = height,
+		width = width,
+		row = math.floor((vim.o.lines - height) / 2) - 2,
+		col = math.floor((vim.o.columns - width) / 2),
+		border = conf.border,
 		title = " " .. prompt .. " ",
 		footer = footer,
 		footer_pos = "right",
@@ -257,6 +253,12 @@ function M.new(mode, prompt, confirmationCallback)
 		vim.bo[bufnr].formatoptions = vim.bo[bufnr].formatoptions .. "t" -- auto-wrap at textwidth
 	end
 
+	-- COMMIT PREVIEW
+	if mode ~= "amend-msg" then
+		---@cast mode "stage-all-and-commit"|"commit" -- ensured above
+		commitPreview.createWin(mode, winid)
+	end
+
 	-- STYLING
 	-- no highlight, since we do that more intuitively with our separator is enough
 	vim.wo[winid].winhighlight = "@markup.heading.gitcommit:,@markup.link.gitcommit:"
@@ -274,7 +276,8 @@ function M.new(mode, prompt, confirmationCallback)
 	setupKeymaps(confirmationCallback)
 	setupTitleCharCount(borderChar)
 	setupUnmount()
-	setupSeparator(winConf.width)
+	setupSeparator(width)
+	setupWinHeightUpdate()
 end
 
 --------------------------------------------------------------------------------

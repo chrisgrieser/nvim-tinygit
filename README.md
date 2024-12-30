@@ -25,9 +25,9 @@ operations.
 - [x] update docs
 - [x] update issue template
 - [x] commit preview
+- [x] adaptive commit window height
 - [ ] use `telescope` instead of `vim.ui.select`
 - [ ] preview for fixup commits
-- [ ] adaptive commit window height
 - [ ] new showcase screenshots
 - [ ] blink module for GitHub issues?
 
