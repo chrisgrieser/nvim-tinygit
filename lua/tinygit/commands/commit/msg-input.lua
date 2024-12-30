@@ -173,11 +173,11 @@ function M.new(mode, prompt, confirmationCallback)
 	-- PARAMS
 	local conf = require("tinygit.config").config.commit
 	local icon = require("tinygit.config").config.appearance.mainIcon
-	prompt = vim.trim(icon .. "  " .. prompt)
+	prompt = vim.trim(icon .. " " .. prompt)
 	local borderChar = conf.border == "double" and "═" or "─"
 
 	local height = INPUT_WIN_HEIGHT.small
-	local width = MAX_TITLE_LEN - 2
+	local width = MAX_TITLE_LEN + 2
 
 	-- PREFILL
 	local msgLines = {}
@@ -220,8 +220,8 @@ function M.new(mode, prompt, confirmationCallback)
 		relative = "editor",
 		height = height,
 		width = width,
-		row = math.floor((vim.o.lines - height) / 2) - 2,
-		col = math.floor((vim.o.columns - width) / 2),
+		row = math.ceil((vim.o.lines - height) / 2) - 5,
+		col = math.ceil((vim.o.columns - width) / 2),
 		border = conf.border,
 		title = " " .. prompt .. " ",
 		footer = footer,

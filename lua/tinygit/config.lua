@@ -73,7 +73,7 @@ local defaultConfig = {
 		mainIcon = "󰊢",
 		backdrop = {
 			enabled = true,
-			blend = 50, -- 0-100
+			blend = 40, -- 0-100
 		},
 	},
 	statusline = {
