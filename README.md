@@ -28,7 +28,8 @@ operations.
 - [x] adaptive commit window height
 - [ ] use `telescope` instead of `vim.ui.select`
 - [ ] preview for fixup commits
-- [ ] new showcase screenshots
+- [ ] more showcase screenshots
+- [ ] plugin rename (it's not tiny anymore…)
 - [ ] blink module for GitHub issues?
 
 ## Screenshots
@@ -36,6 +37,10 @@ operations.
 | Interactive staging                                                                                                                               | File History                                                                                                                              |
 |---------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
 | <img alt="interactive staging" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/3c055861-6b93-4065-8601-f79568d8ac28"> | <img alt="git history" width=70% src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94"> |
+
+| Smart commit                                                                                                              |                                                                                                                                           |
+|---------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| <img alt="smart commit" width=70% src="https://github.com/user-attachments/assets/8a908841-a6e0-4ddb-af63-a8d92ec8c577">  |                                                                                                                                           |
 
 ## Feature overview
 - **Interactive staging** of hunks (parts of a file). Displays hunk diffs with

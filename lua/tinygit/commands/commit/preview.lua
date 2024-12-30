@@ -11,35 +11,45 @@ local state = {
 
 ---@param mode "stage-all-and-commit"|"commit"
 ---@param statsWidth number
----@return string diffStats
+---@return string[] cleanedOutput
+---@return string summary
 ---@nodiscard
-function M.get(mode, statsWidth)
-	---@type fun(args: string[]): string
+function M.getDiffStats(mode, statsWidth)
+	---@type fun(args: string[]): string[], string
 	local function runGitStatsAndCleanUp(args)
-		local cleanedOutput = u
-			.syncShellCmd(args)
-			:gsub("\n[^\n]*$", "") -- remove summary line (footer)
-			:gsub(" | ", " │ ") -- full vertical bars instead of pipes
-			:gsub(" Bin ", "    ") -- icon for binaries
-			:gsub("\n +", "\n") -- remove leading spaces
-		return cleanedOutput
+		local output = vim.split(u.syncShellCmd(args), "\n")
+
+		local summary = table
+			.remove(output)
+			:gsub("^%s*", "") -- remove indentation
+			:gsub(" changed", "")
+			:gsub(" insertions?", "")
+			:gsub(" deletions?", "")
+			:gsub("[()]", "")
+			:gsub(",", " ")
+
+		local cleanedOutput = vim.tbl_map(function(line)
+			local cleanLine = line
+				:gsub(" | ", " │ ") -- full vertical bars instead of pipes
+				:gsub(" Bin ", "    ") -- icon for binaries
+				:gsub("^%s*", "") -- remove indentation
+			return cleanLine
+		end, output)
+
+		return cleanedOutput, summary
 	end
 
 	local gitStatsArgs = { "git", "diff", "--compact-summary", "--stat=" .. statsWidth }
 
-	local diffStats
 	if mode == "stage-all-and-commit" then
 		u.intentToAddUntrackedFiles() -- include new files in diff stats
-		diffStats = runGitStatsAndCleanUp(gitStatsArgs)
-	elseif mode == "commit" then
-		local notStaged = runGitStatsAndCleanUp(gitStatsArgs)
-		table.insert(gitStatsArgs, "--staged")
-		local staged = runGitStatsAndCleanUp(gitStatsArgs)
-		diffStats = notStaged == "" and staged
-			or table.concat({ staged, "", "not staged:", notStaged }, "\n")
+		return runGitStatsAndCleanUp(gitStatsArgs)
 	end
 
-	return diffStats
+	local notStaged, _ = runGitStatsAndCleanUp(gitStatsArgs)
+	local staged, summary = runGitStatsAndCleanUp(vim.list_extend(gitStatsArgs, { "--staged" }))
+	if #notStaged > 0 then notStaged = vim.list_extend({ "", "not staged:" }, notStaged) end
+	return vim.list_extend(staged, notStaged), summary
 end
 
 function M.diffStatsHighlights()
@@ -63,14 +73,12 @@ end
 ---@param mode "stage-all-and-commit"|"commit"
 ---@param inputWinid number
 function M.createWin(mode, inputWinid)
-	-- PARAMS
 	local inputWin = vim.api.nvim_win_get_config(inputWinid)
-	local diffStats = M.get(mode, inputWin.width - 2)
-	local diffStatsLines = vim.split(diffStats, "\n")
+	local diffStats, summary = M.getDiffStats(mode, inputWin.width - 2)
 
 	-- CREATE WINDOW
 	local bufnr = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, diffStatsLines)
+	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, diffStats)
 	local winid = vim.api.nvim_open_win(bufnr, false, {
 		relative = "win",
 		win = inputWinid,
@@ -81,19 +89,18 @@ function M.createWin(mode, inputWinid)
 		border = inputWin.border,
 		style = "minimal",
 		focusable = false,
+		footer = #diffStats > 1 and " " .. summary .. " " or "",
+		footer_pos = "right",
 	})
 	state.bufnr = bufnr
 	state.winid = winid
-	state.diffHeight = #diffStatsLines
+	state.diffHeight = #diffStats
 	M.adaptWinPosition(inputWin)
 
-	-- SETTINGS
 	vim.bo[bufnr].filetype = "tinygit.diffstats"
-	vim.wo[winid].winfixbuf = true
 	vim.wo[winid].statuscolumn = " " -- = left-padding
 
-	-- HIGHLIGHTS
-	vim.wo[winid].winhighlight = "FloatBorder:Comment,Normal:Normal"
+	vim.wo[winid].winhighlight = "FloatFooter:NonText,FloatBorder:Comment,Normal:Normal"
 	vim.api.nvim_win_call(winid, M.diffStatsHighlights)
 end
 
