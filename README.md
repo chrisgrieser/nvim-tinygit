@@ -357,7 +357,7 @@ automatically un-shallow the repo if needed.
 require("tinygit").fileHistory()
 ```
 
-The type of history search depends on the mode `.searchHistory` is called from:
+The type of history search depends on the mode `.fileHistory` is called from:
 - **Normal mode**: search history for a string (`git log -G`)
 	* Correctly follows file renamings, and displays past file names in the
 	  commit selection.
