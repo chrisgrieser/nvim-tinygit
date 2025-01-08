@@ -261,7 +261,8 @@ function M.new(mode, prompt, confirmationCallback)
 
 	-- STYLING
 	-- no highlight, since we do that more intuitively with our separator is enough
-	vim.wo[winid].winhighlight = "@markup.heading.gitcommit:,@markup.link.gitcommit:"
+	-- linking to original `Normal` hl looks better in some themes
+	vim.wo[winid].winhighlight = "Normal:Normal,@markup.heading.gitcommit:,@markup.link.gitcommit:"
 
 	vim.api.nvim_win_call(winid, function()
 
