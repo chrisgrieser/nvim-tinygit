@@ -167,6 +167,13 @@ function M.setup(userConfig)
 	-- cumbersome, and since it's discouraged by git anyway, we simply disallow
 	-- context=0 for now.
 	if M.config.stage.contextSize < 1 then M.config.stage.contextSize = 1 end
+
+	-- `preview_width` is only supported by `horizontal` & `cursor` strategies,
+	-- see https://github.com/chrisgrieser/nvim-scissors/issues/28
+	local strategy = M.config.stage.telescopeOpts.layout_strategy
+	if strategy ~= "horizontal" and strategy ~= "cursor" then
+		M.config.stage.telescopeOpts.layout_config.preview_width = nil
+	end
 end
 
 --------------------------------------------------------------------------------
