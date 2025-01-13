@@ -33,13 +33,17 @@ local defaultConfig = {
 			normal = { abort = "q", confirm = "<CR>" },
 			insert = { confirm = "<C-CR>" },
 		},
-		conventionalCommits = {
-			enforce = false,
+		subject = {
+			noSentenceCase = false,
+			enforceType = false,
 			-- stylua: ignore
-			keywords = {
+			types = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",
 				"perf", "style", "revert", "ci", "break",
 			},
+		},
+		body = {
+			enforce = false,
 		},
 	},
 	push = {
@@ -145,6 +149,13 @@ function M.setup(userConfig)
 	if M.config.push.preventPushingFixupOrSquashCommits then
 		warn(
 			"The config `push.preventPushingFixupOrSquashCommits` has moved to `push.preventPushingFixupCommits`."
+		)
+	end
+
+	-- DEPRECATION (2025-01-13)
+	if M.config.commit.conventionalCommits then
+		warn(
+			"The config `commit.conventionalCommits` has moved to `commit.subject.enforceType`, and `commit.conventionalCommits.keywords` was moved to `commit.subject.types`."
 		)
 	end
 

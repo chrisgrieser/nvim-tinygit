@@ -156,13 +156,17 @@ require("tinygit").setup {
 			normal = { abort = "q", confirm = "<CR>" },
 			insert = { confirm = "<C-CR>" },
 		},
-		conventionalCommits = {
-			enforce = false,
+		subject = {
+			noSentenceCase = false,
+			enforceType = false,
 			-- stylua: ignore
-			keywords = {
+			types = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",
 				"perf", "style", "revert", "ci", "break",
 			},
+		},
+		body = {
+			enforce = false,
 		},
 	},
 	push = {
