@@ -48,8 +48,14 @@ local function setupKeymaps(confirmationCallback)
 	-----------------------------------------------------------------------------
 
 	local function confirm()
-		-- validate commit title
-		local commitTitle = vim.trim(vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1])
+		-- lint title
+		local commitTitle = vim.api
+			.nvim_buf_get_lines(bufnr, 0, 1, false)[1]
+			:gsub("^%s+", "") -- leading whitespace
+			:gsub("%s+$", "") -- trailing whitespace
+			:gsub("%.$", "") -- trailing dot https://commitlint.js.org/reference/rules.html#body-full-stop
+
+		-- VALIDATE commit title
 		if #commitTitle > MAX_TITLE_LEN then
 			warn("Title is too long.")
 			return
@@ -66,12 +72,15 @@ local function setupKeymaps(confirmationCallback)
 			end
 		end
 
-		-- confirm
+		-- lint body
 		local bodytext = vim
 			.iter(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false))
 			:skip(1) -- skip title
 			:join("\n") -- join for shell command
-		local commitBody = vim.trim(bodytext) ~= "" and vim.trim(bodytext) or nil
+		---@type string|nil
+		local commitBody = vim.trim(bodytext)
+		if commitBody == "" then commitBody = nil end -- empty body is allows
+
 		confirmationCallback(commitTitle, commitBody)
 
 		-- reset remembered message
@@ -265,7 +274,6 @@ function M.new(mode, prompt, confirmationCallback)
 	vim.wo[winid].winhighlight = "Normal:Normal,@markup.heading.gitcommit:,@markup.link.gitcommit:"
 
 	vim.api.nvim_win_call(winid, function()
-
 		highlight.inlineCodeAndIssueNumbers()
 		-- overlength
 		-- * `\%<2l` to only highlight 1st line https://neovim.io/doc/user/pattern.html#search-range
