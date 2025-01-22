@@ -203,9 +203,7 @@ local function showDiff(commitIdx)
 	end
 
 	-- KEYMAPS
-	local function keymap(lhs, rhs)
-		vim.keymap.set({ "n", "x" }, lhs, rhs, { buffer = bufnr, nowait = true })
-	end
+	local function keymap(lhs, rhs) vim.keymap.set("n", lhs, rhs, { buffer = bufnr, nowait = true }) end
 
 	-- keymaps: closing
 	local function closePopup()
