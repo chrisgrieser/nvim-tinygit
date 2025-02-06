@@ -27,9 +27,6 @@ operations.
 - [x] commit preview
 - [x] adaptive commit window height
 - [ ] use `telescope` instead of `vim.ui.select`
-- [ ] preview for fixup commits
-- [ ] more showcase screenshots
-- [ ] plugin rename (it's not tiny anymore…)
 
 ## Feature overview
 
@@ -69,7 +66,7 @@ operations.
 - **Status line components:** `git blame` of a file and branch state.
 - **Streamlined workflow:** operations are smartly combined to minimize
   friction. For instance, the smart-commit command combines staging, committing,
-  and pushing, and searching the file history combines un-shallowing, searching,
+  and pushing, and searching the file history combines unshallowing, searching,
   and diff navigation.
 
 <!-- toc -->
@@ -97,8 +94,9 @@ operations.
 - `dressing.nvim` and `nvim-notify` are **no longer dependencies**.
 - `telescope.nvim` is now an **always required dependency**.
 - The `commit.insertIssuesOnHashSign` feature has been removed. Since the commit
-  creation window is now larger, much better issue insertion via plugins like
-  [cmp-git](https://github.com/petertriho/cmp-git) now work there.
+  creation window is now larger, better issue insertion via plugins like
+  [cmp-git](https://github.com/petertriho/cmp-git) or
+  [blink-cmp-git](https://github.com/Kaiser-Yang/blink-cmp-git) now work there.
 - `smartCommit` was overhauled. Among other improvements, it now supports a
   commit body.
 
@@ -225,7 +223,7 @@ require("tinygit").setup {
 All commands are available via lua function or sub-command of `:Tinygit`, for
 example `require("tinygit").interactiveStaging()` and `:Tinygit
 interactiveStaging`. However, do note that the lua function is preferable,
-since the `:Tinygit` does not accept command-specific options and also does not
+since the `:Tinygit` does not accept command-specific options and does not
 trigger visual-mode specific changes to the commands.
 
 ### Interactive staging
@@ -377,7 +375,7 @@ require("tinygit").fileHistory()
 
 The type of history search depends on the mode `.fileHistory` is called from:
 - **Normal mode**: search history for a string (`git log -G`)
-	* Correctly follows file renamings, and displays past file names in the
+	* Correctly follows file renamings, and displays past filenames in the
 	  commit selection.
 	* The search input is case-insensitive and supports regex.
 	* Leave the input field empty to display *all* commits that changed the
