@@ -1,2 +1,3 @@
 [default.extend-words]
 noice = "noice" # for noice.nvim
+equest = "equest" # used in a pattern
