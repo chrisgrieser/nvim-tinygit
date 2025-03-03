@@ -128,11 +128,15 @@ end
 ---@param opts? { state?: string, type?: string }
 function M.issuesAndPrs(opts)
 	if u.notInGitRepo() then return end
-	local defaultOpts = { state = "all", type = "all" }
-	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
-
 	local repo = M.getGithubRemote()
 	if not repo then return end
+	if vim.fn.executable("curl") == 0 then
+		u.notify("`curl` cannot be found.", "warn")
+		return
+	end
+
+	local defaultOpts = { state = "all", type = "all" }
+	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
 	local baseUrl = ("https://api.github.com/repos/%s/issues"):format(repo)
