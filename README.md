@@ -4,12 +4,20 @@
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
 <img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat"/></a>
 
-Bundle of commands focused on swift and streamlined git
-operations.
+Bundle of commands focused on swift and streamlined git operations.
+
+## Breaking changes in v1.0
+- `dressing.nvim` and `nvim-notify` are **no longer dependencies**.
+- `telescope.nvim` is now a **required dependency**.
+- The `commit.insertIssuesOnHashSign` feature has been removed. Better issue
+  insertion via plugins like [cmp-git](https://github.com/petertriho/cmp-git) or
+  [blink-cmp-git](https://github.com/Kaiser-Yang/blink-cmp-git) now work there.
+- `smartCommit` was overhauled. Among other improvements, it now supports a
+  commit body.
 
 > [!NOTE]
-> [Version 1.0 included several breaking changes.](#breaking-changes-in-v10) If
-> you want to keep using the previous version, pin the tag `v0.9`:
+> If you want to keep using the previous version, without these breaking
+> changes, you can pin the tag `v0.9`:
 >
 > ```lua
 > -- lazy.nvim
@@ -19,14 +27,6 @@ operations.
 > 	dependencies = "stevearc/dressing.nvim",
 > },
 > ```
-
-## TODO for version 1.0 release
-- [x] commit message module
-- [x] update docs
-- [x] update issue template
-- [x] commit preview
-- [x] adaptive commit window height
-- [ ] use `telescope` instead of `vim.ui.select`
 
 ## Feature overview
 
@@ -69,9 +69,10 @@ operations.
   and pushing, and searching the file history combines unshallowing, searching,
   and diff navigation.
 
+## Table of contents
+
 <!-- toc -->
 
-- [Breaking changes in v1.0](#breaking-changes-in-v10)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Commands](#commands)
@@ -90,22 +91,12 @@ operations.
 
 <!-- tocstop -->
 
-## Breaking changes in v1.0
-- `dressing.nvim` and `nvim-notify` are **no longer dependencies**.
-- `telescope.nvim` is now an **always required dependency**.
-- The `commit.insertIssuesOnHashSign` feature has been removed. Since the commit
-  creation window is now larger, better issue insertion via plugins like
-  [cmp-git](https://github.com/petertriho/cmp-git) or
-  [blink-cmp-git](https://github.com/Kaiser-Yang/blink-cmp-git) now work there.
-- `smartCommit` was overhauled. Among other improvements, it now supports a
-  commit body.
-
 ## Installation
 **Requirements**
 - nvim 0.10+
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
 - `curl` for GitHub-related features
-- *optional*: Treesitter parser for syntax highlighting `TSInstall gitcommit`
+- *optional*: Treesitter parser for syntax highlighting: `TSInstall gitcommit`
 
 ```lua
 -- lazy.nvim (automatically takes care of dependencies)
