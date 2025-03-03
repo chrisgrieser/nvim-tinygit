@@ -1,5 +1,4 @@
 local M = {}
-local backdrop = require("tinygit.shared.backdrop")
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
@@ -149,6 +148,11 @@ function M.interactiveStaging()
 		notify("There are no staged or unstaged changes.", "warn")
 		return
 	end
+	local installed, _ = pcall(require, "telescope")
+	if not installed then
+		u.notify("telescope.nvim is not installed.", "warn")
+		return
+	end
 
 	-- GET ALL HUNKS
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
@@ -165,11 +169,6 @@ function M.interactiveStaging()
 	local allHunks = vim.list_extend(changedHunks, stagedHunks)
 
 	-- START TELESCOPE PICKER
-	vim.api.nvim_create_autocmd("FileType", {
-		once = true,
-		pattern = "TelescopeResults",
-		callback = function(ctx) backdrop.new(ctx.buf) end,
-	})
 	require("tinygit.commands.stage.telescope").pickHunk(allHunks)
 end
 --------------------------------------------------------------------------------
