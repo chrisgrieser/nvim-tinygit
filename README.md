@@ -256,7 +256,7 @@ require("tinygit").interactiveStaging()
 require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = true }
 ```
 
-**Example workflow**
+**Example workflow**  
 Assuming these keybindings:
 
 ```lua
@@ -317,7 +317,7 @@ require("tinygit").undoLastCommitOrAmend()
   pushIfClean = false }`), the last commit is not undone.
 
 ### GitHub interaction
-**Search issues & PRs**
+**Search issues & PRs**  
 - Requires `curl`.
 
 ```lua
@@ -330,7 +330,7 @@ require("tinygit").issuesAndPrs { type = "all", state = "all" }
 require("tinygit").openIssueUnderCursor()
 ```
 
-**GitHub URL**
+**GitHub URL**  
 Creates a permalink to the current file/lines at GitHub. The link is opened in
 the browser and copied to the system clipboard. In normal mode, uses the current
 file, in visual mode, uses the selected lines. (Note that visual mode detection
@@ -371,7 +371,7 @@ require("tinygit").fileHistory()
 ```
 
 The type of history search depends on the mode `.fileHistory` is called from:
-- **Normal mode**: search history for a string (`git log -G`)
+- **Normal mode**: search file history for a string (`git log -G`)
 	* Correctly follows file renamings, and displays past filenames in the
 	  commit selection.
 	* The search input is case-insensitive and supports regex.
@@ -391,13 +391,6 @@ The type of history search depends on the mode `.fileHistory` is called from:
 
 Note that visual mode detection requires you to use the lua function above
 instead of the `:Tinygit` ex-command.
-
-**Keymaps in the diff popup**
-- `<Tab>`: show older commit
-- `<S-Tab>`: show newer commit
-- `yh`: yank the commit hash to the system clipboard
-- `R`: restore file to state at commit
-- `n`/`N`: go to the next/previous occurrence of the query (only file history)
 
 ### Stash
 Simple wrappers around `git stash push` and `git stash pop`.
