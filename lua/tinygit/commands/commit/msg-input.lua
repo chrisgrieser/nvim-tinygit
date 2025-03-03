@@ -49,18 +49,18 @@ local function setupKeymaps(confirmationCallback)
 
 	local function confirm()
 		-- TITLE
-		local commitTitle = vim.trim(vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1])
-			:gsub("%.$", "") -- no trailing dot https://commitlint.js.org/reference/rules.html#body-full-stop
-		if #commitTitle > MAX_TITLE_LEN then
-			warn("Title is too long.")
+		local commitSubject = vim.trim(vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1])
+		if conf.subject.autoFormat then commitSubject = conf.subject.autoFormat(commitSubject) end
+		if #commitSubject > MAX_TITLE_LEN then
+			warn("Subject is too long.")
 			return
 		end
-		if #commitTitle == 0 then
-			warn("Title is empty.")
+		if #commitSubject == 0 then
+			warn("Subject is empty.")
 			return
 		end
 		if conf.subject.enforceType then
-			local firstWord = commitTitle:match("^%w+")
+			local firstWord = commitSubject:match("^%w+")
 			if not vim.tbl_contains(conf.subject.types, firstWord) then
 				local msg = "Not using a type allowed by the config `commit.subject.types`. "
 					.. "(Alternatively, you can also disable `commit.subject.enforceType`.)"
@@ -89,7 +89,7 @@ local function setupKeymaps(confirmationCallback)
 		state.abortedCommitMsg[cwd] = nil
 
 		-- confirm and close
-		confirmationCallback(commitTitle, commitBody)
+		confirmationCallback(commitSubject, commitBody)
 		vim.cmd.bwipeout(bufnr)
 	end
 

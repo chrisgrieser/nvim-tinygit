@@ -146,6 +146,13 @@ require("tinygit").setup {
 			insert = { confirm = "<C-CR>" },
 		},
 		subject = {
+			-- automatically apply formatting to the subject line
+			autoFormat = function(subject) ---@type nil|fun(subject: string): string
+				subject = subject:gsub("%.$", "") -- remove trailing dot https://commitlint.js.org/reference/rules.html#body-full-stop
+				return subject
+			end,
+
+			-- disallow commits that do not use an allowed type
 			enforceType = false,
 			-- stylua: ignore
 			types = {
