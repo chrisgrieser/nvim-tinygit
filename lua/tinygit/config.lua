@@ -34,8 +34,7 @@ local defaultConfig = {
 			insert = { confirm = "<C-CR>" },
 		},
 		subject = {
-			noSentenceCase = false,
-			enforceType = false,
+			enforceType = false, -- disallow commits that do not use an allowed type
 			-- stylua: ignore
 			types = {
 				"fix", "feat", "chore", "docs", "refactor", "build", "test",

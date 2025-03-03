@@ -146,7 +146,6 @@ require("tinygit").setup {
 			insert = { confirm = "<C-CR>" },
 		},
 		subject = {
-			noSentenceCase = false,
 			enforceType = false,
 			-- stylua: ignore
 			types = {

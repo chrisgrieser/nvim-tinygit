@@ -51,13 +51,6 @@ local function setupKeymaps(confirmationCallback)
 		-- TITLE
 		local commitTitle = vim.trim(vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1])
 			:gsub("%.$", "") -- no trailing dot https://commitlint.js.org/reference/rules.html#body-full-stop
-		if conf.subject.noSentenceCase and conf.subject.enforceType then
-			commitTitle = commitTitle
-				:gsub("^(%w+: )(.)", function(c1, c2) return c1 .. c2:lower() end) -- no scope
-				:gsub("^(%w+%b(): )(.)", function(c1, c2) return c1 .. c2:lower() end) -- with scope
-		elseif conf.subject.noSentenceCase and not conf.subject.enforceType then
-			commitTitle = commitTitle:gsub("^%w", string.lower)
-		end
 		if #commitTitle > MAX_TITLE_LEN then
 			warn("Title is too long.")
 			return
