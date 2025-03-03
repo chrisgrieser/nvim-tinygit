@@ -1,7 +1,6 @@
 local M = {}
 
 local highlight = require("tinygit.shared.highlights")
-local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 local push = require("tinygit.commands.push-pull").push
 local updateStatusline = require("tinygit.statusline").updateAllComponents
@@ -178,27 +177,33 @@ function M.fixupCommit(opts)
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
 
 	-- get commits
+	local gitlogFormat = "%h\t%s\t%cr" -- hash, subject, date, `\t` as delimiter required
 	local result = vim.system({
 		"git",
 		"log",
 		"-n" .. tostring(opts.selectFromLastXCommits),
-		"--format=" .. selectCommit.gitlogFormat,
+		"--format=" .. gitlogFormat,
 	}):wait()
 	if u.nonZeroExit(result) then return end
 	local commits = vim.split(vim.trim(result.stdout), "\n")
 
 	-- user selection of commit
-	local autocmdId = selectCommit.setupAppearance()
 	local icon = require("tinygit.config").config.appearance.mainIcon
 	local prompt = vim.trim(icon .. " Select commit to fixup")
-	vim.ui.select(commits, {
-		prompt = prompt,
-		format_item = selectCommit.selectorFormatter,
-		kind = "tinygit.fixupCommit",
-	}, function(commit)
-		vim.api.nvim_del_autocmd(autocmdId)
-		if not commit then return end
-
+	local commitFormatter = function(commitLine)
+		local _, subject, date, nameAtCommit = unpack(vim.split(commitLine, "\t"))
+		local displayLine = ("%s\t%s"):format(subject, date)
+		-- append name at commit, if it exists
+		if nameAtCommit then displayLine = displayLine .. ("\t(%s)"):format(nameAtCommit) end
+		return displayLine
+	end
+	local stylingFunc = function()
+		local hl = require("tinygit.shared.highlights")
+		hl.commitType()
+		hl.inlineCodeAndIssueNumbers()
+		vim.fn.matchadd("Comment", [[\t.*$]])
+	end
+	local onChoice = function(commit)
 		-- stage
 		local doStageAllChanges = hasNoStagedChanges()
 		if doStageAllChanges then
@@ -232,7 +237,15 @@ function M.fixupCommit(opts)
 		end
 
 		updateStatusline()
-	end)
+	end
+
+	require("tinygit.shared.selector").withTelescope(
+		prompt,
+		commits,
+		commitFormatter,
+		stylingFunc,
+		onChoice
+	)
 end
 
 --------------------------------------------------------------------------------

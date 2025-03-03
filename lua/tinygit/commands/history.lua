@@ -1,5 +1,4 @@
 local M = {}
-local selectCommit = require("tinygit.shared.select-commit")
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
@@ -21,6 +20,11 @@ local state = {
 	ft = "",
 	unshallowingRunning = false,
 }
+
+-- What is passed to `git log --format`. hash/`%h` follows by a tab is required
+-- at the beginning, the rest is decorative, though \t as delimiter as
+-- assumed by the others parts here.
+local gitlogFormat = "%h\t%s\t%cr" -- hash, subject, date
 
 --------------------------------------------------------------------------------
 
@@ -292,17 +296,31 @@ local function selectFromCommits(commitList)
 	end, commits)
 
 	-- select commit
-	local autocmdId = selectCommit.setupAppearance()
 	local searchMode = state.query == "" and vim.fs.basename(state.absPath) or state.query
 	local icon = require("tinygit.config").config.appearance.mainIcon
-	vim.ui.select(commits, {
-		prompt = vim.trim(("%s Commits that changed %q"):format(icon, searchMode)),
-		format_item = selectCommit.selectorFormatter,
-		kind = "tinygit.history",
-	}, function(_, commitIdx)
-		vim.api.nvim_del_autocmd(autocmdId)
-		if commitIdx then showDiff(commitIdx) end
-	end)
+	local prompt = vim.trim(("%s Commits that changed %q"):format(icon, searchMode))
+	local commitFormatter = function(commitLine)
+		local _, subject, date, nameAtCommit = unpack(vim.split(commitLine, "\t"))
+		local displayLine = ("%s\t%s"):format(subject, date)
+		-- append name at commit, if it exists
+		if nameAtCommit then displayLine = displayLine .. ("\t(%s)"):format(nameAtCommit) end
+		return displayLine
+	end
+	local stylingFunc = function()
+		local hl = require("tinygit.shared.highlights")
+		hl.commitType()
+		hl.inlineCodeAndIssueNumbers()
+		vim.fn.matchadd("Comment", [[\t.*$]])
+	end
+	local onChoice = function(_, commitIdx) showDiff(commitIdx) end
+
+	require("tinygit.shared.selector").withTelescope(
+		prompt,
+		commits,
+		commitFormatter,
+		stylingFunc,
+		onChoice
+	)
 end
 
 --------------------------------------------------------------------------------
@@ -329,7 +347,7 @@ local function searchHistoryForString(prefill)
 		local args = {
 			"git",
 			"log",
-			"--format=" .. selectCommit.gitlogFormat,
+			"--format=" .. gitlogFormat,
 			"--follow", -- follow file renamings
 			"--name-only", -- add filenames to display renamed files
 			"--",
@@ -364,7 +382,7 @@ local function functionHistory()
 	local result = vim.system({
 		"git",
 		"log",
-		"--format=" .. selectCommit.gitlogFormat,
+		"--format=" .. gitlogFormat,
 		("-L:%s:%s"):format(funcname, state.absPath),
 		"--no-patch",
 	}):wait()
@@ -393,7 +411,7 @@ local function lineHistory()
 	local result = vim.system({
 		"git",
 		"log",
-		"--format=" .. selectCommit.gitlogFormat,
+		"--format=" .. gitlogFormat,
 		("-L%d,+%d:%s"):format(lnum, offset, state.absPath),
 		"--no-patch",
 	}):wait()

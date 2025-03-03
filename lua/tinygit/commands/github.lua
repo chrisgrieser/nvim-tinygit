@@ -76,54 +76,6 @@ end
 
 --------------------------------------------------------------------------------
 
----formatter for vim.ui.select
----@param issue table
----@return string
-local function issueListFormatter(issue)
-	local icons = require("tinygit.config").config.github.icons
-	local icon
-	if issue.pull_request then
-		if issue.draft then
-			icon = icons.draftPR
-		elseif issue.state == "open" then
-			icon = icons.openPR
-		elseif issue.pull_request.merged_at then
-			icon = icons.mergedPR
-		else
-			icon = icons.closedPR
-		end
-	else
-		if issue.state == "open" then
-			icon = icons.openIssue
-		elseif issue.state_reason == "completed" then
-			icon = icons.closedIssue
-		elseif issue.state_reason == "not_planned" then
-			icon = icons.notPlannedIssue
-		end
-	end
-
-	return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
-end
-
-local function issueListAppearance()
-	local autocmdId = vim.api.nvim_create_autocmd("FileType", {
-		once = true,
-		pattern = { "DressingSelect", "TelescopeResults" },
-		callback = function(ctx)
-			require("tinygit.shared.backdrop").new(ctx.buf)
-			highlight.commitType()
-			highlight.inlineCodeAndIssueNumbers()
-			vim.api.nvim_buf_call(ctx.buf, function()
-				vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
-				vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
-				vim.fn.matchadd("Comment", [[\vby \w+\s*$]])
-			end)
-		end,
-	})
-	return autocmdId
-end
-
----Choose a GitHub issue/PR from the current repo to open in the browser.
 ---CAVEAT Due to GitHub API limitations, only the last 100 issues are shown.
 ---@param opts? { state?: string, type?: string }
 function M.issuesAndPrs(opts)
@@ -164,16 +116,48 @@ function M.issuesAndPrs(opts)
 	end
 
 	local type = opts.type == "all" and "Issue/PR" or opts.type
-	local autocmdId = issueListAppearance()
-	local icon = require("tinygit.config").config.appearance.mainIcon
-	vim.ui.select(issues, {
-		prompt = vim.trim(("%s Select %s (%s)"):format(icon, type, opts.state)),
-		kind = "tinygit.githubIssue",
-		format_item = issueListFormatter,
-	}, function(choice)
-		vim.api.nvim_del_autocmd(autocmdId)
-		if choice then vim.ui.open(choice.html_url) end
-	end)
+	local mainIcon = require("tinygit.config").config.appearance.mainIcon
+	local prompt = vim.trim(("%s Select %s (%s)"):format(mainIcon, type, opts.state))
+	local onChoice = function(choice) vim.ui.open(choice.html_url) end
+	local stylingFunc = function()
+		highlight.commitType()
+		highlight.inlineCodeAndIssueNumbers()
+		vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
+		vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
+		vim.fn.matchadd("Comment", [[\vby [A-Za-z0-9-]+\s*$]])
+	end
+	local function issueListFormatter(issue)
+		local icons = require("tinygit.config").config.github.icons
+		local icon
+		if issue.pull_request then
+			if issue.draft then
+				icon = icons.draftPR
+			elseif issue.state == "open" then
+				icon = icons.openPR
+			elseif issue.pull_request.merged_at then
+				icon = icons.mergedPR
+			else
+				icon = icons.closedPR
+			end
+		else
+			if issue.state == "open" then
+				icon = icons.openIssue
+			elseif issue.state_reason == "completed" then
+				icon = icons.closedIssue
+			elseif issue.state_reason == "not_planned" then
+				icon = icons.notPlannedIssue
+			end
+		end
+		return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
+	end
+
+	require("tinygit.shared.selector").withTelescope(
+		prompt,
+		issues,
+		issueListFormatter,
+		stylingFunc,
+		onChoice
+	)
 end
 
 function M.openIssueUnderCursor()
