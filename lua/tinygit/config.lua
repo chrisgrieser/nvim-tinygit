@@ -173,6 +173,11 @@ function M.setup(userConfig)
 		M.config.history.diffPopup.border = fallback
 		warn(('Border type "none" is not supported, falling back to %q.'):format(fallback))
 	end
+	if M.config.commit.border == "none" then
+		local fallback = defaultConfig.commit.border
+		M.config.commit.border = fallback
+		warn(('Border type "none" is not supported, falling back to %q.'):format(fallback))
+	end
 
 	-- VALIDATE `context` > 0 (0 is not supported without `--unidiff-zero`)
 	-- DOCS https://git-scm.com/docs/git-apply#Documentation/git-apply.txt---unidiff-zero
