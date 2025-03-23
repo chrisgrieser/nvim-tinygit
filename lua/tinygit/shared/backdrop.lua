@@ -21,6 +21,7 @@ function M.new(referenceBuf, referenceZindex)
 		height = vim.o.lines,
 		focusable = false,
 		style = "minimal",
+		border = "none", -- needs to be explicitly set due to `vim.o.winborder`
 		zindex = referenceZindex - 1, -- ensure it's below the reference window
 	})
 	vim.api.nvim_set_hl(0, backdropName, { bg = "#000000", default = true })
