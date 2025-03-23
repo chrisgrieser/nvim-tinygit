@@ -1,6 +1,17 @@
 local M = {}
 --------------------------------------------------------------------------------
 
+local fallbackBorder = "rounded"
+
+---@return string
+local function getBorder()
+	local hasWinborder, winborder = pcall(function() return vim.o.winborder end)
+	if not hasWinborder or winborder == "" or winborder == "none" then return fallbackBorder end
+	return winborder
+end
+
+--------------------------------------------------------------------------------
+
 ---@class Tinygit.Config
 local defaultConfig = {
 	stage = { -- requires `telescope.nvim`
@@ -26,7 +37,7 @@ local defaultConfig = {
 	},
 	commit = {
 		keepAbortedMsgSecs = 300,
-		border = vim.fn.has("nvim-0.11") == 1 and vim.o.winborder or "rounded",
+		border = getBorder(), -- `vim.o.winborder` on nvim 0.11, otherwise "rounded"
 		spellcheck = false, -- vim's builtin spellcheck
 		wrap = "hard", ---@type "hard"|"soft"|"none"
 		keymaps = {
@@ -75,7 +86,7 @@ local defaultConfig = {
 		diffPopup = {
 			width = 0.8, -- between 0-1
 			height = 0.8,
-			border = vim.fn.has("nvim-0.11") == 1 and vim.o.winborder or "rounded",
+			border = getBorder(), -- `vim.o.winborder` on nvim 0.11, otherwise "rounded"
 		},
 		autoUnshallowIfNeeded = false,
 	},
@@ -168,15 +179,13 @@ function M.setup(userConfig)
 	---@diagnostic enable: undefined-field
 
 	-- VALIDATE border `none` does not work with and title/footer used by this plugin
-	if M.config.history.diffPopup.border == "none" then
-		local fallback = defaultConfig.history.diffPopup.border
-		M.config.history.diffPopup.border = fallback
-		warn(('Border type "none" is not supported, falling back to %q.'):format(fallback))
+	if M.config.history.diffPopup.border == "none" or M.config.history.diffPopup.border == "" then
+		M.config.history.diffPopup.border = fallbackBorder
+		warn(('Border type "none" is not supported, falling back to %q.'):format(fallbackBorder))
 	end
-	if M.config.commit.border == "none" then
-		local fallback = defaultConfig.commit.border
-		M.config.commit.border = fallback
-		warn(('Border type "none" is not supported, falling back to %q.'):format(fallback))
+	if M.config.commit.border == "none" or M.config.commit.border == "" then
+		M.config.commit.border = fallbackBorder
+		warn(('Border type "none" is not supported, falling back to %q.'):format(fallbackBorder))
 	end
 
 	-- VALIDATE `context` > 0 (0 is not supported without `--unidiff-zero`)

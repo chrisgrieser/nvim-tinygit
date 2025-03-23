@@ -138,7 +138,7 @@ require("tinygit").setup {
 	},
 	commit = {
 		keepAbortedMsgSecs = 300,
-		border = vim.fn.has("nvim-0.11") == 1 and vim.o.winborder or "rounded",
+		border = getBorder(), -- `vim.o.winborder` on nvim 0.11, otherwise "rounded"
 		spellcheck = false, -- vim's builtin spellcheck
 		wrap = "hard", ---@type "hard"|"soft"|"none"
 		keymaps = {
@@ -187,7 +187,7 @@ require("tinygit").setup {
 		diffPopup = {
 			width = 0.8, -- between 0-1
 			height = 0.8,
-			border = vim.fn.has("nvim-0.11") == 1 and vim.o.winborder or "rounded",
+			border = getBorder(), -- `vim.o.winborder` on nvim 0.11, otherwise "rounded"
 		},
 		autoUnshallowIfNeeded = false,
 	},
