@@ -75,6 +75,11 @@ function M.smartCommit(opts)
 
 	local inputMode = doStageAllChanges and "stage-all-and-commit" or "commit"
 
+	-- check if pre-commit would pass before opening message input
+	local preCommitResult = vim.system({ "git", "hook", "run", "--ignore-missing", "pre-commit" })
+		:wait()
+	if u.nonZeroExit(preCommitResult) then return end
+
 	require("tinygit.commands.commit.msg-input").new(inputMode, prompt, function(title, body)
 		-- stage
 		if doStageAllChanges then
@@ -83,7 +88,8 @@ function M.smartCommit(opts)
 		end
 
 		-- commit
-		local commitArgs = { "git", "commit", "--message=" .. title }
+		-- (using `--no-verify`, since we checked the pre-commit earlier already)
+		local commitArgs = { "git", "commit", "--no-verify", "--message=" .. title }
 		if body then table.insert(commitArgs, "--message=" .. body) end
 		local result = vim.system(commitArgs):wait()
 		if u.nonZeroExit(result) then return end
