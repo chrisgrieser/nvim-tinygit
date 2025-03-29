@@ -96,6 +96,10 @@ local defaultConfig = {
 			enabled = true,
 			blend = 40, -- 0-100
 		},
+		hlGroups = {
+			addedText = "Added", -- i.e. use hlgroup `Added`
+			removedText = "Removed",
+		},
 	},
 	statusline = {
 		blame = {

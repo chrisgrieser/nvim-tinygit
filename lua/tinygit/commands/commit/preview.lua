@@ -53,8 +53,9 @@ function M.getDiffStats(mode, statsWidth)
 end
 
 function M.diffStatsHighlights()
-	vim.fn.matchadd("diffAdded", [[ \zs+\+]]) -- color the plus/minus like in the terminal
-	vim.fn.matchadd("diffRemoved", [[-\+\ze\s*$]])
+	local hlGroups = require("tinygit.config").config.appearance.hlGroups
+	vim.fn.matchadd(hlGroups.addedText, [[ \zs+\+]]) -- color the plus/minus like in the terminal
+	vim.fn.matchadd(hlGroups.removedText, [[-\+\ze\s*$]])
 
 	vim.fn.matchadd("Keyword", [[(new.*)]])
 	vim.fn.matchadd("Keyword", [[(gone.*)]])

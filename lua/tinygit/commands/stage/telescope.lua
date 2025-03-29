@@ -26,7 +26,7 @@ local function newFinder(hunks)
 				:join("\n")
 			entry.ordinal = hunk.relPath .. "\n" .. changeLines
 
-			-- format: status, filename, lnum, added, removed
+			-- format: icon (for stage status), filename, lnum, added, removed
 			entry.display = function(_entry)
 				---@type Tinygit.Hunk
 				local h = _entry.value
@@ -52,11 +52,12 @@ local function newFinder(hunks)
 
 				local out = status .. name .. location .. added .. del
 				local statPos = #status + #name + #location
+				local hlGroups = require("tinygit.config").config.appearance.hlGroups
 				local highlights = {
-					{ { 0, 1 }, "diffChanged" }, -- status
+					{ { 0, 1 }, "Keyword" }, -- icon for stage status
 					{ { #status + #name, statPos }, "Comment" }, -- lnum
-					{ { statPos, statPos + #added }, "diffAdded" }, -- added
-					{ { statPos + #added + 1, statPos + #added + #del }, "diffRemoved" }, -- removed
+					{ { statPos, statPos + #added }, hlGroups.addedText }, -- added
+					{ { statPos + #added + 1, statPos + #added + #del }, hlGroups.removedText }, -- removed
 				}
 
 				return out, highlights
