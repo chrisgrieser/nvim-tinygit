@@ -156,7 +156,8 @@ function M.amendOnlyMsg(opts)
 
 	require("tinygit.commands.commit.msg-input").new("amend-msg", prompt, function(title, body)
 		-- commit
-		local commitArgs = { "git", "commit", "--amend", "--message=" .. title }
+		-- (skip precommit via `--no-verify`, since only editing message)
+		local commitArgs = { "git", "commit", "--no-verify", "--amend", "--message=" .. title }
 		if body then table.insert(commitArgs, "--message=" .. body) end
 		local result = vim.system(commitArgs):wait()
 		if u.nonZeroExit(result) then return end
