@@ -208,12 +208,13 @@ function M.new(mode, prompt, confirmationCallback)
 	local nmaps = conf.keymaps.normal
 	local hlgroup = { key = "Comment", desc = "NonText" }
 	local keymapHints = {
-		{ borderChar, "FloatBorder" }, -- extend border to align with padding
-		{ " normal: ", hlgroup.desc },
-		{ nmaps.confirm, hlgroup.key },
-		{ " confirm  ", hlgroup.desc },
-		{ nmaps.abort, hlgroup.key },
+		{ " normal: ", "FloatBorder" },
+		{ " " .. nmaps.confirm, hlgroup.key },
+		{ " confirm ", hlgroup.desc },
+		{ " " },
+		{ " " .. nmaps.abort, hlgroup.key },
 		{ " abort ", hlgroup.desc },
+		{ " " },
 	}
 
 	local titleCharCount = {
@@ -271,9 +272,11 @@ function M.new(mode, prompt, confirmationCallback)
 	end
 
 	-- STYLING
-	-- no highlight, since we do that more intuitively with our separator is enough
-	-- linking to original `Normal` hl looks better in some themes
-	vim.wo[winid].winhighlight = "Normal:Normal,@markup.heading.gitcommit:,@markup.link.gitcommit:"
+	-- 1. disable highlights, since we do that more intuitively with our separator
+	-- 2. Linking to regular `Normal` looks better in nvim 0.10, but worse in 0.11
+	local winHls = "@markup.heading.gitcommit:,@markup.link.gitcommit:"
+	if vim.fn.has("nvim-0.11") == 0 then winHls = winHls .. ",Normal:Normal" end
+	vim.wo[winid].winhighlight = winHls
 
 	vim.api.nvim_win_call(winid, function()
 		highlight.inlineCodeAndIssueNumbers()
