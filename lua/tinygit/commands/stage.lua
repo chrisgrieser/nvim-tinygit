@@ -157,7 +157,8 @@ function M.interactiveStaging()
 	-- GET ALL HUNKS
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
 	local contextSize = require("tinygit.config").config.stage.contextSize
-	local diffArgs = { "git", "diff", "--unified=" .. contextSize, "--diff-filter=ADMR" }
+	local diffArgs =
+		{ "git", "diff", "--no-ext-diff", "--unified=" .. contextSize, "--diff-filter=ADMR" }
 	-- no trimming, since trailing empty lines can be blank context lines in diff output
 	local changesDiff = u.syncShellCmd(diffArgs, "notrim")
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
