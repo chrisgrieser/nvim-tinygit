@@ -91,6 +91,7 @@ local function setupKeymaps(confirmationCallback)
 		-- confirm and close
 		confirmationCallback(commitSubject, commitBody)
 		vim.cmd.bwipeout(bufnr)
+		vim.cmd.stopinsert() -- when confirming in insert mode don't stay in insert mode
 	end
 
 	map("n", conf.keymaps.normal.confirm, confirm)
