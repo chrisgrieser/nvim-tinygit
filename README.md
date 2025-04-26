@@ -6,6 +6,7 @@
 
 Bundle of commands focused on swift and streamlined git operations.
 
+<!-- DEPRECATION 2025-03-03 -->
 ## Breaking changes in v1.0
 - `dressing.nvim` and `nvim-notify` are **no longer dependencies**.
 - `telescope.nvim` is now a **required dependency**.
@@ -99,8 +100,11 @@ Bundle of commands focused on swift and streamlined git operations.
 - *optional*: Treesitter parser for syntax highlighting: `TSInstall gitcommit`
 
 ```lua
--- lazy.nvim (automatically takes care of dependencies)
-{ "chrisgrieser/nvim-tinygit" },
+-- lazy.nvim
+{ 
+	"chrisgrieser/nvim-tinygit"
+	dependencies = "nvim-telescope/telescope.nvim",
+},
 
 -- packer
 use {
@@ -361,7 +365,7 @@ require("tinygit").createGitHubPr()
 
 ### File history
 Search the git history of the current file. Select from the matching commits to
-open a popup with a diffview of the changes.
+open a popup with a diff view of the changes.
 
 If the config `history.autoUnshallowIfNeeded` is set to `true`, will also
 automatically un-shallow the repo if needed.

@@ -178,7 +178,13 @@ end
 
 ---@param opts? { selectFromLastXCommits?: number, squashInstead: boolean, autoRebase?: boolean }
 function M.fixupCommit(opts)
+	-- GUARD
 	if u.notInGitRepo() or hasNoChanges() then return end
+	local installed, _ = pcall(require, "telescope")
+	if not installed then
+		u.notify("telescope.nvim is not installed.", "warn")
+		return
+	end
 
 	local defaultOpts = { selectFromLastXCommits = 15, autoRebase = false }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
@@ -246,7 +252,7 @@ function M.fixupCommit(opts)
 		updateStatusline()
 	end
 
-	require("tinygit.shared.selector").withTelescope(
+	require("tinygit.shared.picker").withTelescope(
 		prompt,
 		commits,
 		commitFormatter,

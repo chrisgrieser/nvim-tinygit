@@ -79,11 +79,17 @@ end
 ---CAVEAT Due to GitHub API limitations, only the last 100 issues are shown.
 ---@param opts? { state?: string, type?: string }
 function M.issuesAndPrs(opts)
+	-- GUARD
 	if u.notInGitRepo() then return end
 	local repo = M.getGithubRemote()
 	if not repo then return end
 	if vim.fn.executable("curl") == 0 then
 		u.notify("`curl` cannot be found.", "warn")
+		return
+	end
+	local installed, _ = pcall(require, "telescope")
+	if not installed then
+		u.notify("telescope.nvim is not installed.", "warn")
 		return
 	end
 
@@ -151,7 +157,7 @@ function M.issuesAndPrs(opts)
 		return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
 	end
 
-	require("tinygit.shared.selector").withTelescope(
+	require("tinygit.shared.picker").withTelescope(
 		prompt,
 		issues,
 		issueListFormatter,
