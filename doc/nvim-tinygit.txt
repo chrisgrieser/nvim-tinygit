@@ -1,11 +1,10 @@
-*nvim-tinygit.txt*            For Neovim            Last change: 2025 March 23
+*nvim-tinygit.txt*             For Neovim             Last change: 2025 May 06
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
 
 1. nvim-tinygit                                    |nvim-tinygit-nvim-tinygit|
-  - Breaking changes in v1.0|nvim-tinygit-nvim-tinygit-breaking-changes-in-v1.0|
-  - Featureoverview                |nvim-tinygit-nvim-tinygit-featureoverview|
+  - Feature overview              |nvim-tinygit-nvim-tinygit-feature-overview|
   - Table of contents            |nvim-tinygit-nvim-tinygit-table-of-contents|
   - Installation                      |nvim-tinygit-nvim-tinygit-installation|
   - Configuration                    |nvim-tinygit-nvim-tinygit-configuration|
@@ -21,29 +20,7 @@ Table of Contents                             *nvim-tinygit-table-of-contents*
 Bundle of commands focused on swift and streamlined git operations.
 
 
-BREAKING CHANGES IN V1.0  *nvim-tinygit-nvim-tinygit-breaking-changes-in-v1.0*
-
-- `dressing.nvim` and `nvim-notify` are **no longer dependencies**.
-- `telescope.nvim` is now a **required dependency**.
-- The `commit.insertIssuesOnHashSign` feature has been removed. Better issue
-    insertion via plugins like cmp-git <https://github.com/petertriho/cmp-git> or
-    blink-cmp-git <https://github.com/Kaiser-Yang/blink-cmp-git> now work there.
-- `smartCommit` was overhauled. Among other improvements, it now supports a
-    commit body.
-
-
-  [!NOTE] If you want to keep using the previous version, without these breaking
-  changes, you can pin the tag `v0.9`
-  >lua
-      -- lazy.nvim
-      {
-        "chrisgrieser/nvim-tinygit",
-        tag = "v0.9"
-        dependencies = "stevearc/dressing.nvim",
-      },
-  <
-
-FEATUREOVERVIEW                    *nvim-tinygit-nvim-tinygit-featureoverview*
+FEATURE OVERVIEW                  *nvim-tinygit-nvim-tinygit-feature-overview*
 
 Interactive stagingSmart commitFile history- **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
     syntax highlighting, and allows resetting or navigating to the hunk.
@@ -87,14 +64,23 @@ TABLE OF CONTENTS                *nvim-tinygit-nvim-tinygit-table-of-contents*
 
 INSTALLATION                          *nvim-tinygit-nvim-tinygit-installation*
 
-**Requirements** - nvim 0.10+ - telescope.nvim
-<https://github.com/nvim-telescope/telescope.nvim> - `curl` for GitHub-related
-features - _optional_Treesitter parser for syntax highlighting: `TSInstall
-gitcommit`
+**Requirements** - nvim 0.10+ - for interactive staging: telescope.nvim
+<https://github.com/nvim-telescope/telescope.nvim> for (PRs adding support for
+other pickers welcome) - for GitHub-related commands: `curl` -
+_recommended_Treesitter parser for syntax highlighting: `TSInstall gitcommit` -
+_recommended_a plugin implementing `vim.ui.select`, such as: snacks.picker
+<http://github.com/folke/snacks.nvim> mini.pick
+<http://github.com/echasnovski/mini.pick> telescope.nvim
+<https://github.com/nvim-telescope/telescope.nvim> with telescope-ui-select
+<https://github.com/nvim-telescope/telescope-ui-select.nvim> fzf-lua
+<https://github.com/ibhagwan/fzf-lua>
 
 >lua
-    -- lazy.nvim (automatically takes care of dependencies)
-    { "chrisgrieser/nvim-tinygit" },
+    -- lazy.nvim
+    { 
+        "chrisgrieser/nvim-tinygit"
+        dependencies = "nvim-telescope/telescope.nvim",
+    },
     
     -- packer
     use {
@@ -224,8 +210,10 @@ trigger visual-mode specific changes to the commands.
 
 INTERACTIVE STAGING ~
 
-- This command stages hunks, that is, _parts_ of a file instead of the
-    full file. It is roughly comparable to `git add -p`.
+- Interactive straging requires `telescope`. (PRs adding support for other
+    pickers welcome.)
+- This command stages hunks, that is, _parts_ of a file instead of the full
+    file. It is roughly comparable to `git add -p`.
 - Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r` to
     reset the hunk (mappings customizable). Your regular `telescope` mappings also
     apply.
@@ -319,7 +307,7 @@ UNDO LAST COMMIT/AMEND ~
 
 GITHUB INTERACTION ~
 
-**Search issues & PRs** - Requires `curl`.
+**Search issues & PRs** - The GitHub interaction commands all require `curl`.
 
 >lua
     -- state: all|closed|open (default: all)
@@ -364,7 +352,7 @@ PUSH & PRS ~
 FILE HISTORY ~
 
 Search the git history of the current file. Select from the matching commits to
-open a popup with a diffview of the changes.
+open a popup with a diff view of the changes.
 
 If the config `history.autoUnshallowIfNeeded` is set to `true`, will also
 automatically un-shallow the repo if needed.
@@ -440,9 +428,6 @@ digital economy. For my PhD project, I investigate the governance of the app
 economy and how software ecosystems manage the tension between innovation and
 compatibility. If you are interested in this subject, feel free to get in
 touch.
-
-I also occasionally blog about vim: Nano Tips for Vim
-<https://nanotipsforvim.prose.sh>
 
 - Website <https://chris-grieser.de/>
 - Mastodon <https://pkm.social/@pseudometa>
