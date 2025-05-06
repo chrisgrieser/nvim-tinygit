@@ -252,13 +252,7 @@ function M.fixupCommit(opts)
 		updateStatusline()
 	end
 
-	require("tinygit.shared.picker").withTelescope(
-		prompt,
-		commits,
-		commitFormatter,
-		stylingFunc,
-		onChoice
-	)
+	require("tinygit.shared.picker").pick(prompt, commits, commitFormatter, stylingFunc, onChoice)
 end
 
 --------------------------------------------------------------------------------

@@ -314,13 +314,7 @@ local function selectFromCommits(commitList)
 	end
 	local onChoice = function(_, commitIdx) showDiff(commitIdx) end
 
-	require("tinygit.shared.picker").withTelescope(
-		prompt,
-		commits,
-		commitFormatter,
-		stylingFunc,
-		onChoice
-	)
+	require("tinygit.shared.picker").pick(prompt, commits, commitFormatter, stylingFunc, onChoice)
 end
 
 --------------------------------------------------------------------------------

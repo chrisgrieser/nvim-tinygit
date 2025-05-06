@@ -6,29 +6,6 @@
 
 Bundle of commands focused on swift and streamlined git operations.
 
-<!-- DEPRECATION 2025-03-03 -->
-## Breaking changes in v1.0
-- `dressing.nvim` and `nvim-notify` are **no longer dependencies**.
-- `telescope.nvim` is now a **required dependency**.
-- The `commit.insertIssuesOnHashSign` feature has been removed. Better issue
-  insertion via plugins like [cmp-git](https://github.com/petertriho/cmp-git) or
-  [blink-cmp-git](https://github.com/Kaiser-Yang/blink-cmp-git) now work there.
-- `smartCommit` was overhauled. Among other improvements, it now supports a
-  commit body.
-
-> [!NOTE]
-> If you want to keep using the previous version, without these breaking
-> changes, you can pin the tag `v0.9`:
->
-> ```lua
-> -- lazy.nvim
-> {
-> 	"chrisgrieser/nvim-tinygit",
-> 	tag = "v0.9"
-> 	dependencies = "stevearc/dressing.nvim",
-> },
-> ```
-
 ## Feature overview
 
 <table>
@@ -95,9 +72,18 @@ Bundle of commands focused on swift and streamlined git operations.
 ## Installation
 **Requirements**
 - nvim 0.10+
-- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
-- `curl` for GitHub-related features
-- *optional*: Treesitter parser for syntax highlighting: `TSInstall gitcommit`
+- for interactive staging:
+  [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) for (PRs
+  adding support for other pickers welcome)
+- for GitHub-related commands: `curl`
+- *recommended*: Treesitter parser for syntax highlighting: `TSInstall
+  gitcommit`
+- *recommended*: a plugin implementing `vim.ui.select`, such as:
+  * [snacks.picker](http://github.com/folke/snacks.nvim)
+  * [mini.pick](http://github.com/echasnovski/mini.pick)
+  * [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) with
+	[telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim)
+  * [fzf-lua](https://github.com/ibhagwan/fzf-lua)
 
 ```lua
 -- lazy.nvim
@@ -228,8 +214,10 @@ since the `:Tinygit` does not accept command-specific options and does not
 trigger visual-mode specific changes to the commands.
 
 ### Interactive staging
-- This command stages hunks, that is, *parts* of a file instead of the
-  full file. It is roughly comparable to `git add -p`.
+- Interactive straging requires `telescope`. (PRs adding support for other
+  pickers welcome.)
+- This command stages hunks, that is, *parts* of a file instead of the full
+  file. It is roughly comparable to `git add -p`.
 - Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r` to
   reset the hunk (mappings customizable). Your regular `telescope` mappings also
   apply.
@@ -322,7 +310,7 @@ require("tinygit").undoLastCommitOrAmend()
 
 ### GitHub interaction
 **Search issues & PRs**  
-- Requires `curl`.
+- The GitHub interaction commands all require `curl`.
 
 ```lua
 -- state: all|closed|open (default: all)

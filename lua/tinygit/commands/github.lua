@@ -157,13 +157,7 @@ function M.issuesAndPrs(opts)
 		return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
 	end
 
-	require("tinygit.shared.picker").withTelescope(
-		prompt,
-		issues,
-		issueListFormatter,
-		stylingFunc,
-		onChoice
-	)
+	require("tinygit.shared.picker").pick(prompt, issues, issueListFormatter, stylingFunc, onChoice)
 end
 
 function M.openIssueUnderCursor()
