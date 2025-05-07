@@ -87,11 +87,6 @@ function M.issuesAndPrs(opts)
 		u.notify("`curl` cannot be found.", "warn")
 		return
 	end
-	local installed, _ = pcall(require, "telescope")
-	if not installed then
-		u.notify("telescope.nvim is not installed.", "warn")
-		return
-	end
 
 	local defaultOpts = { state = "all", type = "all" }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})

@@ -417,13 +417,7 @@ end
 --------------------------------------------------------------------------------
 
 function M.fileHistory()
-	-- GUARD
 	if u.notInGitRepo() then return end
-	local installed, _ = pcall(require, "telescope")
-	if not installed then
-		u.notify("telescope.nvim is not installed.", "warn")
-		return
-	end
 
 	state.absPath = vim.api.nvim_buf_get_name(0)
 	state.ft = vim.bo.filetype
