@@ -7,7 +7,10 @@ function M.inlineCodeAndIssueNumbers()
 end
 
 function M.commitType()
-	local commitTypePattern = [[\v^\s*\w+(\(.{-}\))?!?]]
+	-- not restricted to start of string, so prefixes like the numbering from the
+	-- snacks-ui-select do not prevent the highlight
+	local commitTypePattern = [[\v\w+(\(.{-}\))?!?]]
+
 	local type = commitTypePattern .. [[\ze: ]] -- `\ze`: end of match
 	local colonAfterType = commitTypePattern .. [[\zs: ]] -- `\zs`: start of match
 	vim.fn.matchadd("Title", type)
