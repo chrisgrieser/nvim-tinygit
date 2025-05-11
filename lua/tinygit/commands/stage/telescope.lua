@@ -46,15 +46,16 @@ local function newFinder(hunks)
 					location = ":" .. h.lnum
 					if h.fileMode == "renamed" then location = location .. " (renamed)" end
 				end
-				local status = h.alreadyStaged and conf.stagedIndicator
-					or (" "):rep(vim.api.nvim_strwidth(conf.stagedIndicator))
+
+				local iconWidth = vim.api.nvim_strwidth(conf.stagedIndicator)
+				local status = h.alreadyStaged and conf.stagedIndicator or (" "):rep(iconWidth)
 				status = status .. " " -- padding
 
 				local out = status .. name .. location .. added .. del
 				local statPos = #status + #name + #location
 				local hlGroups = require("tinygit.config").config.appearance.hlGroups
 				local highlights = {
-					{ { 0, 1 }, "Keyword" }, -- icon for stage status
+					{ { 0, iconWidth }, "Keyword" }, -- icon for stage status
 					{ { #status + #name, statPos }, "Comment" }, -- lnum
 					{ { statPos, statPos + #added }, hlGroups.addedText }, -- added
 					{ { statPos + #added + 1, statPos + #added + #del }, hlGroups.removedText }, -- removed
