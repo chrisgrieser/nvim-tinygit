@@ -10,9 +10,7 @@ body:
       options:
         - label: I have updated to the latest version of the plugin.
           required: true
-        - label:
-            I have read about the [breaking changes in version 1.0 of the
-            plugin](https://github.com/chrisgrieser/nvim-tinygit#breaking-changes-in-v10).
+        - label: I have read the README.
           required: true
   - type: textarea
     id: bug-description
