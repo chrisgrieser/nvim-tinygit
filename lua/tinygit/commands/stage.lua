@@ -23,6 +23,24 @@ end
 
 --------------------------------------------------------------------------------
 
+---@param absPath string
+---@return string|nil ft
+function M.getFiletype(absPath)
+	local ft = vim.filetype.match { filename = vim.fs.basename(absPath) }
+	if ft then return ft end
+
+	-- In some cases, the filename alone is not unambiguous (like `.ts` files for
+	-- typescript), so we need the actual buffer to determine the filetype.
+	local bufnr = vim.iter(vim.api.nvim_list_bufs())
+		:find(function(buf) return vim.api.nvim_buf_get_name(buf) == absPath end)
+
+	-- If there are changes in files that are not loaded as buffer, we have to
+	-- add file to a buffer to be able to determine the filetype from it.
+	if not bufnr then bufnr = vim.fn.bufadd(absPath) end
+
+	return vim.filetype.match { buf = bufnr }
+end
+
 ---@param diffCmdStdout string
 ---@param diffIsOfStaged boolean
 ---@return Tinygit.Hunk[] hunks
