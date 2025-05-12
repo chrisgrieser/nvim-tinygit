@@ -50,12 +50,13 @@ local function newFinder(hunks)
 				local iconWidth = vim.api.nvim_strwidth(conf.stagedIndicator)
 				local status = h.alreadyStaged and conf.stagedIndicator or (" "):rep(iconWidth)
 				status = status .. " " -- padding
+				local iconHlWidth = #status -- needed for double-width chars, see #27
 
 				local out = status .. name .. location .. added .. del
 				local statPos = #status + #name + #location
 				local hlGroups = require("tinygit.config").config.appearance.hlGroups
 				local highlights = {
-					{ { 0, iconWidth }, "Keyword" }, -- icon for stage status
+					{ { 0, iconHlWidth }, "Keyword" }, -- icon for stage status
 					{ { #status + #name, statPos }, "Comment" }, -- lnum
 					{ { statPos, statPos + #added }, hlGroups.addedText }, -- added
 					{ { statPos + #added + 1, statPos + #added + #del }, hlGroups.removedText }, -- removed
