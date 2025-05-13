@@ -68,7 +68,7 @@ local defaultConfig = {
 		confirmationSound = true, -- currently macOS only, PRs welcome
 
 		-- If pushed commits contain references to issues, open them in the browser
-		-- (not used when using force-push).
+		-- (not used when force-pushing).
 		openReferencedIssues = false,
 	},
 	github = {

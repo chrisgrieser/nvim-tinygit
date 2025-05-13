@@ -33,7 +33,7 @@ Bundle of commands focused on swift and streamlined git operations.
   commit preview, and commit title length indicators. If there are no staged
   changes, stages all changes before doing so (`git add -A`). Optionally trigger
   a `git push` afterward.
-- Convenient commands for **amend, stash, fixup, or undoing** commits.
+- Convenient commands for **amending, stashing, fixup, or undoing commits**.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current file, repo, or selected lines. Also
   supports opening GitHub's blame view.
@@ -72,30 +72,30 @@ Bundle of commands focused on swift and streamlined git operations.
 ## Installation
 **Requirements**
 - nvim 0.10+
-- for interactive staging:
-  [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) for (PRs
-  adding support for other pickers welcome)
-- for GitHub-related commands: `curl`
-- *recommended*: Treesitter parser for syntax highlighting: `TSInstall
-  gitcommit`
-- *recommended*: a plugin implementing `vim.ui.select`, such as:
+- A plugin implementing `vim.ui.select`, such as:
   * [snacks.picker](http://github.com/folke/snacks.nvim)
   * [mini.pick](http://github.com/echasnovski/mini.pick)
   * [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) with
 	[telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim)
   * [fzf-lua](https://github.com/ibhagwan/fzf-lua)
+- For interactive staging:
+  [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) (PRs
+  adding support for other pickers are welcome.)
+- For GitHub-related commands: `curl`
+- *Recommended*: Treesitter parser for syntax highlighting: `TSInstall
+  gitcommit`.
 
 ```lua
 -- lazy.nvim
 { 
-	"chrisgrieser/nvim-tinygit"
-	dependencies = "nvim-telescope/telescope.nvim",
+	"chrisgrieser/nvim-tinygit",
+	-- dependencies = "nvim-telescope/telescope.nvim", -- only for interactive staging
 },
 
 -- packer
 use {
 	"chrisgrieser/nvim-tinygit",
-	requires = "nvim-telescope/telescope.nvim",
+	-- requires = "nvim-telescope/telescope.nvim", -- only for interactive staging
 }
 ```
 
@@ -159,7 +159,7 @@ require("tinygit").setup {
 		confirmationSound = true, -- currently macOS only, PRs welcome
 
 		-- If pushed commits contain references to issues, open them in the browser
-		-- (not used when using force-push).
+		-- (not used when force-pushing).
 		openReferencedIssues = false,
 	},
 	github = {
@@ -225,7 +225,7 @@ trigger visual-mode specific changes to the commands.
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
   from `gitsigns.nvim`.) A context size between 1 and 4 is recommended.
-- Limitations: `contextSize=0` (= no merging at all) is not supported.
+- Limitation: `contextSize=0` (= no merging at all) is not supported.
 
 ```lua
 require("tinygit").interactiveStaging()
@@ -241,7 +241,7 @@ require("tinygit").interactiveStaging()
   no surprises.
 - Input field contents of aborted commits are briefly kept, if you just want to
   fix a detail.
-- The first line is used as commit subject, the rest is as commit body.
+- The first line is used as commit subject, the rest as commit body.
 
 ```lua
 -- values shown are the defaults
@@ -260,10 +260,11 @@ vim.keymap.set("n", "<leader>gp", function() require("tinygit").push() end, { de
 1. Stage some changes via `<leader>ga`.
 2. Use `<leader>gc` to enter a commit message.
 3. Repeat 1 and 2.
-4. When done, `<leader>gp` to push the commits.
+4. When done, use `<leader>gp` to push the commits.
 
-Using `pushIfClean = true` allows you to combine staging, committing, and
-pushing into a single step, when it is the last commit you intend to make.
+Using `require("tinygit").smartCommit({pushIfClean = true})` allows you to
+combine staging, committing, and pushing into a single step, when it is the last
+commit you intend to make.
 
 ### Amend and fixup commits
 **Amending**
@@ -303,14 +304,14 @@ require("tinygit").fixupCommit {
 require("tinygit").undoLastCommitOrAmend()
 ```
 
-- Changes in the working directory are kept, but unstaged. (In the background,
+- Changes in the working directory are kept but unstaged. (In the background,
   this uses `git reset --mixed`.)
-- If there was a `push` operation done as a followup (such as `.smartCommit {
-  pushIfClean = false }`), the last commit is not undone.
+- If there was a `push` operation done as a followup, the last commit is not
+  undone.
 
 ### GitHub interaction
-**Search issues & PRs**  
-- The GitHub interaction commands all require `curl`.
+**Search issues & PRs**
+- All GitHub interaction commands require `curl`.
 
 ```lua
 -- state: all|closed|open (default: all)
@@ -327,12 +328,12 @@ Creates a permalink to the current file/lines at GitHub. The link is opened in
 the browser and copied to the system clipboard. In normal mode, uses the current
 file, in visual mode, uses the selected lines. (Note that visual mode detection
 requires you to use the lua function below instead of the `:Tinygit` ex-command.)
-- `"file"`: code view
-- `"blame"`: blame view
-- `"repo"`: repo root
+- `"file"`: link to the file
+- `"blame"`: link to the blame view of the file
+- `"repo"`: link to the repo root
 
 ```lua
--- file|repo|blame (default: file)
+-- "file"|"repo"|"blame" (default: "file")
 require("tinygit").githubUrl("file")
 ```
 
