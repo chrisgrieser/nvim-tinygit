@@ -60,8 +60,11 @@ local function pushCmd(opts)
 			if config.openReferencedIssues and not opts.forceWithLease then
 				openReferencedIssues(commitRange)
 			end
-			if opts.createGitHubPr then createGitHubPr() end
 			updateStatusline()
+			if opts.createGitHubPr then
+				-- deferred to ensrue GitHub has registered the PR
+				vim.defer_fn(createGitHubPr, 1000)
+			end
 		end)
 	)
 end

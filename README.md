@@ -349,7 +349,7 @@ require("tinygit").push {
 	forceWithLease = false,
 	createGitHubPr = false,
 }
-require("tinygit").createGitHubPr()
+require("tinygit").createGitHubPr() -- to push before, use `.push { createGitHubPr = true }`
 ```
 
 ### File history
