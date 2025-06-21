@@ -5,8 +5,9 @@ local createGitHubPr = require("tinygit.commands.github").createGitHubPr
 local updateStatusline = require("tinygit.statusline").updateAllComponents
 --------------------------------------------------------------------------------
 
----@param commitRange string
+---@param commitRange string|nil
 local function openReferencedIssues(commitRange)
+	if not commitRange then return end -- e.g. for "Everything is up-to-date"
 	local repo = require("tinygit.commands.github").getGithubRemote("silent")
 	if not repo then return end
 
@@ -33,7 +34,7 @@ local function pushCmd(opts)
 		vim.schedule_wrap(function(result)
 			local out = vim.trim((result.stdout or "") .. (result.stderr or ""))
 			out = out:gsub("\n%s+", "\n") -- remove padding
-			local commitRange = out:match("%x+%.%.%x+")
+			local commitRange = out:match("%x+%.%.%x+") ---@type string|nil
 			-- force-push `+` would get md-lhighlight
 			local ft = opts.forceWithLease and "text" or "markdown"
 
