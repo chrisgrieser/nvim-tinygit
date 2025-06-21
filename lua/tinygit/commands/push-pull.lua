@@ -35,8 +35,7 @@ local function pushCmd(opts)
 			local out = vim.trim((result.stdout or "") .. (result.stderr or ""))
 			out = out:gsub("\n%s+", "\n") -- remove padding
 			local commitRange = out:match("%x+%.%.%x+") ---@type string|nil
-			-- force-push `+` would get md-lhighlight
-			local ft = opts.forceWithLease and "text" or "markdown"
+			local ft = opts.forceWithLease and "text" or "markdown" -- force-push has `+` which gets md-highlight
 
 			-- notify
 			if result.code == 0 then
@@ -63,8 +62,7 @@ local function pushCmd(opts)
 			end
 			updateStatusline()
 			if opts.createGitHubPr then
-				-- deferred to ensrue GitHub has registered the PR
-				vim.defer_fn(createGitHubPr, 1000)
+				vim.defer_fn(createGitHubPr, 1000) -- deferred so GitHub has registered the PR
 			end
 		end)
 	)
