@@ -82,7 +82,7 @@ Bundle of commands focused on swift and streamlined git operations.
   [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) (PRs
   adding support for other pickers are welcome.)
 - For GitHub-related commands: `curl`
-- *Recommended*: Treesitter parser for syntax highlighting: `TSInstall
+- *Recommended*: Treesitter parser for syntax highlighting `TSInstall
   gitcommit`.
 
 ```lua
@@ -207,18 +207,18 @@ require("tinygit").setup {
 ```
 
 ## Commands
-All commands are available via lua function or sub-command of `:Tinygit`, for
-example `require("tinygit").interactiveStaging()` and `:Tinygit
-interactiveStaging`. However, do note that the lua function is preferable,
-since the `:Tinygit` does not accept command-specific options and does not
-trigger visual-mode specific changes to the commands.
+All commands are available as lua function or as sub-command of `:Tinygit`, 
+for example `require("tinygit").interactiveStaging()` and `:Tinygit
+interactiveStaging`. Note that the lua function is preferable,
+since `:Tinygit` does not accept command-specific options and does not
+trigger visual-mode specific changes.
 
 ### Interactive staging
 - Interactive straging requires `telescope`. (PRs adding support for other
   pickers welcome.)
 - This command stages hunks, that is, *parts* of a file instead of the full
   file. It is roughly comparable to `git add -p`.
-- Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r` to
+- Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r>` to
   reset the hunk (mappings customizable). Your regular `telescope` mappings also
   apply.
 - The size of the hunks is determined by the setting `staging.contextSize`.
