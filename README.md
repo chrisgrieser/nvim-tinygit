@@ -207,7 +207,7 @@ require("tinygit").setup {
 ```
 
 ## Commands
-All commands are available as lua function or as sub-command of `:Tinygit`, 
+All commands are available as lua function or as sub-command of `:Tinygit`,
 for example `require("tinygit").interactiveStaging()` and `:Tinygit
 interactiveStaging`. Note that the lua function is preferable,
 since `:Tinygit` does not accept command-specific options and does not
