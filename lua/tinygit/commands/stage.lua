@@ -58,14 +58,16 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 	---@type Tinygit.Hunk[]
 	local hunks = {}
 	for _, file in ipairs(changesPerFile) do
-		if not vim.startswith(file, "diff --git a/") then -- first file still has this
+		-- some git versions output `i/… w/…` instead of `a/… b/…` (#34)
+		if not file:find("^diff %-%-git [ia]/") then -- first file still has this
 			file = "diff --git a/" .. file -- needed to make patches valid
 		end
 		-- split off diff header
 		local diffLines = vim.split(file, "\n")
 		local changesInFile, diffHeaderLines, fileMode, _ = splitOffDiffHeader(diffLines)
 		local diffHeader = table.concat(diffHeaderLines, "\n")
-		local relPath = diffHeaderLines[1]:match("b/(.+)") or "ERROR: path not found"
+		local relPath = diffHeaderLines[1]:match("[bw]/(.+)")
+		assert(relPath, "Failed to parse diff header: " .. table.concat(diffHeaderLines, "\n"))
 		local absPath = gitroot .. "/" .. relPath
 
 		-- split remaining output into hunks
@@ -175,8 +177,14 @@ function M.interactiveStaging()
 	-- GET ALL HUNKS
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
 	local contextSize = require("tinygit.config").config.stage.contextSize
-	local diffArgs =
-		{ "git", "diff", "--no-ext-diff", "--unified=" .. contextSize, "--diff-filter=ADMR" }
+	local diffArgs = {
+		"git",
+		"--no-pager",
+		"diff",
+		"--no-ext-diff",
+		"--unified=" .. contextSize,
+		"--diff-filter=ADMR",
+	}
 	-- no trimming, since trailing empty lines can be blank context lines in diff output
 	local changesDiff = u.syncShellCmd(diffArgs, "notrim")
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
