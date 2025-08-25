@@ -58,16 +58,15 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 	---@type Tinygit.Hunk[]
 	local hunks = {}
 	for _, file in ipairs(changesPerFile) do
-		-- some git versions output `i/… w/…` instead of `a/… b/…` (#34)
-		if not file:find("^diff %-%-git [ia]/") then -- first file still has this
+		if not vim.startswith(file, "diff --git a/") then -- first file still has this
 			file = "diff --git a/" .. file -- needed to make patches valid
 		end
 		-- split off diff header
 		local diffLines = vim.split(file, "\n")
 		local changesInFile, diffHeaderLines, fileMode, _ = splitOffDiffHeader(diffLines)
 		local diffHeader = table.concat(diffHeaderLines, "\n")
-		local relPath = diffHeaderLines[1]:match("[bw]/(.+)")
-		assert(relPath, "Failed to parse diff header: " .. table.concat(diffHeaderLines, "\n"))
+		local relPath = diffHeaderLines[1]:match("b/(.+)")
+		assert(relPath, "Failed to parse diff header:\n" .. table.concat(diffHeaderLines, "\n"))
 		local absPath = gitroot .. "/" .. relPath
 
 		-- split remaining output into hunks
@@ -179,6 +178,8 @@ function M.interactiveStaging()
 	local contextSize = require("tinygit.config").config.stage.contextSize
 	local diffArgs = {
 		"git",
+		"-c",
+		"diff.mnemonicPrefix=false", -- `mnemonicPrefix` creates irregular diff header (#34)
 		"--no-pager",
 		"diff",
 		"--no-ext-diff",
