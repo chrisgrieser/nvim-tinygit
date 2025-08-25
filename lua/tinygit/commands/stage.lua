@@ -176,16 +176,18 @@ function M.interactiveStaging()
 	-- GET ALL HUNKS
 	u.intentToAddUntrackedFiles() -- include untracked files, enables using `--diff-filter=A`
 	local contextSize = require("tinygit.config").config.stage.contextSize
+	-- stylua: ignore start
 	local diffArgs = {
 		"git",
-		"-c",
-		"diff.mnemonicPrefix=false", -- `mnemonicPrefix` creates irregular diff header (#34)
+		"-c", "diff.mnemonicPrefix=false", -- `mnemonicPrefix` creates irregular diff header (#34)
+		"-c", "diff.srcPrefix=a/", -- in case use overwrites any of these
+		"-c", "diff.dstPrefix=b/",
+		"-c", "diff.noPrefix=false",
 		"--no-pager",
 		"diff",
-		"--no-ext-diff",
-		"--unified=" .. contextSize,
-		"--diff-filter=ADMR",
+		"--no-ext-diff", "--unified=" .. contextSize, "--diff-filter=ADMR",
 	}
+	-- stylua: ignore end
 	-- no trimming, since trailing empty lines can be blank context lines in diff output
 	local changesDiff = u.syncShellCmd(diffArgs, "notrim")
 	local changedHunks = getHunksFromDiffOutput(changesDiff, false)
