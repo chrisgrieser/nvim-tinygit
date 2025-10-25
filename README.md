@@ -328,7 +328,7 @@ Creates a permalink to the current file/lines at GitHub. The link is opened in
 the browser and copied to the system clipboard. In normal mode, uses the current
 file, in visual mode, uses the selected lines. (Note that visual mode detection
 requires you to use the lua function below instead of the `:Tinygit` ex-command.)
-- `"file"`: link to the file
+- `"file"`: link to the file (normal mode) or the selected lines (visual mode)
 - `"blame"`: link to the blame view of the file
 - `"repo"`: link to the repo root
 
