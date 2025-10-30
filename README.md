@@ -79,8 +79,8 @@ Bundle of commands focused on swift and streamlined git operations.
 	[telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim)
   * [fzf-lua](https://github.com/ibhagwan/fzf-lua)
 - For interactive staging:
-  [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) (PRs
-  adding support for other pickers are welcome.)
+  [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim). (For
+  `snacks.nvim`, the `git_diff` picker allows interactive staging.)
 - For GitHub-related commands: `curl`
 - *Recommended*: Treesitter parser for syntax highlighting `TSInstall
   gitcommit`.
@@ -116,7 +116,7 @@ require("tinygit").setup {
 		moveToNextHunkOnStagingToggle = false,
 
 		-- accepts the common telescope picker config
-		telescopeOpts = { 
+		telescopeOpts = {
 			layout_strategy = "horizontal",
 			layout_config = {
 				horizontal = {
@@ -214,8 +214,7 @@ since `:Tinygit` does not accept command-specific options and does not
 trigger visual-mode specific changes.
 
 ### Interactive staging
-- Interactive straging requires `telescope`. (PRs adding support for other
-  pickers welcome.)
+- Interactive straging requires `telescope`.
 - This command stages hunks, that is, *parts* of a file instead of the full
   file. It is roughly comparable to `git add -p`.
 - Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r>` to
@@ -230,6 +229,10 @@ trigger visual-mode specific changes.
 ```lua
 require("tinygit").interactiveStaging()
 ```
+
+> [!NOTE]
+> For `snacks.nvim`, you can just use the `git_diff` picker, which pretty much
+> does the same thing.
 
 ### Smart commit
 - Open a commit popup, alongside a preview of what is going to be committed. If
@@ -252,8 +255,18 @@ require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = true }
 Assuming these keybindings:
 
 ```lua
-vim.keymap.set("n", "<leader>ga", function() require("tinygit").interactiveStaging() end, { desc = "git add" })
-vim.keymap.set("n", "<leader>gc", function() require("tinygit").smartCommit() end, { desc = "git commit" })
+vim.keymap.set(
+	"n",
+	"<leader>ga",
+	function() require("tinygit").interactiveStaging() end,
+	{ desc = "git add" }
+)
+vim.keymap.set(
+	"n",
+	"<leader>gc",
+	function() require("tinygit").smartCommit() end,
+	{ desc = "git commit" }
+)
 vim.keymap.set("n", "<leader>gp", function() require("tinygit").push() end, { desc = "git push" })
 ```
 
