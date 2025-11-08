@@ -1,7 +1,7 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----@return string blame lualine stringifys result, so need to return empty string instead of nil
+---@return string state lualine stringifys result, so need to return empty string instead of nil
 ---@nodiscard
 local function getBranchState()
 	local cwd = vim.uv.cwd()

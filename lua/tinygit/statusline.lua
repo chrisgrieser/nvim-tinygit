@@ -2,8 +2,8 @@ local M = {}
 --------------------------------------------------------------------------------
 
 function M.blame() return require("tinygit.statusline.blame").getBlame() end
-
 function M.branchState() return require("tinygit.statusline.branch-state").getBranchState() end
+function M.fileState() return require("tinygit.statusline.file-state").getFileState() end
 
 function M.updateAllComponents()
 	-- conditions to avoid unnecessarily loading the modules
@@ -12,6 +12,9 @@ function M.updateAllComponents()
 	end
 	if package.loaded["tinygit.statusline.branch-state"] then
 		require("tinygit.statusline.branch-state").refreshBranchState()
+	end
+	if package.loaded["tinygit.statusline.file-state"] then
+		require("tinygit.statusline.file-state").refreshFileState()
 	end
 
 	-- Needs to be triggered manually, since lualine updates the git diff

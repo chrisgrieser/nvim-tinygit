@@ -41,7 +41,8 @@ Bundle of commands focused on swift and streamlined git operations.
   pickaxe"), or examine the history of a function or line range. Displays the
   results in a diff view with syntax highlighting, correctly following file
   renamings.
-- **Status line components:** `git blame` of a file and branch state.
+- **Status line components:** `git blame` of a file, branch state, and file
+  state.
 - **Streamlined workflow:** operations are smartly combined to minimize
   friction. For instance, the smart-commit command combines staging, committing,
   and pushing, and searching the file history combines unshallowing, searching,
@@ -65,6 +66,7 @@ Bundle of commands focused on swift and streamlined git operations.
 - [Status line components](#status-line-components)
 	* [git blame](#git-blame)
 	* [Branch state](#branch-state)
+	* [File state](#file-state)
 - [Credits](#credits)
 
 <!-- tocstop -->
@@ -201,6 +203,9 @@ require("tinygit").setup {
 				behind = "󰶡",
 				diverge = "󰃻",
 			},
+		},
+		fileState = {
+			icon = "",
 		},
 	},
 }
@@ -433,6 +438,13 @@ the component may not be up-to-date with remote changes.)
 
 ```lua
 require("tinygit.statusline").branchState()
+```
+
+### File state
+Shows the number of changed files, similar to terminal prompts.
+
+```lua
+require("tinygit.statusline").fileState()
 ```
 
 ## Credits
