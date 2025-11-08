@@ -1,6 +1,4 @@
-<!-- LTeX: enabled=false -->
 # nvim-tinygit
-<!-- LTeX: enabled=true -->
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
 <img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat"/></a>
 
@@ -212,9 +210,9 @@ require("tinygit").setup {
 ```
 
 ## Commands
-All commands are available as lua function or as sub-command of `:Tinygit`,
+All commands are available as Lua function or as sub-command of `:Tinygit`,
 for example `require("tinygit").interactiveStaging()` and `:Tinygit
-interactiveStaging`. Note that the lua function is preferable,
+interactiveStaging`. Note that the Lua function is preferable,
 since `:Tinygit` does not accept command-specific options and does not
 trigger visual-mode specific changes.
 
@@ -345,7 +343,7 @@ require("tinygit").openIssueUnderCursor()
 Creates a permalink to the current file/lines at GitHub. The link is opened in
 the browser and copied to the system clipboard. In normal mode, uses the current
 file, in visual mode, uses the selected lines. (Note that visual mode detection
-requires you to use the lua function below instead of the `:Tinygit` ex-command.)
+requires you to use the Lua function below instead of the `:Tinygit` ex-command.)
 - `"file"`: link to the file (normal mode) or the selected lines (visual mode)
 - `"blame"`: link to the blame view of the file
 - `"repo"`: link to the repo root
@@ -400,7 +398,7 @@ The type of history search depends on the mode `.fileHistory` is called from:
 	* Uses the selected lines as the line range.
 	* Caveat: for line history, git does not support to follow file renamings.
 
-Note that visual mode detection requires you to use the lua function above
+Note that visual mode detection requires you to use the Lua function above
 instead of the `:Tinygit` ex-command.
 
 ### Stash
