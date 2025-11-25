@@ -153,6 +153,7 @@ require("tinygit").setup {
 		body = {
 			enforce = false,
 		},
+		keymapHints = true,
 	},
 	push = {
 		preventPushingFixupCommits = true,

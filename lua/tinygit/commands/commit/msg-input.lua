@@ -206,17 +206,20 @@ function M.new(mode, prompt, confirmationCallback)
 	end
 
 	-- FOOTER
-	local nmaps = conf.keymaps.normal
-	local hlgroup = { key = "Comment", desc = "NonText" }
-	local keymapHints = {
-		{ " normal: ", "FloatBorder" },
-		{ " " .. nmaps.confirm, hlgroup.key },
-		{ " confirm ", hlgroup.desc },
-		{ " " },
-		{ " " .. nmaps.abort, hlgroup.key },
-		{ " abort ", hlgroup.desc },
-		{ " " },
-	}
+	local keymapHints = {}
+	if conf.keymapHints then
+		local nmaps = conf.keymaps.normal
+		local hlgroup = { key = "Comment", desc = "NonText" }
+		keymapHints = {
+			{ " normal: ", "FloatBorder" },
+			{ " " .. nmaps.confirm, hlgroup.key },
+			{ " confirm ", hlgroup.desc },
+			{ " " },
+			{ " " .. nmaps.abort, hlgroup.key },
+			{ " abort ", hlgroup.desc },
+			{ " " },
+		}
+	end
 
 	local titleCharCount = {
 		{ borderChar:rep(3), "FloatBorder" },

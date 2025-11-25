@@ -62,6 +62,7 @@ local defaultConfig = {
 		body = {
 			enforce = false,
 		},
+		keymapHints = true,
 	},
 	push = {
 		preventPushingFixupCommits = true,
