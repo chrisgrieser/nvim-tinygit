@@ -31,15 +31,6 @@ setmetatable(M, {
 		return function(...)
 			local u = require("tinygit.shared.utils")
 
-			-- DEPRECATION (2024-11-28)
-			local deprecated = { "searchFileHistory", "functionHistory", "lineHistory" }
-			if vim.tbl_contains(deprecated, key) then
-				local msg = "`.searchFileHistory`, `.functionHistory`, and `.lineHistory` have been unified to a `.fileHistory` command that adapts behavior depending on the mode called in.\n\n"
-					.. "See the readme for further information. "
-				u.notify(msg, "warn")
-				return function() end -- prevent function call throwing error
-			end
-
 			local module = M.cmdToModuleMap[key]
 			if not module then
 				u.notify(("Unknown command `%s`."):format(key), "warn")
