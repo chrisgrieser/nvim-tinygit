@@ -37,13 +37,17 @@ local function getBlame(bufnr)
 		:gsub(" ", "")
 		:gsub("%d+s", "just now") -- secs -> just now
 	if not shortRelDate:find("just now") then shortRelDate = shortRelDate .. " ago" end
+
+	if vim.list_contains(config.showOnlyTimeIfAuthor, author) then
+		return vim.trim(("%s %s"):format(config.icon, shortRelDate))
+	end
+
 	local trimmedMsg = #msg <= config.maxMsgLen and msg
 		or vim.trim(msg:sub(1, config.maxMsgLen)) .. "…"
 	local authorInitials = not (author:find("%s")) and author:sub(1, 2) -- "janedoe" -> "ja"
 		or author:sub(1, 1) .. author:match("%s(%S)") -- "Jane Doe" -> "JD"
-	local authorStr = vim.tbl_contains(config.hideAuthorNames, author) and ""
+	local authorStr = vim.list_contains(config.hideAuthorNames, author) and ""
 		or " by " .. authorInitials
-
 	return vim.trim(("%s %s [%s%s]"):format(config.icon, trimmedMsg, shortRelDate, authorStr))
 end
 

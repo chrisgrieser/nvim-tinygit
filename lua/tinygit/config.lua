@@ -106,6 +106,7 @@ local defaultConfig = {
 		blame = {
 			ignoreAuthors = {}, -- hide component if from these authors (useful for bots)
 			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
+			showOnlyTimeIfAuthor = {}, -- show only time if author is in this list
 			maxMsgLen = 40,
 			icon = "ﰖ",
 		},
