@@ -27,10 +27,10 @@ Bundle of commands focused on swift and streamlined git operations.
 
 - **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
   syntax highlighting, and allows resetting or navigating to the hunk.
-- **Smart-commit**: Open a popup to enter a commit message with syntax highlighting,
-  commit preview, and commit title length indicators. If there are no staged
-  changes, stages all changes before doing so (`git add -A`). Optionally trigger
-  a `git push` afterward.
+- **Smart-commit**: Open a popup to enter a commit message with syntax
+  highlighting, commit preview, and commit title length indicators. If there are
+  no staged changes, stages all changes before doing so (`git add -A`).
+  Optionally trigger a `git push` afterward.
 - Convenient commands for **amending, stashing, fixup, or undoing commits**.
 - Search **issues & PRs**. Open the selected issue or PR in the browser.
 - Open the **GitHub URL** of the current file, repo, or selected lines. Also
@@ -193,7 +193,7 @@ require("tinygit").setup {
 		blame = {
 			ignoreAuthors = {}, -- hide component if from these authors (useful for bots)
 			hideAuthorNames = {}, -- show component, but hide names (useful for your own name)
-			showOnlyTimeIfAuthor = {}, -- show only time if author is in this list
+			showOnlyTimeIfAuthor = {}, -- show only time if these authors (useful for automated commits)
 			maxMsgLen = 40,
 			icon = "ﰖ",
 		},
@@ -222,7 +222,7 @@ trigger visual-mode specific changes.
 - Interactive straging requires `telescope`.
 - This command stages hunks, that is, *parts* of a file instead of the full
   file. It is roughly comparable to `git add -p`.
-- Use `<Space>` to (un)stage the hunk, `<CR>` to go to the hunk, or `<C-r>` to
+- Use `<Space>` to stage/unstage the hunk, `<CR>` to go to the hunk, or `<C-r>` to
   reset the hunk (mappings customizable). Your regular `telescope` mappings also
   apply.
 - The size of the hunks is determined by the setting `staging.contextSize`.
@@ -345,7 +345,8 @@ require("tinygit").openIssueUnderCursor()
 Creates a permalink to the current file/lines at GitHub. The link is opened in
 the browser and copied to the system clipboard. In normal mode, uses the current
 file, in visual mode, uses the selected lines. (Note that visual mode detection
-requires you to use the Lua function below instead of the `:Tinygit` ex-command.)
+requires you to use the Lua function below instead of the `:Tinygit`
+ex-command.)
 - `"file"`: link to the file (normal mode) or the selected lines (visual mode)
 - `"blame"`: link to the blame view of the file
 - `"repo"`: link to the repo root
@@ -357,7 +358,8 @@ require("tinygit").githubUrl("file")
 
 ### Push & PRs
 - `push` can be combined with other actions, depending on the options.
-- `createGitHubPr` opens a PR from the current branch browser. (This requires the
+- `createGitHubPr` opens a PR from the current branch browser. (This requires
+  the
   repo to be a fork with sufficient information on the remote.)
 
 ```lua
@@ -375,7 +377,7 @@ Search the git history of the current file. Select from the matching commits to
 open a popup with a diff view of the changes.
 
 If the config `history.autoUnshallowIfNeeded` is set to `true`, will also
-automatically un-shallow the repo if needed.
+automatically unshallow the repo if needed.
 
 ```lua
 require("tinygit").fileHistory()
@@ -428,7 +430,8 @@ require("tinygit.statusline").blame()
 > win bar. If your status line is too crowded, you can add the blame-component
 > to one of those bars instead.
 
-The component can be configured with the `statusline.blame` options in the [plugin
+The component can be configured with the `statusline.blame` options in the
+[plugin
 configuration](#configuration).
 
 ### Branch state
