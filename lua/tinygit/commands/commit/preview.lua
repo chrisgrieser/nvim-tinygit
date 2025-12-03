@@ -94,9 +94,12 @@ local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
 		vim.fn.matchadd(hl[1], pattern)
 	end
 
-	-- highlight diffstat for UNSTAGED lines
+	-- highlight diffstat for UNSTAGED lines (if any)
 	local ns = vim.api.nvim_create_namespace("tinygit.commitPreview")
-	vim.hl.range(bufnr, ns, "Comment", { stagedLines, 0 }, { diffstatLines, 0 }, { priority = 1000 })
+	vim.hl.range(bufnr, ns, "Comment", { stagedLines, 0 }, { diffstatLines - 1, -1 })
+
+	-- highlight separator line
+	vim.hl.range(bufnr, ns, "NonText", { diffstatLines, 0 }, { diffstatLines, -1 })
 
 	-- highlight log lines
 	local highlights = require("tinygit.shared.highlights")
@@ -114,7 +117,7 @@ function M.createWin(mode, inputWinid)
 	local textWidth = inputWin.width - 2
 	local diffStatLines, summary, stagedLinesCount = M.getDiffStats(mode, textWidth)
 	local diffstatLineCount = #diffStatLines -- save, since `list_extend` mutates
-	table.insert(diffStatLines, "") -- line break
+	table.insert(diffStatLines, ("─"):rep(textWidth)) -- separator
 	local logLines = M.getGitLog()
 	local previewLines = vim.list_extend(diffStatLines, logLines)
 
@@ -142,7 +145,7 @@ function M.createWin(mode, inputWinid)
 	vim.bo[bufnr].filetype = "tinygit.diffstats"
 	vim.wo[winid].statuscolumn = " " -- = left-padding
 
-	vim.wo[winid].winhighlight = "FloatFooter:NonText,FloatBorder:Comment,Normal:Normal"
+	vim.wo[winid].winhighlight = "FloatFooter:Comment,FloatBorder:Comment,Normal:Normal"
 	vim.api.nvim_win_call(
 		winid,
 		function() highlightPreviewWin(bufnr, stagedLinesCount, diffstatLineCount) end

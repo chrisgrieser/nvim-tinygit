@@ -136,13 +136,12 @@ local function setupSeparator(width)
 	local function updateSeparator()
 		local ns = vim.api.nvim_create_namespace("tinygit.commitMsgInput")
 		vim.api.nvim_buf_clear_namespace(state.bufnr, ns, 0, -1)
-		local separator = { char = "┄", hlgroup = "Comment" }
+		local separator = { char = "┄", hlgroup = "NonText" }
 
 		vim.api.nvim_buf_set_extmark(state.bufnr, ns, 0, 0, {
 			virt_lines = {
-				{ { separator.char:rep(width), separator.hlgroup } },
+				{ { separator.char:rep(width - 2), separator.hlgroup } },
 			},
-			virt_lines_leftcol = true,
 		})
 	end
 	updateSeparator() -- initialize
@@ -206,14 +205,14 @@ function M.new(mode, prompt, confirmationCallback)
 	local keymapHints = {}
 	if conf.keymapHints then
 		local nmaps = conf.keymaps.normal
-		local hlgroup = { key = "Comment", desc = "NonText" }
+		local hlgroupKey, hlgroupDesc = "Comment", "NonText"
 		keymapHints = {
 			{ " normal: ", "FloatBorder" },
-			{ " " .. nmaps.confirm, hlgroup.key },
-			{ " confirm ", hlgroup.desc },
+			{ " " .. nmaps.confirm, hlgroupKey },
+			{ " confirm ", hlgroupDesc },
 			{ " " },
-			{ " " .. nmaps.abort, hlgroup.key },
-			{ " abort ", hlgroup.desc },
+			{ " " .. nmaps.abort, hlgroupKey },
+			{ " abort ", hlgroupDesc },
 			{ " " },
 		}
 	end
