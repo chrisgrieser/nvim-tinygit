@@ -233,7 +233,7 @@ function M.new(mode, prompt, confirmationCallback)
 		relative = "editor",
 		height = height,
 		width = width,
-		row = math.ceil((vim.o.lines - height) / 2) - 5,
+		row = math.ceil((vim.o.lines - height) / 2) - 2 - conf.preview.loglines,
 		col = math.ceil((vim.o.columns - width) / 2),
 		border = conf.border,
 		title = " " .. prompt .. " ",
