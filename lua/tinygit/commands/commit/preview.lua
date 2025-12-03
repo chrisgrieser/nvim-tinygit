@@ -10,11 +10,12 @@ local state = {
 --------------------------------------------------------------------------------
 
 ---@param mode "stage-all-and-commit"|"commit"
----@param statsWidth number
+---@param width number
 ---@return string[] cleanedOutput
 ---@return string summary
+---@return number stagedLinesCount
 ---@nodiscard
-function M.getDiffStats(mode, statsWidth)
+function M.getDiffStats(mode, width)
 	---@type fun(args: string[]): string[], string
 	local function runGitStatsAndCleanUp(args)
 		local output = vim.split(u.syncShellCmd(args), "\n")
@@ -39,34 +40,59 @@ function M.getDiffStats(mode, statsWidth)
 		return cleanedOutput, summary
 	end
 
-	local gitStatsArgs = { "git", "diff", "--compact-summary", "--stat=" .. statsWidth }
+	local gitStatsArgs = { "git", "diff", "--compact-summary", "--stat=" .. width }
 
 	if mode == "stage-all-and-commit" then
 		u.intentToAddUntrackedFiles() -- include new files in diff stats
-		return runGitStatsAndCleanUp(gitStatsArgs)
+		local staged, summary = runGitStatsAndCleanUp(gitStatsArgs)
+		return staged, summary, #staged
 	end
 
 	local notStaged, _ = runGitStatsAndCleanUp(gitStatsArgs)
 	local staged, summary = runGitStatsAndCleanUp(vim.list_extend(gitStatsArgs, { "--staged" }))
-	if #notStaged > 0 then notStaged = vim.list_extend({ "", "not staged:" }, notStaged) end
-	return vim.list_extend(staged, notStaged), summary
+	local stagedLinesCount = #staged -- save, since `list_extend` mutates
+	return vim.list_extend(staged, notStaged), summary, stagedLinesCount
 end
 
-function M.diffStatsHighlights()
+---@param width number
+---@return string[] logLines
+function M.getGitLog(width)
+	local args = { "git", "log", "--max-count=3", "--format=%s (%cr)" }
+	local lines = vim.split(u.syncShellCmd(args), "\n")
+	return vim.tbl_map(function(line)
+		if #line > width then return line:sub(1, width - 1) .. "…" end
+		return line
+	end, lines)
+end
+
+---@param bufnr number
+---@param stagedLines number
+---@param diffstatLines number
+local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
+	-- highlight diffstat for staged lines
 	local hlGroups = require("tinygit.config").config.appearance.hlGroups
-	vim.fn.matchadd(hlGroups.addedText, [[ \zs+\+]]) -- color the plus/minus like in the terminal
-	vim.fn.matchadd(hlGroups.removedText, [[-\+\ze\s*$]])
+	local highlights = {
+		{ hlGroups.addedText, [[ \zs+\+]] }, -- added lines
+		{ hlGroups.removedText, [[-\+\ze *]] }, -- removed lines
+		{ "Keyword", [[(new.*)]] },
+		{ "Keyword", [[(gone.*)]] },
+		{ "Function", ".*/" }, -- directory of a file
+		{ "WarningMsg", "/" }, -- path separator
+		{ "Comment", "│" }, -- path separator
+	}
+	local endToken = "\\%<" .. stagedLines + 1 .. "l" -- limit pattern to range, see :help \%<l
+	for _, hl in ipairs(highlights) do
+		local pattern = hl[2] .. endToken
+		vim.fn.matchadd(hl[1], pattern)
+	end
 
-	vim.fn.matchadd("Keyword", [[(new.*)]])
-	vim.fn.matchadd("Keyword", [[(gone.*)]])
+	-- highlight diffstat for UNstaged lines
+	local ns = vim.api.nvim_create_namespace("tinygit.commitPreview")
+	vim.hl.range(bufnr, ns, "Comment", { stagedLines, 0 }, { diffstatLines, 0 }, { priority = 1000 })
 
-	vim.fn.matchadd("Function", ".*/") -- directory of a file
-	vim.fn.matchadd("WarningMsg", "/") -- path separator
-
-	vim.fn.matchadd("Comment", "│") -- vertical separator
-
-	-- starting with "not staged", color rest of buffer (`\_.` matches any char, inc. \n)
-	vim.fn.matchadd("Comment", [[^not staged:\_.*]])
+	-- highlight log lines
+	require("tinygit.shared.highlights").commitType(stagedLines) -- subject
+	vim.fn.matchadd("Comment", [[(.*)$]]) -- date at the end via `git log --format="%s (%cr)"`
 end
 
 --------------------------------------------------------------------------------
@@ -75,11 +101,16 @@ end
 ---@param inputWinid number
 function M.createWin(mode, inputWinid)
 	local inputWin = vim.api.nvim_win_get_config(inputWinid)
-	local diffStats, summary = M.getDiffStats(mode, inputWin.width - 2)
+	local textWidth = inputWin.width - 2
+	local diffStatLines, summary, stagedLinesCount = M.getDiffStats(mode, textWidth)
+	local diffstatLineCount = #diffStatLines -- save, since `list_extend` mutates
+	table.insert(diffStatLines, "") -- line break
+	local logLines = M.getGitLog(textWidth)
+	local previewLines = vim.list_extend(diffStatLines, logLines)
 
 	-- CREATE WINDOW
 	local bufnr = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, diffStats)
+	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, previewLines)
 	local winid = vim.api.nvim_open_win(bufnr, false, {
 		relative = "win",
 		win = inputWinid,
@@ -90,19 +121,22 @@ function M.createWin(mode, inputWinid)
 		border = inputWin.border,
 		style = "minimal",
 		focusable = false,
-		footer = #diffStats > 1 and " " .. summary .. " " or "",
+		footer = #diffStatLines > 1 and " " .. summary .. " " or "",
 		footer_pos = "right",
 	})
 	state.bufnr = bufnr
 	state.winid = winid
-	state.diffHeight = #diffStats
+	state.diffHeight = #previewLines
 	M.adaptWinPosition(inputWin)
 
 	vim.bo[bufnr].filetype = "tinygit.diffstats"
 	vim.wo[winid].statuscolumn = " " -- = left-padding
 
 	vim.wo[winid].winhighlight = "FloatFooter:NonText,FloatBorder:Comment,Normal:Normal"
-	vim.api.nvim_win_call(winid, M.diffStatsHighlights)
+	vim.api.nvim_win_call(
+		winid,
+		function() highlightPreviewWin(bufnr, stagedLinesCount, diffstatLineCount) end
+	)
 end
 
 ---@param inputWin vim.api.keyset.win_config
