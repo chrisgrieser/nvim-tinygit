@@ -12,6 +12,7 @@ local setDiffBuffer = require("tinygit.shared.diff").setDiffBuffer
 --------------------------------------------------------------------------------
 
 ---@param hunks Tinygit.Hunk[]
+---@return unknown -- `TelescopeFinder` typing not available
 local function newFinder(hunks)
 	local conf = require("tinygit.config").config.stage
 
@@ -113,6 +114,7 @@ function M.pickHunk(hunks)
 					vim.wo[self.state.winid].conceallevel = 0 -- do not hide chars in markdown/json
 				end,
 				---@param entry { value: Tinygit.Hunk }
+				---@return string relPath
 				dyn_title = function(_, entry)
 					local hunk = entry.value
 					if hunk.added + hunk.removed == 0 then return hunk.relPath end -- renamed w/o changes

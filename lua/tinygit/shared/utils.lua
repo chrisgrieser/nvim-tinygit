@@ -6,6 +6,7 @@ local M = {}
 ---@param msg string
 ---@param level? Tinygit.NotifyLevel
 ---@param opts? table
+---@return unknown -- depends on the notification plugin of the user (if any)
 function M.notify(msg, level, opts)
 	if not level then level = "info" end
 	if not opts then opts = {} end
