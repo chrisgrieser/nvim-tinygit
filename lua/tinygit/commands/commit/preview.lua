@@ -74,10 +74,10 @@ local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
 	local hlGroups = require("tinygit.config").config.appearance.hlGroups
 	local highlightPatterns = {
 		{ hlGroups.addedText, [[ \zs+\+]] }, -- added lines
-		{ hlGroups.removedText, [[-\+\ze *]] }, -- removed lines
+		{ hlGroups.removedText, "[ +]\\zs-\\+" }, -- removed lines
 		{ "Keyword", [[(new.*)]] },
 		{ "Keyword", [[(gone.*)]] },
-		{ "Function", ".*/" }, -- directory of a file
+		{ "Function", [[.*\ze/]] }, -- directory of a file
 		{ "WarningMsg", "/" }, -- path separator
 		{ "Comment", "│" }, -- path separator
 	}
@@ -94,6 +94,7 @@ local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
 	-- highlight log lines
 	local highlights = require("tinygit.shared.highlights")
 	highlights.commitType(stagedLines)
+	highlights.inlineCodeAndIssueNumbers()
 	vim.fn.matchadd("Comment", [[(\d\+ .\{-} ago)$]]) -- date at the end via `git log --format="%s (%cr)"`
 end
 
