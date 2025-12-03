@@ -21,7 +21,7 @@ function M.commitType(startingFromLine)
 
 	-- SCOPE
 	local commitScopeBrackets = prefix .. [[\v\w+\zs(\(.{-}\)\ze): ]] -- matches scope with brackets
-	vim.fn.matchadd("Comment", commitScopeBrackets, 10) -- lower prio than scope-matching for simple pattern
+	vim.fn.matchadd("@punctuation.special.gitcommit", commitScopeBrackets, 10) -- via lower prio for simpler pattern
 	local commitScope = prefix .. [[\v\w+(\(\zs.{-}\ze\)): ]] -- matches scope without brackets
 	vim.fn.matchadd("@variable.parameter.gitcommit", commitScope, 11)
 

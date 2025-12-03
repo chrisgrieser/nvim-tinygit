@@ -1,9 +1,6 @@
 local M = {}
 
-local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
-local push = require("tinygit.commands.push-pull").push
-local updateStatusline = require("tinygit.statusline").updateAllComponents
 --------------------------------------------------------------------------------
 
 ---@nodiscard
@@ -42,8 +39,9 @@ local function postCommitNotif(notifTitle, doStageAllChanges, commitTitle, extra
 			callback = function(ctx)
 				vim.defer_fn(function()
 					vim.api.nvim_buf_call(ctx.buf, function()
-						highlight.commitType()
-						highlight.inlineCodeAndIssueNumbers()
+						local highlights = require("tinygit.shared.highlights")
+						highlights.commitType()
+						highlights.inlineCodeAndIssueNumbers()
 						vim.fn.matchadd("Comment", stageAllText)
 						vim.fn.matchadd("Comment", extraLines)
 					end)
@@ -103,10 +101,10 @@ function M.smartCommit(opts)
 
 		-- push
 		if opts.pushIfClean and cleanAfterCommit then
-			push({ pullBefore = opts.pullBeforePush }, true)
+			require("tinygit.commands.push-pull").push({ pullBefore = opts.pullBeforePush }, true)
 		end
 
-		updateStatusline()
+		require("tinygit.statusline").updateAllComponents()
 	end)
 end
 
@@ -141,10 +139,10 @@ function M.amendNoEdit(opts)
 	local extraInfo
 	if opts.forcePushIfDiverged and prevCommitWasPushed then
 		extraInfo = "Force pushing…"
-		push({ forceWithLease = true }, true)
+		require("tinygit.commands.push-pull").push({ forceWithLease = true }, true)
 	end
 	postCommitNotif("Amend-no-edit", doStageAllChanges, lastCommitMsg, extraInfo)
-	updateStatusline()
+	require("tinygit.statusline").updateAllComponents()
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean }
@@ -167,12 +165,12 @@ function M.amendOnlyMsg(opts)
 			:find("%[ahead 1, behind 1%]")
 		local extra = ""
 		if opts.forcePushIfDiverged and prevCommitWasPushed then
-			push({ forceWithLease = true }, true)
+			require("tinygit.commands.push-pull").push({ forceWithLease = true }, true)
 			extra = "Force pushing…"
 		end
 		postCommitNotif(prompt, false, title, extra)
 
-		updateStatusline()
+		require("tinygit.statusline").updateAllComponents()
 	end)
 end
 
@@ -243,7 +241,7 @@ function M.fixupCommit(opts)
 			u.notify("Auto-rebase applied.", "info", { title = "Fixup commit" })
 		end
 
-		updateStatusline()
+		require("tinygit.statusline").updateAllComponents()
 	end
 
 	require("tinygit.shared.picker").pick(prompt, commits, commitFormatter, stylingFunc, onChoice)

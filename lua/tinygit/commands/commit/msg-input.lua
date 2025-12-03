@@ -1,6 +1,3 @@
-local backdrop = require("tinygit.shared.backdrop")
-local commitPreview = require("tinygit.commands.commit.preview")
-local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
 
 local M = {}
@@ -128,7 +125,7 @@ local function setupUnmount()
 			local curWin = vim.api.nvim_get_current_win()
 			if curWin == state.winid then
 				vim.cmd.bwipeout(state.bufnr)
-				commitPreview.unmount()
+				require("tinygit.commands.commit.preview").unmount()
 				return true -- deletes this autocmd
 			end
 		end,
@@ -165,7 +162,7 @@ local function setupWinHeightUpdate()
 		winConf.height = bodyLines > 1 and INPUT_WIN_HEIGHT.big or INPUT_WIN_HEIGHT.small
 
 		vim.api.nvim_win_set_config(state.winid, winConf)
-		commitPreview.adaptWinPosition(winConf)
+		require("tinygit.commands.commit.preview").adaptWinPosition(winConf)
 	end
 
 	updateWinHeight() -- initialize
@@ -272,7 +269,7 @@ function M.new(mode, prompt, confirmationCallback)
 	-- COMMIT PREVIEW
 	if mode ~= "amend-msg" then
 		---@cast mode "stage-all-and-commit"|"commit" -- ensured above
-		commitPreview.createWin(mode, winid)
+		require("tinygit.commands.commit.preview").createWin(mode, winid)
 	end
 
 	-- STYLING
@@ -283,7 +280,7 @@ function M.new(mode, prompt, confirmationCallback)
 	vim.wo[winid].winhighlight = winHls
 
 	vim.api.nvim_win_call(winid, function()
-		highlight.inlineCodeAndIssueNumbers()
+		require("tinygit.shared.highlights").inlineCodeAndIssueNumbers()
 		-- overlength
 		-- * `\%<2l` to only highlight 1st line https://neovim.io/doc/user/pattern.html#search-range
 		-- * match only starts after `\zs` https://neovim.io/doc/user/pattern.html#%2Fordinary-atom
@@ -291,7 +288,7 @@ function M.new(mode, prompt, confirmationCallback)
 	end)
 
 	-- AUTOCMDS
-	backdrop.new(bufnr)
+	require("tinygit.shared.backdrop").new(bufnr)
 	setupKeymaps(confirmationCallback)
 	setupTitleCharCount(borderChar)
 	setupUnmount()

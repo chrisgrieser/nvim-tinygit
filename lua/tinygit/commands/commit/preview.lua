@@ -70,9 +70,9 @@ end
 ---@param stagedLines number
 ---@param diffstatLines number
 local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
-	-- highlight diffstat for staged lines
+	-- highlight diffstat for STAGED lines
 	local hlGroups = require("tinygit.config").config.appearance.hlGroups
-	local highlights = {
+	local highlightPatterns = {
 		{ hlGroups.addedText, [[ \zs+\+]] }, -- added lines
 		{ hlGroups.removedText, [[-\+\ze *]] }, -- removed lines
 		{ "Keyword", [[(new.*)]] },
@@ -82,17 +82,18 @@ local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
 		{ "Comment", "│" }, -- path separator
 	}
 	local endToken = "\\%<" .. stagedLines + 1 .. "l" -- limit pattern to range, see :help \%<l
-	for _, hl in ipairs(highlights) do
+	for _, hl in ipairs(highlightPatterns) do
 		local pattern = hl[2] .. endToken
 		vim.fn.matchadd(hl[1], pattern)
 	end
 
-	-- highlight diffstat for UNstaged lines
+	-- highlight diffstat for UNSTAGED lines
 	local ns = vim.api.nvim_create_namespace("tinygit.commitPreview")
 	vim.hl.range(bufnr, ns, "Comment", { stagedLines, 0 }, { diffstatLines, 0 }, { priority = 1000 })
 
 	-- highlight log lines
-	require("tinygit.shared.highlights").commitType(stagedLines) -- subject
+	local highlights = require("tinygit.shared.highlights")
+	highlights.commitType(stagedLines)
 	vim.fn.matchadd("Comment", [[(\d\+ .\{-} ago)$]]) -- date at the end via `git log --format="%s (%cr)"`
 end
 

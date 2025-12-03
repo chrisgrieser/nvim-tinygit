@@ -1,5 +1,4 @@
 local M = {}
-local highlight = require("tinygit.shared.highlights")
 local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
@@ -121,8 +120,9 @@ function M.issuesAndPrs(opts)
 	local prompt = vim.trim(("%s Select %s (%s)"):format(mainIcon, type, opts.state))
 	local onChoice = function(choice) vim.ui.open(choice.html_url) end
 	local stylingFunc = function()
-		highlight.commitType()
-		highlight.inlineCodeAndIssueNumbers()
+		local highlights = require("tinygit.shared.highlights")
+		highlights.commitType()
+		highlights.inlineCodeAndIssueNumbers()
 		vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
 		vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
 		vim.fn.matchadd("Comment", [[\vby [A-Za-z0-9-]+\s*$]])
