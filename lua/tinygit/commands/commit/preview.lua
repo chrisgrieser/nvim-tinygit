@@ -54,15 +54,11 @@ function M.getDiffStats(mode, width)
 	return vim.list_extend(staged, notStaged), summary, stagedLinesCount
 end
 
----@param width number
 ---@return string[] logLines
-function M.getGitLog(width)
+function M.getGitLog()
 	local args = { "git", "log", "--max-count=3", "--format=%s (%cr)" }
 	local lines = vim.split(u.syncShellCmd(args), "\n")
-	return vim.tbl_map(function(line)
-		if #line > width then return line:sub(1, width - 1) .. "…" end
-		return line
-	end, lines)
+	return lines
 end
 
 ---@param bufnr number
@@ -92,7 +88,7 @@ local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
 
 	-- highlight log lines
 	require("tinygit.shared.highlights").commitType(stagedLines) -- subject
-	vim.fn.matchadd("Comment", [[(.*)$]]) -- date at the end via `git log --format="%s (%cr)"`
+	vim.fn.matchadd("Comment", [[(\d\+ .\{-} ago)$]]) -- date at the end via `git log --format="%s (%cr)"`
 end
 
 --------------------------------------------------------------------------------
@@ -105,7 +101,7 @@ function M.createWin(mode, inputWinid)
 	local diffStatLines, summary, stagedLinesCount = M.getDiffStats(mode, textWidth)
 	local diffstatLineCount = #diffStatLines -- save, since `list_extend` mutates
 	table.insert(diffStatLines, "") -- line break
-	local logLines = M.getGitLog(textWidth)
+	local logLines = M.getGitLog()
 	local previewLines = vim.list_extend(diffStatLines, logLines)
 
 	-- CREATE WINDOW
