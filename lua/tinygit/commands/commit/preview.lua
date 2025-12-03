@@ -56,7 +56,8 @@ end
 
 ---@return string[] logLines
 function M.getGitLog()
-	local args = { "git", "log", "--max-count=3", "--format=%s (%cr)" }
+	local loglines = require("tinygit.config").config.commit.preview.loglines
+	local args = { "git", "log", "--max-count=" .. loglines, "--format=%s (%cr)" }
 	local lines = vim.split(u.syncShellCmd(args), "\n")
 	return lines
 end

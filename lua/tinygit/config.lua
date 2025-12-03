@@ -44,6 +44,9 @@ local defaultConfig = {
 			normal = { abort = "q", confirm = "<CR>" },
 			insert = { confirm = "<C-CR>" },
 		},
+		preview = {
+			loglines = 3,
+		},
 		subject = {
 			-- automatically apply formatting to the subject line
 			autoFormat = function(subject) ---@type nil|fun(subject: string): string
