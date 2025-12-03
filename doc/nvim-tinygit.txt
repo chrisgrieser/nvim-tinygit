@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*           For Neovim          Last change: 2025 November 30
+*nvim-tinygit.txt*           For Neovim          Last change: 2025 December 03
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -128,6 +128,9 @@ The `setup` call is optional.
             keymaps = {
                 normal = { abort = "q", confirm = "<CR>" },
                 insert = { confirm = "<C-CR>" },
+            },
+            preview = {
+                loglines = 3,
             },
             subject = {
                 -- automatically apply formatting to the subject line
