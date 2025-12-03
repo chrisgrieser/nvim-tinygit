@@ -59,6 +59,10 @@ function M.getGitLog()
 	local loglines = require("tinygit.config").config.commit.preview.loglines
 	local args = { "git", "log", "--max-count=" .. loglines, "--format=%s (%cr)" }
 	local lines = vim.split(u.syncShellCmd(args), "\n")
+
+	-- shorten `minutes` to `min`
+	lines = vim.tbl_map(function(l) return l:gsub(" minutes? ago%)$", " min ago)") end, lines)
+
 	return lines
 end
 
