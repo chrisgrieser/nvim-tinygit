@@ -24,19 +24,13 @@ local function getBlame(bufnr)
 
 	local hash, author, relDate, msg = unpack(vim.split(stdout, "\t"))
 	if vim.tbl_contains(config.ignoreAuthors, author) then return "" end
+	local shortRelDate = u.shortenRelativeDate(relDate)
 
 	-- GUARD shallow and on first commit
 	-- get first commit: https://stackoverflow.com/a/5189296/22114136
 	local isOnFirstCommit = hash == u.syncShellCmd { "git", "rev-list", "--max-parents=0", "HEAD" }
 	local shallowRepo = require("tinygit.shared.utils").inShallowRepo()
 	if shallowRepo and isOnFirstCommit then return "" end
-
-	-- shorten the output
-	local shortRelDate = (relDate:match("%d+ %wi?n?") or "") -- 1 unit char (expect min)
-		:gsub("m$", "mo") -- "month" -> "mo" to be distinguishable from "min"
-		:gsub(" ", "")
-		:gsub("%d+s", "just now") -- secs -> just now
-	if not shortRelDate:find("just now") then shortRelDate = shortRelDate .. " ago" end
 
 	if vim.list_contains(config.showOnlyTimeIfAuthor, author) then
 		return vim.trim(("%s %s"):format(config.icon, shortRelDate))

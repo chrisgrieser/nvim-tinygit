@@ -186,7 +186,7 @@ function M.fixupCommit(opts)
 	local result = vim.system({
 		"git",
 		"log",
-		"-n" .. tostring(opts.selectFromLastXCommits),
+		"--max-count=" .. opts.selectFromLastXCommits,
 		"--format=" .. gitlogFormat,
 	}):wait()
 	if u.nonZeroExit(result) then return end
@@ -196,16 +196,17 @@ function M.fixupCommit(opts)
 	local icon = require("tinygit.config").config.appearance.mainIcon
 	local prompt = vim.trim(icon .. " Select commit to fixup")
 	local commitFormatter = function(commitLine)
-		local _, subject, date, nameAtCommit = unpack(vim.split(commitLine, "\t"))
-		local displayLine = ("%s\t%s"):format(subject, date)
+		local _, subject, relDate, nameAtCommit = unpack(vim.split(commitLine, "\t"))
+		local shortRelDate = u.shortenRelativeDate(relDate)
+		local displayLine = ("%s\t%s"):format(subject, shortRelDate)
 		-- append name at commit, if it exists
 		if nameAtCommit then displayLine = displayLine .. ("\t(%s)"):format(nameAtCommit) end
 		return displayLine
 	end
 	local stylingFunc = function()
-		local hl = require("tinygit.shared.highlights")
-		hl.commitType()
-		hl.inlineCodeAndIssueNumbers()
+		local highlights = require("tinygit.shared.highlights")
+		highlights.commitType()
+		highlights.inlineCodeAndIssueNumbers()
 		vim.fn.matchadd("Comment", [[\t.*$]])
 	end
 	local onChoice = function(commit)

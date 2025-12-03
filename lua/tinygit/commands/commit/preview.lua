@@ -57,20 +57,13 @@ end
 ---@return string[] logLines
 function M.getGitLog()
 	local loglines = require("tinygit.config").config.commit.preview.loglines
-	local args = { "git", "log", "--max-count=" .. loglines, "--format=%s  %cr" }
+	local args = { "git", "log", "--max-count=" .. loglines, "--format=%s  %cr" } -- subject, date
 	local lines = vim.split(u.syncShellCmd(args), "\n")
 
-	-- shorten units, like `minutes` to `min`
-	lines = vim.tbl_map(function(line)
-		local shortLine = line:gsub(" (%a+) ago$", function(unit)
-			local shortUnit = (unit:match("%ai?n?") or "") -- 1 unit char (expect min)
-				:gsub("m$", "mo") -- "month" -> "mo" to be distinguishable from "min"
-			return shortUnit .. " ago"
-		end)
-		return shortLine
-	end, lines)
-
-	return lines
+	return vim.tbl_map(
+		function(line) return line:gsub("%d+ %a+ ago$", u.shortenRelativeDate) end,
+		lines
+	)
 end
 
 ---@param bufnr number

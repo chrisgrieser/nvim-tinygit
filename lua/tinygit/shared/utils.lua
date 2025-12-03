@@ -60,5 +60,16 @@ function M.intentToAddUntrackedFiles()
 	end
 end
 
+---@param longStr string
+---@return string shortened
+function M.shortenRelativeDate(longStr)
+	local shortStr = (longStr:match("%d+ %ai?n?") or "") -- 1 unit char (expect min)
+		:gsub("m$", "mo") -- "month" -> "mo" to keep it distinguishable from "min"
+		:gsub(" ", "")
+		:gsub("%d+s$", "just now") -- secs -> just now
+	if shortStr ~= "just now" then shortStr = shortStr .. " ago" end
+	return shortStr
+end
+
 --------------------------------------------------------------------------------
 return M
