@@ -98,7 +98,7 @@ local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
 	local highlights = require("tinygit.shared.highlights")
 	highlights.commitType(stagedLines)
 	highlights.inlineCodeAndIssueNumbers()
-	vim.fn.matchadd("Comment", [[\d\+.\{-} ago$]]) -- date at the end via `git log --format="%s (%cr)"`
+	vim.fn.matchadd("Comment", [[\d\+\w\{1,3} ago$\|just now]]) -- date at the end via `git log --format="%s (%cr)"`
 end
 
 --------------------------------------------------------------------------------
