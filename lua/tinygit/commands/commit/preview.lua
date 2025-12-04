@@ -28,6 +28,8 @@ function M.getDiffStats(mode, width)
 			:gsub(" deletions?", "")
 			:gsub("[()]", "")
 			:gsub(",", " ")
+			:gsub("files?", "%0,")
+			:gsub("  ", " ")
 
 		local cleanedOutput = vim.tbl_map(function(line)
 			local cleanLine = line
@@ -79,7 +81,7 @@ local function highlightPreviewWin(bufnr, stagedLines, diffstatLines)
 		{ "Keyword", [[(gone.*)]] },
 		{ "Function", [[.*\ze/]] }, -- directory of a file
 		{ "WarningMsg", "/" }, -- path separator
-		{ "Comment", "│" }, -- path separator
+		{ "Comment", "│" }, -- vertical separator
 	}
 	local endToken = "\\%<" .. stagedLines + 1 .. "l" -- limit pattern to range, see :help \%<l
 	for _, hl in ipairs(highlightPatterns) do
@@ -138,12 +140,11 @@ function M.createWin(mode, inputWinid)
 	state.bufnr = bufnr
 	state.winid = winid
 	state.diffHeight = #previewLines
-	M.adaptWinPosition(inputWin)
-
 	vim.bo[bufnr].filetype = "tinygit.diffstats"
 	vim.wo[winid].statuscolumn = " " -- = left-padding
-
 	vim.wo[winid].winhighlight = "FloatFooter:Comment,FloatBorder:Comment,Normal:Normal"
+
+	M.adaptWinPosition(inputWin)
 	vim.api.nvim_win_call(
 		winid,
 		function() highlightPreviewWin(bufnr, stagedLinesCount, diffstatLineCount) end
