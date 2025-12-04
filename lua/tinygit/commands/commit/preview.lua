@@ -106,13 +106,18 @@ end
 ---@param mode "stage-all-and-commit"|"commit"
 ---@param inputWinid number
 function M.createWin(mode, inputWinid)
+	local logLinesToGet = require("tinygit.config").config.commit.preview.loglines
 	local inputWin = vim.api.nvim_win_get_config(inputWinid)
 	local textWidth = inputWin.width - 2
+
 	local diffStatLines, summary, stagedLinesCount = M.getDiffStats(mode, textWidth)
 	local diffstatLineCount = #diffStatLines -- save, since `list_extend` mutates
-	table.insert(diffStatLines, ("─"):rep(textWidth)) -- separator
-	local logLines = M.getGitLog()
-	local previewLines = vim.list_extend(diffStatLines, logLines)
+	local previewLines = diffStatLines
+	if logLinesToGet > 0 then
+		table.insert(previewLines, ("─"):rep(textWidth)) -- separator
+		local logLines = M.getGitLog()
+		previewLines = vim.list_extend(previewLines, logLines)
+	end
 
 	-- CREATE WINDOW
 	local bufnr = vim.api.nvim_create_buf(false, true)
