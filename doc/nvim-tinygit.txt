@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*           For Neovim          Last change: 2025 December 03
+*nvim-tinygit.txt*           For Neovim          Last change: 2025 December 09
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -129,13 +129,14 @@ The `setup` call is optional.
                 normal = { abort = "q", confirm = "<CR>" },
                 insert = { confirm = "<C-CR>" },
             },
+            keymapHints = true,
             preview = {
                 loglines = 3,
             },
             subject = {
                 -- automatically apply formatting to the subject line
                 autoFormat = function(subject) ---@type nil|fun(subject: string): string
-                    subject = subject:gsub("%.$", "") -- remove trailing dot https://commitlint.js.org/reference/rules.html#body-full-stop
+                    subject = subject:gsub("%.$", "") -- remove trailing dot
                     return subject
                 end,
     
@@ -150,7 +151,6 @@ The `setup` call is optional.
             body = {
                 enforce = false,
             },
-            keymapHints = true,
         },
         push = {
             preventPushingFixupCommits = true,
@@ -184,6 +184,10 @@ The `setup` call is optional.
             backdrop = {
                 enabled = true,
                 blend = 40, -- 0-100
+            },
+            hlGroups = {
+                addedText = "Added", -- i.e. use hlgroup `Added`
+                removedText = "Removed",
             },
         },
         statusline = {
