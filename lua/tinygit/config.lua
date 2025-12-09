@@ -44,13 +44,14 @@ local defaultConfig = {
 			normal = { abort = "q", confirm = "<CR>" },
 			insert = { confirm = "<C-CR>" },
 		},
+		keymapHints = true,
 		preview = {
 			loglines = 3,
 		},
 		subject = {
 			-- automatically apply formatting to the subject line
 			autoFormat = function(subject) ---@type nil|fun(subject: string): string
-				subject = subject:gsub("%.$", "") -- remove trailing dot https://commitlint.js.org/reference/rules.html#body-full-stop
+				subject = subject:gsub("%.$", "") -- remove trailing dot
 				return subject
 			end,
 
@@ -65,7 +66,6 @@ local defaultConfig = {
 		body = {
 			enforce = false,
 		},
-		keymapHints = true,
 	},
 	push = {
 		preventPushingFixupCommits = true,

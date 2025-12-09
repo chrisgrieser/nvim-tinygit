@@ -135,13 +135,14 @@ require("tinygit").setup {
 			normal = { abort = "q", confirm = "<CR>" },
 			insert = { confirm = "<C-CR>" },
 		},
+		keymapHints = true,
 		preview = {
 			loglines = 3,
 		},
 		subject = {
 			-- automatically apply formatting to the subject line
 			autoFormat = function(subject) ---@type nil|fun(subject: string): string
-				subject = subject:gsub("%.$", "") -- remove trailing dot https://commitlint.js.org/reference/rules.html#body-full-stop
+				subject = subject:gsub("%.$", "") -- remove trailing dot
 				return subject
 			end,
 
@@ -156,7 +157,6 @@ require("tinygit").setup {
 		body = {
 			enforce = false,
 		},
-		keymapHints = true,
 	},
 	push = {
 		preventPushingFixupCommits = true,
@@ -190,6 +190,10 @@ require("tinygit").setup {
 		backdrop = {
 			enabled = true,
 			blend = 40, -- 0-100
+		},
+		hlGroups = {
+			addedText = "Added", -- i.e. use hlgroup `Added`
+			removedText = "Removed",
 		},
 	},
 	statusline = {
