@@ -1,11 +1,12 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----@return string state lualine stringifys result, so need to return empty string instead of nil
+---@return string? state lualine stringifys result, so need to return empty string instead of nil
 ---@nodiscard
 local function getFileState()
-	local u = require("tinygit.shared.utils")
+	if not vim.uv.cwd() then return end -- file without cwd
 
+	local u = require("tinygit.shared.utils")
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	if not gitroot then return "" end
 	local gitStatus = vim.system({ "git", "-C", gitroot, "status", "--porcelain" }):wait()
@@ -45,15 +46,21 @@ end
 
 --------------------------------------------------------------------------------
 
-function M.refreshFileState() vim.b.tinygit_fileState = getFileState() end
+function M.refreshFileState()
+	local state = getFileState()
+	if state then vim.b.tinygit_fileState = state end
+end
 
 function M.getFileState() return vim.b.tinygit_fileState or "" end
 
 vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged", "FocusGained" }, {
-	group = vim.api.nvim_create_augroup("tinygit_branchState", { clear = true }),
-	callback = M.refreshFileState,
+	group = vim.api.nvim_create_augroup("tinygit_fileState", { clear = true }),
+	callback = function()
+		-- defer so cwd changes take place before checking
+		vim.defer_fn(M.refreshFileState, 1)
+	end,
 })
-M.refreshFileState() -- initialize in case of lazy-loading
+vim.defer_fn(M.refreshFileState, 1) -- initialize in case of lazy-loading
 
 --------------------------------------------------------------------------------
 return M

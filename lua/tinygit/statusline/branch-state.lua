@@ -1,11 +1,11 @@
 local M = {}
 --------------------------------------------------------------------------------
 
----@return string state lualine stringifys result, so need to return empty string instead of nil
+---@return string? state lualine stringifys result, so need to return empty string instead of nil
 ---@nodiscard
 local function getBranchState()
 	local cwd = vim.uv.cwd()
-	if not cwd then return "" end -- file without cwd
+	if not cwd then return end -- file without cwd
 
 	local allBranchInfo = vim.system({ "git", "-C", cwd, "branch", "--verbose" }):wait()
 	if allBranchInfo.code ~= 0 then return "" end -- not in git repo
@@ -34,15 +34,21 @@ end
 
 --------------------------------------------------------------------------------
 
-function M.refreshBranchState() vim.b.tinygit_branchState = getBranchState() end
+function M.refreshBranchState()
+	local state = getBranchState()
+	if state then vim.b.tinygit_branchState = state end
+end
 
 function M.getBranchState() return vim.b.tinygit_branchState or "" end
 
 vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged", "FocusGained" }, {
 	group = vim.api.nvim_create_augroup("tinygit_branchState", { clear = true }),
-	callback = M.refreshBranchState,
+	callback = function()
+		-- defer so cwd changes take place before checking
+		vim.defer_fn(M.refreshBranchState, 1)
+	end,
 })
-M.refreshBranchState() -- initialize in case of lazy-loading
+vim.defer_fn(M.refreshBranchState, 1) -- initialize in case of lazy-loading
 
 --------------------------------------------------------------------------------
 return M

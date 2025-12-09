@@ -4,17 +4,18 @@ local u = require("tinygit.shared.utils")
 --------------------------------------------------------------------------------
 
 ---@param bufnr? number
----@return string blame lualine stringifys result, so need to return empty string instead of nil
+---@return string? blame lualine stringifys result, so need to return empty string instead of nil
 ---@nodiscard
 local function getBlame(bufnr)
 	bufnr = bufnr or 0
-	local config = require("tinygit.config").config.statusline.blame
+	local bufPath = vim.api.nvim_buf_get_name(bufnr)
 
 	-- GUARD valid buffer
-	if not vim.api.nvim_buf_is_valid(bufnr) then return "" end
-	if vim.api.nvim_get_option_value("buftype", { buf = bufnr }) ~= "" then return "" end
+	if not vim.api.nvim_buf_is_valid(bufnr) then return end
+	if vim.bo[bufnr].buftype ~= "" then return end
+	if vim.uv.fs_stat(bufPath) == nil then return end -- non-existing file
 
-	local bufPath = vim.api.nvim_buf_get_name(bufnr)
+	local config = require("tinygit.config").config.statusline.blame
 	local gitLogCmd = { "git", "log", "--max-count=1", "--format=%H\t%an\t%cr\t%s", "--", bufPath }
 	local gitLogResult = vim.system(gitLogCmd):wait()
 
@@ -48,12 +49,16 @@ end
 --------------------------------------------------------------------------------
 
 ---@param bufnr? number
-function M.refreshBlame(bufnr) vim.b["tinygit_blame"] = getBlame(bufnr) end
+function M.refreshBlame(bufnr)
+	bufnr = bufnr or 0
+	if not vim.api.nvim_buf_is_valid(bufnr) then return end
+	vim.b[bufnr].tinygit_blame = getBlame(bufnr)
+end
 
 vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged", "FocusGained" }, {
 	group = vim.api.nvim_create_augroup("tinygit_blame", { clear = true }),
 	callback = function(ctx)
-		-- so buftype is set before checking the buffer
+		-- defer so buftype is set before checking the buffer
 		vim.defer_fn(function() M.refreshBlame(ctx.buf) end, 1)
 	end,
 })
