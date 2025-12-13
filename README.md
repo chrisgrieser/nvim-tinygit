@@ -219,7 +219,7 @@ require("tinygit").setup {
 ```
 
 ## Commands
-All commands are available as Lua function or as sub-command of `:Tinygit`,
+All commands are available as Lua function or as subcommand of `:Tinygit`,
 for example `require("tinygit").interactiveStaging()` and `:Tinygit
 interactiveStaging`. Note that the Lua function is preferable,
 since `:Tinygit` does not accept command-specific options and does not
@@ -229,9 +229,9 @@ trigger visual-mode specific changes.
 - Interactive straging requires `telescope`.
 - This command stages hunks, that is, *parts* of a file instead of the full
   file. It is roughly comparable to `git add -p`.
-- Use `<Space>` to stage/unstage the hunk, `<CR>` to go to the hunk, or `<C-r>` to
-  reset the hunk (mappings customizable). Your regular `telescope` mappings also
-  apply.
+- Use `<Space>` to stage/unstage the hunk, `<CR>` to go to the hunk, or `<C-r>`
+  to reset the hunk (mappings customizable). Your regular `telescope` mappings
+  also apply.
 - The size of the hunks is determined by the setting `staging.contextSize`.
   Larger context size is going to "merge" changes that are close to one another
   into one hunk. (As such, the hunks displayed are not 1:1 the same as the hunks
@@ -279,7 +279,12 @@ vim.keymap.set(
 	function() require("tinygit").smartCommit() end,
 	{ desc = "git commit" }
 )
-vim.keymap.set("n", "<leader>gp", function() require("tinygit").push() end, { desc = "git push" })
+vim.keymap.set(
+	"n",
+	"<leader>gp",
+	function() require("tinygit").push() end,
+	{ desc = "git push" }
+)
 ```
 
 1. Stage some changes via `<leader>ga`.
@@ -303,7 +308,10 @@ commit you intend to make.
 ```lua
 -- values shown are the defaults
 require("tinygit").amendOnlyMsg { forcePushIfDiverged = false }
-require("tinygit").amendNoEdit { forcePushIfDiverged = false, stageAllIfNothingStaged = true }
+require("tinygit").amendNoEdit {
+	forcePushIfDiverged = false,
+	stageAllIfNothingStaged = true,
+}
 ```
 
 **Fixup commits**
@@ -376,7 +384,9 @@ require("tinygit").push {
 	forceWithLease = false,
 	createGitHubPr = false,
 }
-require("tinygit").createGitHubPr() -- to push before, use `.push { createGitHubPr = true }`
+
+require("tinygit").createGitHubPr()
+-- to push before the PR, use `require("tinygit").push { createGitHubPr = true }`
 ```
 
 ### File history
