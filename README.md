@@ -7,22 +7,22 @@ Bundle of commands focused on swift and streamlined git operations.
 ## Feature overview
 
 <table>
-	<tr>
-		<th>Interactive staging</th>
-		<th>Smart commit</th>
-	</tr>
-	<tr>
-		<td><img alt="interactive staging" src="https://github.com/user-attachments/assets/93812b73-7a0d-4496-b101-8551c41ee393"></td>
-		<td><img alt="smart commit" src="https://github.com/user-attachments/assets/8dfdaa83-2f5b-49ee-a4a7-a72ae07f5941"></td>
-	</tr>
-	<tr>
-		<th>File history</th>
-		<th></th>
-	</tr>
-	<tr>
-		<td><img alt="file history" src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94"></td>
-		<td></td>
-	</tr>
+    <tr>
+        <th>Interactive staging</th>
+        <th>Smart commit</th>
+    </tr>
+    <tr>
+        <td><img alt="interactive staging" src="https://github.com/user-attachments/assets/93812b73-7a0d-4496-b101-8551c41ee393"></td>
+        <td><img alt="smart commit" src="https://github.com/user-attachments/assets/8dfdaa83-2f5b-49ee-a4a7-a72ae07f5941"></td>
+    </tr>
+    <tr>
+        <th>File history</th>
+        <th></th>
+    </tr>
+    <tr>
+        <td><img alt="file history" src="https://github.com/chrisgrieser/nvim-tinygit/assets/73286100/b4cb918e-ff95-40ac-a09f-feb767ba2b94"></td>
+        <td></td>
+    </tr>
  </table>
 
 - **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
@@ -53,18 +53,18 @@ Bundle of commands focused on swift and streamlined git operations.
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Commands](#commands)
-	* [Interactive staging](#interactive-staging)
-	* [Smart commit](#smart-commit)
-	* [Amend and fixup commits](#amend-and-fixup-commits)
-	* [Undo last commit/amend](#undo-last-commitamend)
-	* [GitHub interaction](#github-interaction)
-	* [Push & PRs](#push--prs)
-	* [File history](#file-history)
-	* [Stash](#stash)
+    - [Interactive staging](#interactive-staging)
+    - [Smart commit](#smart-commit)
+    - [Amend and fixup commits](#amend-and-fixup-commits)
+    - [Undo last commit/amend](#undo-last-commitamend)
+    - [GitHub interaction](#github-interaction)
+    - [Push & PRs](#push--prs)
+    - [File history](#file-history)
+    - [Stash](#stash)
 - [Status line components](#status-line-components)
-	* [git blame](#git-blame)
-	* [Branch state](#branch-state)
-	* [File state](#file-state)
+    - [git blame](#git-blame)
+    - [Branch state](#branch-state)
+    - [File state](#file-state)
 - [Credits](#credits)
 
 <!-- tocstop -->
@@ -73,11 +73,11 @@ Bundle of commands focused on swift and streamlined git operations.
 **Requirements**
 - nvim 0.10+
 - A plugin implementing `vim.ui.select`, such as:
-  * [snacks.picker](http://github.com/folke/snacks.nvim)
-  * [mini.pick](http://github.com/echasnovski/mini.pick)
-  * [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) with
-	[telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim)
-  * [fzf-lua](https://github.com/ibhagwan/fzf-lua)
+    - [snacks.picker](http://github.com/folke/snacks.nvim)
+    - [mini.pick](http://github.com/echasnovski/mini.pick)
+    - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) with
+    [telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim)
+    - [fzf-lua](https://github.com/ibhagwan/fzf-lua)
 - For interactive staging:
   [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim). (For
   `snacks.nvim`, the `git_diff` picker allows interactive staging.)
@@ -402,22 +402,22 @@ require("tinygit").fileHistory()
 
 The type of history search depends on the mode `.fileHistory` is called from:
 - **Normal mode**: search file history for a string (`git log -G`)
-	* Correctly follows file renamings, and displays past filenames in the
-	  commit selection.
-	* The search input is case-insensitive and supports regex.
-	* Leave the input field empty to display *all* commits that changed the
-	  current file.
+    - Correctly follows file renamings, and displays past filenames in the
+      commit selection.
+    - The search input is case-insensitive and supports regex.
+    - Leave the input field empty to display *all* commits that changed the
+      current file.
 - **Visual mode**: function history (`git log -L`).
-	* The selected text is assumed to be the name of the function whose history
-	  you want to explore.
-	* Note that [`git` uses heuristics to determine the enclosing function of
-	  a change](https://news.ycombinator.com/item?id=38153309), so this is not
-	  100% perfect and has varying reliability across languages.
-	* Caveat: for function history, git does not support to follow renamings of
-	  the file or function name.
+    - The selected text is assumed to be the name of the function whose history
+      you want to explore.
+    - Note that [`git` uses heuristics to determine the enclosing function of
+      a change](https://news.ycombinator.com/item?id=38153309), so this is not
+      100% perfect and has varying reliability across languages.
+    - Caveat: for function history, git does not support to follow renamings of
+      the file or function name.
 - **Visual line mode**: line range history (`git log -L`).
-	* Uses the selected lines as the line range.
-	* Caveat: for line history, git does not support to follow file renamings.
+    - Uses the selected lines as the line range.
+    - Caveat: for line history, git does not support to follow file renamings.
 
 Note that visual mode detection requires you to use the Lua function above
 instead of the `:Tinygit` ex-command.
