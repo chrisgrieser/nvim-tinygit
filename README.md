@@ -6,6 +6,7 @@ Bundle of commands focused on swift and streamlined git operations.
 
 ## Feature overview
 
+<!-- rumdl-disable MD033 -->
 <table>
     <tr>
         <th>Interactive staging</th>
@@ -24,6 +25,7 @@ Bundle of commands focused on swift and streamlined git operations.
         <td></td>
     </tr>
  </table>
+<!-- rumdl-enable MD033 -->
 
 - **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
   syntax highlighting, and allows resetting or navigating to the hunk.
@@ -70,7 +72,7 @@ Bundle of commands focused on swift and streamlined git operations.
 <!-- tocstop -->
 
 ## Installation
-**Requirements**
+**Requirements** <!-- rumdl-disable-line MD036 -->
 - nvim 0.10+
 - A plugin implementing `vim.ui.select`, such as:
     - [snacks.picker](http://github.com/folke/snacks.nvim)
@@ -263,8 +265,7 @@ require("tinygit").interactiveStaging()
 require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = true }
 ```
 
-**Example workflow**  
-Assuming these keybindings:
+**Example workflow**, assuming these keybindings:
 
 ```lua
 vim.keymap.set(
@@ -297,7 +298,8 @@ combine staging, committing, and pushing into a single step, when it is the last
 commit you intend to make.
 
 ### Amend and fixup commits
-**Amending**
+
+#### Amending
 - `amendOnlyMsg` just opens the commit popup to change the last commit message,
   and does not stage any changes.
 - `amendNoEdit` keeps the last commit message; if there are no staged changes,
@@ -314,7 +316,7 @@ require("tinygit").amendNoEdit {
 }
 ```
 
-**Fixup commits**
+#### Fixup commits
 - `fixupCommit` lets you select a commit from the last X commits and runs `git
   commit --fixup` on the selected commit.
 - If there are no staged changes, stages all changes (`git add --all`), like
@@ -343,7 +345,8 @@ require("tinygit").undoLastCommitOrAmend()
   undone.
 
 ### GitHub interaction
-**Search issues & PRs**
+
+#### Search issues & PRs
 - All GitHub interaction commands require `curl`.
 
 ```lua
@@ -356,7 +359,7 @@ require("tinygit").issuesAndPrs { type = "all", state = "all" }
 require("tinygit").openIssueUnderCursor()
 ```
 
-**GitHub URL**  
+#### GitHub URL
 Creates a permalink to the current file/lines at GitHub. The link is opened in
 the browser and copied to the system clipboard. In normal mode, uses the current
 file, in visual mode, uses the selected lines. (Note that visual mode detection

@@ -1,0 +1,6 @@
+fixup
+fixups
+permalink
+renamings
+unshallow
+unstaged
