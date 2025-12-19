@@ -3,24 +3,24 @@
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
 
-1. nvim-tinygit                                    |nvim-tinygit-nvim-tinygit|
-  - Feature overview              |nvim-tinygit-nvim-tinygit-feature-overview|
-  - Table of contents            |nvim-tinygit-nvim-tinygit-table-of-contents|
-  - Installation                      |nvim-tinygit-nvim-tinygit-installation|
-  - Configuration                    |nvim-tinygit-nvim-tinygit-configuration|
-  - Commands                              |nvim-tinygit-nvim-tinygit-commands|
-  - Status line components  |nvim-tinygit-nvim-tinygit-status-line-components|
-  - Credits                                |nvim-tinygit-nvim-tinygit-credits|
+1. nvim-tinygit                                   |nvim-tinygit-nvim-tinygit-|
+  - Feature overview             |nvim-tinygit-nvim-tinygit--feature-overview|
+  - Table of contents           |nvim-tinygit-nvim-tinygit--table-of-contents|
+  - Installation                     |nvim-tinygit-nvim-tinygit--installation|
+  - Configuration                   |nvim-tinygit-nvim-tinygit--configuration|
+  - Commands                             |nvim-tinygit-nvim-tinygit--commands|
+  - Status line components |nvim-tinygit-nvim-tinygit--status-line-components|
+  - Credits                               |nvim-tinygit-nvim-tinygit--credits|
 
 ==============================================================================
-1. nvim-tinygit                                    *nvim-tinygit-nvim-tinygit*
+1. nvim-tinygit                                   *nvim-tinygit-nvim-tinygit-*
 
 
 
 Bundle of commands focused on swift and streamlined git operations.
 
 
-FEATURE OVERVIEW                  *nvim-tinygit-nvim-tinygit-feature-overview*
+FEATURE OVERVIEW                 *nvim-tinygit-nvim-tinygit--feature-overview*
 
 Interactive stagingSmart commitFile history- **Interactive staging** of hunks (parts of a file). Displays hunk diffs with
     syntax highlighting, and allows resetting or navigating to the hunk.
@@ -44,7 +44,7 @@ Interactive stagingSmart commitFile history- **Interactive staging** of hunks (p
     and diff navigation.
 
 
-TABLE OF CONTENTS                *nvim-tinygit-nvim-tinygit-table-of-contents*
+TABLE OF CONTENTS               *nvim-tinygit-nvim-tinygit--table-of-contents*
 
 - |nvim-tinygit-installation|
 - |nvim-tinygit-configuration|
@@ -64,7 +64,7 @@ TABLE OF CONTENTS                *nvim-tinygit-nvim-tinygit-table-of-contents*
 - |nvim-tinygit-credits|
 
 
-INSTALLATION                          *nvim-tinygit-nvim-tinygit-installation*
+INSTALLATION                         *nvim-tinygit-nvim-tinygit--installation*
 
 **Requirements** - nvim 0.10+ - A plugin implementing `vim.ui.select`, such as:
 - snacks.picker <http://github.com/folke/snacks.nvim> - mini.pick
@@ -92,7 +92,7 @@ gitcommit`.
 <
 
 
-CONFIGURATION                        *nvim-tinygit-nvim-tinygit-configuration*
+CONFIGURATION                       *nvim-tinygit-nvim-tinygit--configuration*
 
 The `setup` call is optional.
 
@@ -213,7 +213,7 @@ The `setup` call is optional.
 <
 
 
-COMMANDS                                  *nvim-tinygit-nvim-tinygit-commands*
+COMMANDS                                 *nvim-tinygit-nvim-tinygit--commands*
 
 All commands are available as Lua function or as subcommand of `:Tinygit`, for
 example `require("tinygit").interactiveStaging()` and `:Tinygit
@@ -441,7 +441,7 @@ Simple wrappers around `git stash push` and `git stash pop`.
 <
 
 
-STATUS LINE COMPONENTS      *nvim-tinygit-nvim-tinygit-status-line-components*
+STATUS LINE COMPONENTS     *nvim-tinygit-nvim-tinygit--status-line-components*
 
 
 GIT BLAME ~
@@ -481,7 +481,7 @@ Shows the number of changed files, similar to terminal prompts.
 <
 
 
-CREDITS                                    *nvim-tinygit-nvim-tinygit-credits*
+CREDITS                                   *nvim-tinygit-nvim-tinygit--credits*
 
 In my day job, I am a sociologist studying the social mechanisms underlying the
 digital economy. For my PhD project, I investigate the governance of the app
