@@ -262,7 +262,7 @@ SMART COMMIT ~
     require("tinygit").smartCommit { pushIfClean = false, pullBeforePush = true }
 <
 
-**Example workflow** Assuming these keybindings:
+**Example workflow**, assuming these keybindings:
 
 >lua
     vim.keymap.set(
@@ -297,12 +297,15 @@ last commit you intend to make.
 
 AMEND AND FIXUP COMMITS ~
 
-**Amending** - `amendOnlyMsg` just opens the commit popup to change the last
-commit message, and does not stage any changes. - `amendNoEdit` keeps the last
-commit message; if there are no staged changes, stages all changes (`git add
---all`), like `smartCommit`. - Optionally runs `git push --force-with-lease`
-afterward, if the branch has diverged (that is, the amended commit was already
-pushed).
+
+AMENDING
+
+- `amendOnlyMsg` just opens the commit popup to change the last commit message,
+    and does not stage any changes.
+- `amendNoEdit` keeps the last commit message; if there are no staged changes,
+    stages all changes (`git add --all`), like `smartCommit`.
+- Optionally runs `git push --force-with-lease` afterward, if the branch has
+    diverged (that is, the amended commit was already pushed).
 
 >lua
     -- values shown are the defaults
@@ -313,12 +316,14 @@ pushed).
     }
 <
 
-**Fixup commits** - `fixupCommit` lets you select a commit from the last X
-commits and runs `git commit --fixup` on the selected commit. - If there are no
-staged changes, stages all changes (`git add --all`), like `smartCommit`. -
-`autoRebase = true` automatically runs rebase with `--autosquash` and
-`--autostash` afterward, confirming all fixups and squashes **without opening a
-rebase to do editor**. Note that this can potentially result in conflicts.
+
+FIXUP COMMITS
+
+- `fixupCommit` lets you select a commit from the last X commits and runs `git   commit --fixup` on the selected commit.
+- If there are no staged changes, stages all changes (`git add --all`), like
+    `smartCommit`.
+- `autoRebase = true` automatically runs rebase with `--autosquash` and
+    `--autostash` afterward, confirming all fixups and squashes **without opening a rebase to do editor**. Note that this can potentially result in conflicts.
 
 >lua
     -- values shown are the defaults
@@ -343,7 +348,10 @@ UNDO LAST COMMIT/AMEND ~
 
 GITHUB INTERACTION ~
 
-**Search issues & PRs** - All GitHub interaction commands require `curl`.
+
+SEARCH ISSUES & PRS
+
+- All GitHub interaction commands require `curl`.
 
 >lua
     -- state: all|closed|open (default: all)
@@ -355,13 +363,16 @@ GITHUB INTERACTION ~
     require("tinygit").openIssueUnderCursor()
 <
 
-**GitHub URL** Creates a permalink to the current file/lines at GitHub. The
-link is opened in the browser and copied to the system clipboard. In normal
-mode, uses the current file, in visual mode, uses the selected lines. (Note
-that visual mode detection requires you to use the Lua function below instead
-of the `:Tinygit` ex-command.) - `"file"`: link to the file (normal mode) or
-the selected lines (visual mode) - `"blame"`: link to the blame view of the
-file - `"repo"`: link to the repo root
+
+GITHUB URL
+
+Creates a permalink to the current file/lines at GitHub. The link is opened in
+the browser and copied to the system clipboard. In normal mode, uses the
+current file, in visual mode, uses the selected lines. (Note that visual mode
+detection requires you to use the Lua function below instead of the `:Tinygit`
+ex-command.) - `"file"`: link to the file (normal mode) or the selected lines
+(visual mode) - `"blame"`: link to the blame view of the file - `"repo"`: link
+to the repo root
 
 >lua
     -- "file"|"repo"|"blame" (default: "file")
