@@ -1,4 +1,4 @@
-# nvim-tinygit
+# nvim-tinygit <!-- rumdl-disable-line MD063 `nvim` lowercased -->
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
 <img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat"/></a>
 
@@ -436,7 +436,7 @@ require("tinygit").stashPop()
 ## Status line components
 
 <!-- LTeX: enabled=false -->
-### git blame
+### Git blame
 <!-- LTeX: enabled=true -->
 Shows the message and date (`git blame`) of the last commit that changed the
 current *file* (not line).
