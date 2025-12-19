@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*           For Neovim          Last change: 2025 December 13
+*nvim-tinygit.txt*           For Neovim          Last change: 2025 December 19
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -67,10 +67,10 @@ TABLE OF CONTENTS                *nvim-tinygit-nvim-tinygit-table-of-contents*
 INSTALLATION                          *nvim-tinygit-nvim-tinygit-installation*
 
 **Requirements** - nvim 0.10+ - A plugin implementing `vim.ui.select`, such as:
-snacks.picker <http://github.com/folke/snacks.nvim> mini.pick
-<http://github.com/echasnovski/mini.pick> telescope.nvim
+- snacks.picker <http://github.com/folke/snacks.nvim> - mini.pick
+<http://github.com/echasnovski/mini.pick> - telescope.nvim
 <https://github.com/nvim-telescope/telescope.nvim> with telescope-ui-select
-<https://github.com/nvim-telescope/telescope-ui-select.nvim> fzf-lua
+<https://github.com/nvim-telescope/telescope-ui-select.nvim> - fzf-lua
 <https://github.com/ibhagwan/fzf-lua> - For interactive staging: telescope.nvim
 <https://github.com/nvim-telescope/telescope.nvim>. (For `snacks.nvim`, the
 `git_diff` picker allows interactive staging.) - For GitHub-related commands:
@@ -402,19 +402,19 @@ automatically unshallow the repo if needed.
 <
 
 The type of history search depends on the mode `.fileHistory` is called from: -
-**Normal mode**: search file history for a string (`git log -G`) Correctly
-follows file renamings, and displays past filenames in the commit selection.
-The search input is case-insensitive and supports regex. Leave the input field
-empty to display _all_ commits that changed the current file. - **Visual
-mode**: function history (`git log -L`). The selected text is assumed to be the
-name of the function whose history you want to explore. Note that `git` uses
-heuristics to determine the enclosing function of a change
+**Normal mode**: search file history for a string (`git log -G`) - Correctly
+follows file renamings, and displays past filenames in the commit selection. -
+The search input is case-insensitive and supports regex. - Leave the input
+field empty to display _all_ commits that changed the current file. - **Visual
+mode**: function history (`git log -L`). - The selected text is assumed to be
+the name of the function whose history you want to explore. - Note that `git`
+uses heuristics to determine the enclosing function of a change
 <https://news.ycombinator.com/item?id=38153309>, so this is not 100% perfect
-and has varying reliability across languages. Caveat: for function history, git
-does not support to follow renamings of the file or function name. - **Visual
-line mode**: line range history (`git log -L`). Uses the selected lines as the
-line range. Caveat: for line history, git does not support to follow file
-renamings.
+and has varying reliability across languages. - Caveat: for function history,
+git does not support to follow renamings of the file or function name. -
+**Visual line mode**: line range history (`git log -L`). - Uses the selected
+lines as the line range. - Caveat: for line history, git does not support to
+follow file renamings.
 
 Note that visual mode detection requires you to use the Lua function above
 instead of the `:Tinygit` ex-command.
