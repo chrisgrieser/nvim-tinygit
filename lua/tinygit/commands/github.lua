@@ -19,6 +19,16 @@ end
 
 --------------------------------------------------------------------------------
 
+---@param unencoded string
+---@return string
+local function urlEncode(unencoded)
+	local encoded = unencoded:gsub(
+		"([^%w%-_.~])",
+		function(c) return string.format("%%%02X", string.byte(c)) end
+	)
+	return encoded
+end
+
 ---opens current buffer in the browser & copies the link to the clipboard
 ---normal mode: link to file
 ---visual mode: link to selected lines
@@ -48,7 +58,6 @@ function M.githubUrl(what)
 	local filepath = vim.api.nvim_buf_get_name(0)
 	local gitroot = u.syncShellCmd { "git", "rev-parse", "--show-toplevel" }
 	local pathInRepo = filepath:sub(#gitroot + 2)
-	local pathInRepoEncoded = pathInRepo:gsub("%s+", "%%20")
 	local hash = u.syncShellCmd { "git", "rev-parse", "HEAD" }
 	local url = "https://github.com/" .. repo
 	local location = ""
@@ -67,7 +76,7 @@ function M.githubUrl(what)
 		end
 	end
 	local type = what == "blame" and "blame" or "blob"
-	url = url .. ("/%s/%s/%s%s"):format(type, hash, pathInRepoEncoded, location)
+	url = url .. ("/%s/%s/%s%s"):format(type, hash, urlEncode(pathInRepo), location)
 
 	vim.ui.open(url)
 	vim.fn.setreg("+", url) -- copy to clipboard
