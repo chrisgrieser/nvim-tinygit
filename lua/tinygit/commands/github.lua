@@ -19,16 +19,6 @@ end
 
 --------------------------------------------------------------------------------
 
----@param unencoded string
----@return string
-local function urlEncode(unencoded)
-	local encoded = unencoded:gsub(
-		"([^%w%-_.~])",
-		function(c) return string.format("%%%02X", string.byte(c)) end
-	)
-	return encoded
-end
-
 ---opens current buffer in the browser & copies the link to the clipboard
 ---normal mode: link to file
 ---visual mode: link to selected lines
@@ -76,7 +66,7 @@ function M.githubUrl(what)
 		end
 	end
 	local type = what == "blame" and "blame" or "blob"
-	url = url .. ("/%s/%s/%s%s"):format(type, hash, urlEncode(pathInRepo), location)
+	url = url .. ("/%s/%s/%s%s"):format(type, hash, vim.uri_encode(pathInRepo), location)
 
 	vim.ui.open(url)
 	vim.fn.setreg("+", url) -- copy to clipboard
