@@ -1,4 +1,4 @@
-# nvim-tinygit <!-- rumdl-disable-line MD063 `nvim` lowercased -->
+# nvim-tinygit <!-- rumdl-disable-line MD063 -->
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
 <img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat"/></a>
 
