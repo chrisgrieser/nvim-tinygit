@@ -228,7 +228,7 @@ since `:Tinygit` does not accept command-specific options and does not
 trigger visual-mode specific changes.
 
 ### Interactive staging
-- Interactive straging requires `telescope`.
+- Requires `telescope`.
 - This command stages hunks, that is, *parts* of a file instead of the full
   file. It is roughly comparable to `git add -p`.
 - Use `<Space>` to stage/unstage the hunk, `<CR>` to go to the hunk, or `<C-r>`

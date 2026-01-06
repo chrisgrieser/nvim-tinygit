@@ -1,6 +1,10 @@
 fixup
 fixups
 permalink
+pickaxe
 renamings
+tinygit
 unshallow
+unshallowing
+unstage
 unstaged
