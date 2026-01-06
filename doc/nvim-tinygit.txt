@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*           For Neovim          Last change: 2025 December 30
+*nvim-tinygit.txt*           For Neovim           Last change: 2026 January 06
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -224,7 +224,7 @@ specific changes.
 
 INTERACTIVE STAGING ~
 
-- Interactive straging requires `telescope`.
+- Requires `telescope`.
 - This command stages hunks, that is, _parts_ of a file instead of the full
     file. It is roughly comparable to `git add -p`.
 - Use `<Space>` to stage/unstage the hunk, `<CR>` to go to the hunk, or `<C-r>`
@@ -474,7 +474,7 @@ the component may not be up-to-date with remote changes.)
 
 FILE STATE ~
 
-Shows the number of changed files, similar to terminal prompts.
+Shows the number of unstaged changed files, similar to terminal prompts.
 
 >lua
     require("tinygit.statusline").fileState()
