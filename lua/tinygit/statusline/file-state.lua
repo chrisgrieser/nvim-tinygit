@@ -14,8 +14,7 @@ local function getFileState()
 
 	local statusLines = vim.split(gitStatus.stdout, "\n", { trimempty = true })
 	local changes = vim.iter(statusLines):fold({}, function(acc, line)
-		local label = vim.trim(line:sub(1, 2))
-		if #label == 2 then label = label:sub(1, 1) end -- prefer staged over unstaged
+		local label = line:sub(2, 2) -- second letter = unstaged
 		acc[label] = (acc[label] or 0) + 1
 		return acc
 	end)

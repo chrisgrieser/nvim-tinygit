@@ -464,7 +464,7 @@ require("tinygit.statusline").branchState()
 ```
 
 ### File state
-Shows the number of changed files, similar to terminal prompts.
+Shows the number of unstaged changed files, similar to terminal prompts.
 
 ```lua
 require("tinygit.statusline").fileState()
