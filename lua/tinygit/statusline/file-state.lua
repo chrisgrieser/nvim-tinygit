@@ -12,26 +12,11 @@ local function getFileState()
 	local gitStatus = vim.system({ "git", "-C", gitroot, "status", "--porcelain" }):wait()
 	if gitStatus.code ~= 0 then return "" end
 
-	local icons = {
-		added = "+",
-		modified = "~",
-		deleted = "-",
-		untracked = "?",
-		renamed = "R",
-	}
-
-	local changes = vim.iter(vim.split(gitStatus.stdout, "\n")):fold({}, function(acc, line)
+	local statusLines = vim.split(gitStatus.stdout, "\n", { trimempty = true })
+	local changes = vim.iter(statusLines):fold({}, function(acc, line)
 		local label = vim.trim(line:sub(1, 2))
-		if #label > 1 then label = label:sub(1, 1) end -- prefer staged over unstaged
-		local map = {
-			["?"] = icons.untracked,
-			A = icons.added,
-			M = icons.modified,
-			R = icons.renamed,
-			D = icons.deleted,
-		}
-		local key = map[label]
-		if key then acc[key] = (acc[key] or 0) + 1 end
+		if #label == 2 then label = label:sub(1, 1) end -- prefer staged over unstaged
+		acc[label] = (acc[label] or 0) + 1
 		return acc
 	end)
 
