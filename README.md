@@ -1,4 +1,4 @@
-# nvim-tinygit <!-- rumdl-disable-line MD063 -->
+# Nvim-tinygit <!-- rumdl-disable-line MD063 -->
 <a href="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit">
 <img alt="badge" src="https://dotfyle.com/plugins/chrisgrieser/nvim-tinygit/shield?style=flat"/></a>
 
@@ -51,24 +51,26 @@ Bundle of commands focused on swift and streamlined git operations.
 ## Table of contents
 
 <!-- toc -->
-
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Commands](#commands)
     - [Interactive staging](#interactive-staging)
     - [Smart commit](#smart-commit)
     - [Amend and fixup commits](#amend-and-fixup-commits)
+        - [Amending](#amending)
+        - [Fixup commits](#fixup-commits)
     - [Undo last commit/amend](#undo-last-commitamend)
     - [GitHub interaction](#github-interaction)
+        - [Search issues & PRs](#search-issues--prs)
+        - [GitHub URL](#github-url)
     - [Push & PRs](#push--prs)
     - [File history](#file-history)
     - [Stash](#stash)
 - [Status line components](#status-line-components)
-    - [git blame](#git-blame)
+    - [Git blame](#git-blame)
     - [Branch state](#branch-state)
     - [File state](#file-state)
 - [Credits](#credits)
-
 <!-- tocstop -->
 
 ## Installation
