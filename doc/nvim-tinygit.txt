@@ -1,9 +1,9 @@
-*nvim-tinygit.txt*           For Neovim           Last change: 2026 January 06
+*nvim-tinygit.txt*           For Neovim           Last change: 2026 January 29
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
 
-1. nvim-tinygit                                   |nvim-tinygit-nvim-tinygit-|
+1. Nvim-tinygit                                   |nvim-tinygit-nvim-tinygit-|
   - Feature overview             |nvim-tinygit-nvim-tinygit--feature-overview|
   - Table of contents           |nvim-tinygit-nvim-tinygit--table-of-contents|
   - Installation                     |nvim-tinygit-nvim-tinygit--installation|
@@ -13,7 +13,7 @@ Table of Contents                             *nvim-tinygit-table-of-contents*
   - Credits                               |nvim-tinygit-nvim-tinygit--credits|
 
 ==============================================================================
-1. nvim-tinygit                                   *nvim-tinygit-nvim-tinygit-*
+1. Nvim-tinygit                                   *nvim-tinygit-nvim-tinygit-*
 
 
 
@@ -52,8 +52,12 @@ TABLE OF CONTENTS               *nvim-tinygit-nvim-tinygit--table-of-contents*
     - |nvim-tinygit-interactive-staging|
     - |nvim-tinygit-smart-commit|
     - |nvim-tinygit-amend-and-fixup-commits|
+        - |nvim-tinygit-amending|
+        - |nvim-tinygit-fixup-commits|
     - |nvim-tinygit-undo-last-commit/amend|
     - |nvim-tinygit-github-interaction|
+        - |nvim-tinygit-search-issues-&-prs|
+        - |nvim-tinygit-github-url|
     - |nvim-tinygit-push-&-prs|
     - |nvim-tinygit-file-history|
     - |nvim-tinygit-stash|
