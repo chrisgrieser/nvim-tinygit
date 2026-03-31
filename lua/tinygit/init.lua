@@ -1,9 +1,12 @@
 local version = vim.version()
-if version.major == 0 and version.minor < 10 then
-	vim.notify("tinygit requires at least nvim 0.10.", vim.log.levels.WARN)
+if version.major == 0 and version.minor < 12 then
+	local msg = "nvim-scissors requires at least nvim 0.12.\n"
+		.. "The latest commit supporting nvim 0.11 is d108d5c."
+	vim.notify(msg, vim.log.levels.WARN)
 	return
 end
 --------------------------------------------------------------------------------
+
 local M = {}
 
 ---@param userConfig? Tinygit.Config

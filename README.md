@@ -75,17 +75,16 @@ Bundle of commands focused on swift and streamlined git operations.
 
 ## Installation
 **Requirements** <!-- rumdl-disable-line MD036 -->
-- nvim 0.10+
+- nvim 0.12+
 - A plugin implementing `vim.ui.select`, such as:
     - [snacks.picker](http://github.com/folke/snacks.nvim)
     - [mini.pick](http://github.com/echasnovski/mini.pick)
     - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) with
-    [telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim)
+      [telescope-ui-select](https://github.com/nvim-telescope/telescope-ui-select.nvim)
     - [fzf-lua](https://github.com/ibhagwan/fzf-lua)
 - For interactive staging:
   [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim). (For
   `snacks.nvim`, the `git_diff` picker allows interactive staging.)
-- For GitHub-related commands: `curl`
 - *Recommended*: Treesitter parser for syntax highlighting `TSInstall
   gitcommit`.
 
@@ -349,7 +348,6 @@ require("tinygit").undoLastCommitOrAmend()
 ### GitHub interaction
 
 #### Search issues & PRs
-- All GitHub interaction commands require `curl`.
 
 ```lua
 -- state: all|closed|open (default: all)

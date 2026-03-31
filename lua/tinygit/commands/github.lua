@@ -81,10 +81,6 @@ function M.issuesAndPrs(opts)
 	if u.notInGitRepo() then return end
 	local repo = M.getGithubRemote()
 	if not repo then return end
-	if vim.fn.executable("curl") == 0 then
-		u.notify("`curl` cannot be found.", "warn")
-		return
-	end
 
 	local defaultOpts = { state = "all", type = "all" }
 	opts = vim.tbl_deep_extend("force", defaultOpts, opts or {})
@@ -92,66 +88,83 @@ function M.issuesAndPrs(opts)
 	-- DOCS https://docs.github.com/en/free-pro-team@latest/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
 	local baseUrl = ("https://api.github.com/repos/%s/issues"):format(repo)
 	local rawJsonUrl = baseUrl .. ("?per_page=100&state=%s&sort=updated"):format(opts.state)
-	local rawJSON = vim.system({ "curl", "-sL", rawJsonUrl }):wait().stdout or ""
-	local issues = vim.json.decode(rawJSON)
-	if not issues then
-		u.notify("Failed to fetch issues.", "warn")
-		return
-	end
-	if issues and opts.type ~= "all" then
-		issues = vim.tbl_filter(function(issue)
-			local isPR = issue.pull_request ~= nil
-			local isRightKind = (isPR and opts.type == "pr") or (not isPR and opts.type == "issue")
-			return isRightKind
-		end, issues)
-	end
-
-	if #issues == 0 then
-		local state = opts.state == "all" and "" or opts.state .. " "
-		local type = opts.type == "all" and "issues or PRs " or opts.type .. "s "
-		local msg = ("There are no %s%sfor this repo."):format(state, type)
-		u.notify(msg, "warn")
-		return
-	end
-
-	local type = opts.type == "all" and "Issue/PR" or opts.type
-	local mainIcon = require("tinygit.config").config.appearance.mainIcon
-	local prompt = vim.trim(("%s Select %s (%s)"):format(mainIcon, type, opts.state))
-	local onChoice = function(choice) vim.ui.open(choice.html_url) end
-	local stylingFunc = function()
-		local highlights = require("tinygit.shared.highlights")
-		highlights.commitType()
-		highlights.inlineCodeAndIssueNumbers()
-		vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
-		vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
-		vim.fn.matchadd("Comment", [[\vby [A-Za-z0-9-]+\s*$]])
-	end
-	local function issueListFormatter(issue)
-		local icons = require("tinygit.config").config.github.icons
-		local icon
-		if issue.pull_request then
-			if issue.draft then
-				icon = icons.draftPR
-			elseif issue.state == "open" then
-				icon = icons.openPR
-			elseif issue.pull_request.merged_at then
-				icon = icons.mergedPR
-			else
-				icon = icons.closedPR
+	vim.net.request(
+		rawJsonUrl,
+		{},
+		vim.schedule_wrap(function(err, res)
+			if err then
+				u.notify(("Failed to fetch issues: %s"):format(err), "warn")
+				return
 			end
-		else
-			if issue.state == "open" then
-				icon = icons.openIssue
-			elseif issue.state_reason == "completed" then
-				icon = icons.closedIssue
-			elseif issue.state_reason == "not_planned" then
-				icon = icons.notPlannedIssue
+			local issues = vim.json.decode(res.body)
+			if not issues then
+				u.notify("Failed to decode GitHub response.", "warn")
+				return
 			end
-		end
-		return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
-	end
 
-	require("tinygit.shared.picker").pick(prompt, issues, issueListFormatter, stylingFunc, onChoice)
+			if opts.type ~= "all" then
+				issues = vim.tbl_filter(function(issue)
+					local isPR = issue.pull_request ~= nil
+					local isRightKind = (isPR and opts.type == "pr")
+						or (not isPR and opts.type == "issue")
+					return isRightKind
+				end, issues)
+			end
+
+			if #issues == 0 then
+				local state = opts.state == "all" and "" or opts.state .. " "
+				local type = opts.type == "all" and "issues or PRs " or opts.type .. "s "
+				local msg = ("There are no %s%sfor this repo."):format(state, type)
+				u.notify(msg, "warn")
+				return
+			end
+
+			local type = opts.type == "all" and "Issue/PR" or opts.type
+			local mainIcon = require("tinygit.config").config.appearance.mainIcon
+			local prompt = vim.trim(("%s Select %s (%s)"):format(mainIcon, type, opts.state))
+			local onChoice = function(choice) vim.ui.open(choice.html_url) end
+			local stylingFunc = function()
+				local highlights = require("tinygit.shared.highlights")
+				highlights.commitType()
+				highlights.inlineCodeAndIssueNumbers()
+				vim.fn.matchadd("DiagnosticError", [[\v[Bb]ug]])
+				vim.fn.matchadd("DiagnosticInfo", [[\v[Ff]eature [Rr]equest|FR]])
+				vim.fn.matchadd("Comment", [[\vby [A-Za-z0-9-]+\s*$]])
+			end
+			local function issueListFormatter(issue)
+				local icons = require("tinygit.config").config.github.icons
+				local icon
+				if issue.pull_request then
+					if issue.draft then
+						icon = icons.draftPR
+					elseif issue.state == "open" then
+						icon = icons.openPR
+					elseif issue.pull_request.merged_at then
+						icon = icons.mergedPR
+					else
+						icon = icons.closedPR
+					end
+				else
+					if issue.state == "open" then
+						icon = icons.openIssue
+					elseif issue.state_reason == "completed" then
+						icon = icons.closedIssue
+					elseif issue.state_reason == "not_planned" then
+						icon = icons.notPlannedIssue
+					end
+				end
+				return ("%s #%s %s by %s"):format(icon, issue.number, issue.title, issue.user.login)
+			end
+
+			require("tinygit.shared.picker").pick(
+				prompt,
+				issues,
+				issueListFormatter,
+				stylingFunc,
+				onChoice
+			)
+		end)
+	)
 end
 
 function M.openIssueUnderCursor()
