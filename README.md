@@ -117,6 +117,7 @@ require("tinygit").setup {
 			resetHunk = "<C-r>",
 		},
 		moveToNextHunkOnStagingToggle = false,
+		showFilePaths = false,
 
 		-- accepts the common telescope picker config
 		telescopeOpts = {
