@@ -33,7 +33,7 @@ local function newFinder(hunks)
 				local h = _entry.value
 				local changeWithoutHunk = h.lnum == -1
 
-				local name = vim.fs.basename(h.relPath)
+				local name = conf.showFilePaths and h.relPath or vim.fs.basename(h.relPath)
 				local added = h.added > 0 and (" +" .. h.added) or ""
 				local del = h.removed > 0 and (" -" .. h.removed) or ""
 				local location = ""
