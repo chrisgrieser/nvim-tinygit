@@ -1,4 +1,4 @@
-*nvim-tinygit.txt*            For Neovim            Last change: 2026 March 31
+*nvim-tinygit.txt*            For Neovim            Last change: 2026 April 11
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
@@ -111,6 +111,7 @@ The `setup` call is optional.
                 resetHunk = "<C-r>",
             },
             moveToNextHunkOnStagingToggle = false,
+            showFilePaths = false,
     
             -- accepts the common telescope picker config
             telescopeOpts = {
