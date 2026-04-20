@@ -65,7 +65,7 @@ local function getHunksFromDiffOutput(diffCmdStdout, diffIsOfStaged)
 		local diffLines = vim.split(file, "\n")
 		local changesInFile, diffHeaderLines, fileMode, _ = splitOffDiffHeader(diffLines)
 		local diffHeader = table.concat(diffHeaderLines, "\n")
-		local relPath = diffHeaderLines[1]:match("b/(.+)")
+		local relPath = diffHeaderLines[1]:match("a/.+ b/(.+)")
 		assert(relPath, "Failed to parse diff header:\n" .. table.concat(diffHeaderLines, "\n"))
 		local absPath = gitroot .. "/" .. relPath
 
