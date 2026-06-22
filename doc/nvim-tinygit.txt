@@ -1,4 +1,5 @@
-*nvim-tinygit.txt*            For Neovim            Last change: 2026 April 11
+*nvim-tinygit.txt*
+                                       For Neovim    Last change: 2026 June 22
 
 ==============================================================================
 Table of Contents                             *nvim-tinygit-table-of-contents*
