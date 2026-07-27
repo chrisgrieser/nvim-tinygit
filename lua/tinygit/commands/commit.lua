@@ -55,6 +55,21 @@ local function postCommitNotif(notifTitle, doStageAllChanges, commitTitle, extra
 	u.notify(table.concat(lines, "\n"), "info", { title = notifTitle })
 end
 
+---@return boolean
+local function repoHasPrecommitHook()
+	local out = vim.system({ "git", "config", "--get", "core.hooksPath" }):wait()
+	local hasHookConfig = out.code == 0
+	if not hasHookConfig then return false end
+
+	local currentHookPath = vim.fs.normalize(vim.trim(out.stdout))
+	local gitRoot = vim.fs.root(0, ".git")
+
+	local isRelative = not vim.startswith(currentHookPath, "/")
+	if isRelative then currentHookPath = vim.fs.normalize(gitRoot .. "/" .. currentHookPath) end
+	local hookPathExists = vim.uv.fs_stat(currentHookPath) ~= nil
+	return hookPathExists
+end
+
 --------------------------------------------------------------------------------
 
 ---@param opts? { pushIfClean?: boolean, pullBeforePush?: boolean }
@@ -67,45 +82,68 @@ function M.smartCommit(opts)
 	local doStageAllChanges = hasNoStagedChanges()
 	local cleanAfterCommit = hasNoUnstagedChanges() or doStageAllChanges
 
-	local prompt = "Commit"
-	if doStageAllChanges then prompt = "Stage all · " .. prompt:lower() end
-	if cleanAfterCommit and opts.pushIfClean then prompt = prompt .. " · push" end
+	local function startCommit()
+		-- params
+		local input = require("tinygit.commands.commit.msg-input")
+		local prompt = "Commit"
+		if doStageAllChanges then prompt = "Stage all · " .. prompt:lower() end
+		if cleanAfterCommit and opts.pushIfClean then prompt = prompt .. " · push" end
+		local inputMode = doStageAllChanges and "stage-all-and-commit" or "commit"
 
-	local inputMode = doStageAllChanges and "stage-all-and-commit" or "commit"
+		input.new(inputMode, prompt, function(title, body)
+			-- stage
+			if doStageAllChanges then
+				local result = vim.system({ "git", "add", "--all" }):wait()
+				if u.nonZeroExit(result) then return end
+			end
 
-	-- check if pre-commit would pass before opening message input
-	local preCommitResult = vim.system({ "git", "hook", "run", "--ignore-missing", "pre-commit" })
-		:wait()
-	if u.nonZeroExit(preCommitResult) then return end
-
-	require("tinygit.commands.commit.msg-input").new(inputMode, prompt, function(title, body)
-		-- stage
-		if doStageAllChanges then
-			local result = vim.system({ "git", "add", "--all" }):wait()
+			-- commit
+			-- (using `--no-verify`, since we checked the pre-commit earlier already)
+			local commitArgs = { "git", "commit", "--no-verify", "--message=" .. title }
+			if body then table.insert(commitArgs, "--message=" .. body) end
+			local result = vim.system(commitArgs):wait()
 			if u.nonZeroExit(result) then return end
-		end
 
-		-- commit
-		-- (using `--no-verify`, since we checked the pre-commit earlier already)
-		local commitArgs = { "git", "commit", "--no-verify", "--message=" .. title }
-		if body then table.insert(commitArgs, "--message=" .. body) end
-		local result = vim.system(commitArgs):wait()
-		if u.nonZeroExit(result) then return end
+			-- notification
+			local extra = ""
+			if opts.pushIfClean then
+				extra = cleanAfterCommit and "Pushing…" or "Not pushing since repo still dirty."
+			end
+			postCommitNotif("Smart commit", doStageAllChanges, title, extra)
 
-		-- notification
-		local extra = ""
-		if opts.pushIfClean then
-			extra = cleanAfterCommit and "Pushing…" or "Not pushing since repo still dirty."
-		end
-		postCommitNotif("Smart commit", doStageAllChanges, title, extra)
+			-- push
+			if opts.pushIfClean and cleanAfterCommit then
+				require("tinygit.commands.push-pull").push({ pullBefore = opts.pullBeforePush }, true)
+			end
 
-		-- push
-		if opts.pushIfClean and cleanAfterCommit then
-			require("tinygit.commands.push-pull").push({ pullBefore = opts.pullBeforePush }, true)
-		end
+			require("tinygit.statusline").updateAllComponents()
+		end)
+	end
 
-		require("tinygit.statusline").updateAllComponents()
-	end)
+	if repoHasPrecommitHook() then
+		u.notify("Running pre-commit hook…")
+
+		-- open commit window async, in case of slow precommit hook (#44)
+		vim.system(
+			{ "git", "hook", "run", "pre-commit" },
+			vim.schedule_wrap(function(hookResult)
+				-- hide info notification in case of snacks.nvim
+				if package.loaded["snacks"] then require("snacks").notifier.hide() end
+
+				-- don't open input if hook fails
+				if hookResult.code ~= 0 then
+					local msg = (hookResult.stdout or "") .. (hookResult.stderr or "")
+					msg = "[Pre-commit hook failed]\n\n" .. msg
+					u.notify(msg, "error")
+					return
+				end
+
+				startCommit()
+			end)
+		)
+	else
+		startCommit()
+	end
 end
 
 ---@param opts? { forcePushIfDiverged?: boolean, stageAllIfNothingStaged?: boolean }
