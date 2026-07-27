@@ -134,7 +134,7 @@ function M.smartCommit(opts)
 				if hookResult.code ~= 0 then
 					local msg = (hookResult.stdout or "") .. (hookResult.stderr or "")
 					msg = "[Pre-commit hook failed]\n\n" .. msg
-					u.notify(msg, "error")
+					u.notify(msg, "error", { timeout = 0 }) -- no timeout, since relevant for user
 					return
 				end
 
