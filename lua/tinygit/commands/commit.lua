@@ -131,14 +131,15 @@ function M.smartCommit(opts)
 				if package.loaded["snacks"] then require("snacks").notifier.hide() end
 
 				-- don't open input if hook fails
+				local msg = (hookResult.stdout or "") .. (hookResult.stderr or "")
 				if hookResult.code ~= 0 then
-					local msg = (hookResult.stdout or "") .. (hookResult.stderr or "")
-					msg = "[Pre-commit hook failed]\n\n" .. msg
+					msg = "[Pre-commit hook failed]\n" .. msg
 					u.notify(msg, "error", { timeout = 0 }) -- no timeout, since relevant for user
-					return
+				else
+					msg = "[Pre-commit hook result]\n" .. msg
+					u.notify(msg)
+					startCommit()
 				end
-
-				startCommit()
 			end)
 		)
 	else
