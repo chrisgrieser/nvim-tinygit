@@ -131,12 +131,13 @@ function M.smartCommit(opts)
 				if package.loaded["snacks"] then require("snacks").notifier.hide() end
 
 				-- don't open input if hook fails
-				local msg = (hookResult.stdout or "") .. (hookResult.stderr or "")
+				local msg = vim.trim((hookResult.stdout or "") .. (hookResult.stderr or ""))
 				if hookResult.code ~= 0 then
 					msg = "[Pre-commit hook failed]\n" .. msg
 					u.notify(msg, "error", { timeout = 0 }) -- no timeout, since relevant for user
 				else
-					msg = "[Pre-commit hook result]\n" .. msg
+					msg = (msg == "") and "Pre-commit hook succeeded."
+						or ("[Pre-commit hook result]\n" .. msg)
 					u.notify(msg)
 					startCommit()
 				end
